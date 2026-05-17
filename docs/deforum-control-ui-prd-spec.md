@@ -48,7 +48,31 @@ From the supplied PC screenshot:
 | OS | Windows 11 Pro 25H2, build 26200.8246 |
 | Touch | 256 touch points |
 
-Planning implication: the prototype can target local GPU preview renders and 1080p test clips, while still keeping final show resolution and render duration configurable. The RTX 4090 is strong enough for rapid short-clip iteration, but long production-quality runs should be queued, cached, and profiled rather than assumed to be real-time.
+Planning implication: the prototype can target local GPU preview renders using the exercise asset ratio, while still keeping final show resolution and render duration configurable. The RTX 4090 is strong enough for rapid short-clip iteration, but long production-quality runs should be queued, cached, and profiled rather than assumed to be real-time.
+
+### Source Exercise Assets
+
+The exercise source images have been moved into:
+
+```text
+assets/images/source/
+```
+
+Current asset set:
+
+| Item | Value |
+|---|---|
+| Image count | 24 PNG files |
+| Source resolution | 1680x720 |
+| Aspect ratio | 7:3, approximately 2.333:1 |
+| Canonical UI canvas | 1680x720 source frame |
+| Fast preview render size | 896x384 |
+| Review preview render size | 1344x576 |
+| Final exercise config size | 1680x720 where the selected backend supports it |
+
+UI and render planning must not assume 16:9. The preview panel should preserve a 7:3 frame, show safe-frame guides for the full 1680x720 composition, and avoid automatic centre-cropping that would remove the wide panoramic edges.
+
+Deforum/backend note: 1680x720 preserves the supplied image dimensions but is not a 64-pixel-multiple canvas. If a selected Stable Diffusion or Deforum backend requires 64-pixel multiples, use `896x384` for fast checks or `1344x576` for review previews, then upscale or pad/crop back to the 1680x720 source frame for comparison and handoff.
 
 ## Fresh Reference Analysis
 
@@ -107,6 +131,7 @@ Prototype implication: the UI needs controls for source-image ordering, prompt/k
 | FR-10 | Export a reviewed config JSON plus a human-readable preset report. | P0 |
 | FR-11 | Keep render-engine integration behind an adapter so Automatic1111 Deforum, ComfyUI, custom img2img scripts, or TouchDesigner-facing exports can be swapped. | P0 |
 | FR-12 | Store local assets and generated preview outputs under the prototype folder or a configured local workspace path. | P0 |
+| FR-13 | Preserve the 1680x720 source frame in the UI preview, exported configs, and take-comparison metadata. | P0 |
 
 ## Non-Functional Requirements
 
@@ -142,7 +167,7 @@ The first screen should be the actual tuning bench, not a landing page.
 | Zone | Purpose |
 |---|---|
 | Left asset rail | Source image tray, sequence order, image metadata, crop/aspect controls. |
-| Centre preview | Current frame, before/after scrub, latest rendered clip, safe-frame guides. |
+| Centre preview | 7:3 current frame, before/after scrub, latest rendered clip, 1680x720 safe-frame guides. |
 | Bottom timeline | Image segments, prompt keyframes, camera/motion curves, render range. |
 | Right controls | Sliders/dropdowns grouped by Generation, Motion, Prompt, Image Morph, Look, Output. |
 | Top toolbar | Preset name, save, render preview, queue, compare, export. |
@@ -220,19 +245,22 @@ The prototype should treat the exported preset as the main deliverable. Draft sh
   "schemaVersion": "0.1.0",
   "presetName": "future-wall-morph-study-01",
   "target": {
-    "previewResolution": [1280, 720],
-    "finalResolution": [1920, 1080],
+    "sourceResolution": [1680, 720],
+    "previewResolution": [896, 384],
+    "reviewPreviewResolution": [1344, 576],
+    "finalResolution": [1680, 720],
+    "aspectRatio": "7:3",
     "fps": 24,
     "durationSeconds": 30
   },
   "assets": [
     {
       "id": "image-001",
-      "path": "assets/images/source-001.png",
+      "path": "assets/images/source/20260430/source-001.png",
       "label": "starting landscape",
       "enabled": true,
       "focalPoint": [0.5, 0.45],
-      "cropMode": "cover"
+      "cropMode": "contain-7x3"
     }
   ],
   "timeline": [
@@ -337,7 +365,7 @@ Key boundaries:
 
 **Files:** `src/config/defaultPreset.js`, `src/services/presetSchema.js`, `docs/config-contract.md`
 
-**Verify:** `pnpm test -- presetSchema`
+**Verify:** `pnpm test -- presetSchema`; manual: asset validation rejects non-1680x720 source images unless explicitly marked as a crop/pad test.
 
 ### T3: Workbench Layout
 
@@ -345,7 +373,7 @@ Key boundaries:
 
 **Files:** `src/components/workbench/*`, `src/App.jsx`, `src/styles/*`
 
-**Verify:** `pnpm test`, manual: layout remains usable at 1920x1080 and 2560x1440.
+**Verify:** `pnpm test`, manual: 1680x720 source images display inside a 7:3 preview frame without horizontal cropping; layout remains usable at 1920x1080 and 2560x1440.
 
 ### T4: Parameter Controls
 
@@ -399,6 +427,8 @@ Key boundaries:
 
 - [ ] The prototype UI runs locally on the supplied PC.
 - [ ] Etienne can import multiple pre-generated images and arrange them into a sequence.
+- [ ] The provided 1680x720 exercise images are available from `assets/images/source/`.
+- [ ] The UI preserves a 7:3 preview frame and records source, preview, and final resolutions in exported configs.
 - [ ] Core Deforum-style parameters are editable through sliders, dropdowns, toggles, and text fields.
 - [ ] Prompt keyframes can be scheduled by frame range.
 - [ ] A short preview clip can be rendered through at least one local adapter path.

@@ -9,8 +9,7 @@ coverage/
 playwright-report/
 test-results/
 
-# Local assets and generated outputs
-assets/images/*
+# Generated outputs
 outputs/
 exports/
 *.mp4

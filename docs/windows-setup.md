@@ -229,24 +229,36 @@ Do not store model licences, API tokens, client-private images, or credentials i
 
 ## 10. Create Local Asset Folders
 
-Inside the prototype folder, create local asset and output folders:
+The exercise source images are tracked in Git under:
+
+```text
+assets\images\source\
+```
+
+They are 1680x720 PNG files. The UI and Deforum setup should treat them as a 7:3 source canvas.
+
+Inside the prototype folder, create local output folders:
 
 ```powershell
 cd D:\NMS-SHG\prototype\KRD\projects\NMS-SHG\04-development\prototypes\deforum-control-ui
-mkdir assets
-mkdir assets\images
-mkdir outputs
-mkdir outputs\previews
-mkdir outputs\exports
+New-Item -ItemType Directory -Force assets\images\source
+New-Item -ItemType Directory -Force outputs\previews
+New-Item -ItemType Directory -Force outputs\exports
 ```
 
-Put pre-generated source images in:
+After cloning or copying the repo, confirm source images are present:
+
+```powershell
+dir assets\images\source
+```
+
+If additional exercise source images are added later, put them under a dated folder inside:
 
 ```text
-assets\images\
+assets\images\source\
 ```
 
-Do not commit large generated videos or model files to Git.
+Do not commit generated videos, model files, or temporary render outputs to Git.
 
 ## 11. Recommended First Test
 
@@ -256,7 +268,11 @@ Suggested first render settings:
 
 | Setting | Starter value |
 |---|---|
-| Preview resolution | 768 x 432 or 960 x 540 |
+| Source resolution | 1680 x 720 |
+| Fast preview resolution | 896 x 384 |
+| Review preview resolution | 1344 x 576 |
+| Final exercise config resolution | 1680 x 720, if the selected backend supports it |
+| Aspect ratio | 7:3 |
 | Duration | 5-10 seconds |
 | FPS | 12-24 |
 | Steps | 20-25 |
@@ -267,6 +283,8 @@ Suggested first render settings:
 | Output format | MP4 preview plus exported JSON |
 
 Only move to longer or higher-resolution tests after a short preview renders successfully.
+
+If the selected Deforum or Stable Diffusion backend rejects 1680x720 because it wants 64-pixel multiples, render tests at `896x384` or `1344x576`, then upscale or pad/crop the candidate back to the 1680x720 source frame for review.
 
 ## 12. Troubleshooting
 
@@ -332,7 +350,8 @@ Keep only candidate renders and their exported JSON reports.
 - [ ] FFmpeg works.
 - [ ] pnpm works.
 - [ ] Prototype folder is on the Windows PC.
-- [ ] Source images folder exists.
+- [ ] Source images folder exists at `assets\images\source`.
+- [ ] The exercise images are present and verified as 1680x720.
 - [ ] UI app is scaffolded or ready to be scaffolded.
 - [ ] Optional: AUTOMATIC1111 WebUI launches.
 - [ ] Optional: Deforum extension appears in WebUI.
