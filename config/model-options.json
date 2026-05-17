@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "0.1.0",
+  "defaultModelId": "sd15-baseline",
+  "modelDirectory": "D:\\NMS-SHG\\render-tools\\stable-diffusion-webui\\models\\Stable-diffusion",
+  "ui": {
+    "controlGroup": "Generation",
+    "controlType": "select",
+    "label": "Model profile",
+    "compareMode": true
+  },
+  "models": [
+    {
+      "id": "sd15-baseline",
+      "label": "SD 1.5 Baseline",
+      "provider": "Hugging Face",
+      "repository": "stable-diffusion-v1-5/stable-diffusion-v1-5",
+      "file": "v1-5-pruned-emaonly.safetensors",
+      "license": "creativeml-openrail-m",
+      "intendedUse": "Compatibility baseline for Automatic1111 Deforum and fast iteration.",
+      "expectedStrength": "Most likely to work with classic Deforum workflows and lower VRAM pressure.",
+      "risk": "Lower detail and prompt adherence than SDXL-class models.",
+      "status": "approved-for-prototype-review",
+      "requiresLicenseAcceptance": true
+    },
+    {
+      "id": "sdxl-base",
+      "label": "SDXL Base 1.0",
+      "provider": "Hugging Face",
+      "repository": "stabilityai/stable-diffusion-xl-base-1.0",
+      "file": "sd_xl_base_1.0.safetensors",
+      "license": "openrail++",
+      "intendedUse": "Neutral high-detail fallback for panoramic image-to-image morph tests.",
+      "expectedStrength": "Better detail, composition, and prompt adherence than SD 1.5.",
+      "risk": "Slower than SD 1.5 and may need SDXL-compatible backend settings.",
+      "status": "approved-for-prototype-review",
+      "requiresLicenseAcceptance": true
+    },
+    {
+      "id": "realvisxl-v5",
+      "label": "RealVisXL V5.0",
+      "provider": "Hugging Face",
+      "repository": "SG161222/RealVisXL_V5.0",
+      "file": "RealVisXL_V5.0_fp16.safetensors",
+      "license": "openrail++",
+      "intendedUse": "Photoreal reference pass for skyline, architecture, and atmosphere.",
+      "expectedStrength": "Photorealism, lighting, and architectural detail.",
+      "risk": "May pull the look away from the desired poetic painterly treatment.",
+      "status": "approved-for-prototype-review",
+      "requiresLicenseAcceptance": false
+    },
+    {
+      "id": "juggernaut-xl-v9",
+      "label": "Juggernaut XL v9",
+      "provider": "Hugging Face",
+      "repository": "RunDiffusion/Juggernaut-XL-v9",
+      "file": "Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors",
+      "license": "creativeml-openrail-m",
+      "intendedUse": "Cinematic architecture and atmosphere comparison pass.",
+      "expectedStrength": "High-impact cinematic lighting and architectural render quality.",
+      "risk": "Model card includes business/API-use restrictions; production use needs licence review.",
+      "status": "prototype-only-license-review-required",
+      "requiresLicenseAcceptance": false
+    },
+    {
+      "id": "sdxl-refiner",
+      "label": "SDXL Refiner 1.0",
+      "provider": "Hugging Face",
+      "repository": "stabilityai/stable-diffusion-xl-refiner-1.0",
+      "file": "sd_xl_refiner_1.0.safetensors",
+      "license": "openrail++",
+      "intendedUse": "Optional finishing/refinement pass after an SDXL base render.",
+      "expectedStrength": "Final denoising and detail refinement for selected stills or short candidate passes.",
+      "risk": "Not a primary Deforum animation model; use only where the backend supports refiner workflows.",
+      "status": "optional-refiner",
+      "requiresLicenseAcceptance": true
+    }
+  ],
+  "comparisonRubric": [
+    "composition stability across the 1680x720 frame",
+    "identity retention between source images",
+    "smoothness of morph without flicker",
+    "fit with poetic Future Wall art direction",
+    "architectural and atmospheric detail",
+    "render speed on RTX 4090",
+    "licence and production viability"
+  ]
+}

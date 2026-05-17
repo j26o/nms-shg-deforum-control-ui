@@ -74,6 +74,32 @@ UI and render planning must not assume 16:9. The preview panel should preserve a
 
 Deforum/backend note: 1680x720 preserves the supplied image dimensions but is not a 64-pixel-multiple canvas. If a selected Stable Diffusion or Deforum backend requires 64-pixel multiples, use `896x384` for fast checks or `1344x576` for review previews, then upscale or pad/crop back to the 1680x720 source frame for comparison and handoff.
 
+### Fallback Model Options
+
+Model choice should be a first-class prototype variable, not a hidden backend setting. The canonical model option list lives in:
+
+```text
+config/model-options.json
+```
+
+Human-readable setup and comparison guidance lives in:
+
+```text
+docs/model-options.md
+```
+
+Initial model profiles:
+
+| Model ID | Purpose |
+|---|---|
+| `sd15-baseline` | Fast compatibility baseline for classic Automatic1111 Deforum workflows. |
+| `sdxl-base` | Neutral high-detail SDXL fallback for panoramic morph tests. |
+| `realvisxl-v5` | Photoreal skyline and architecture comparison pass. |
+| `juggernaut-xl-v9` | Cinematic architecture comparison pass; prototype-only until licence review. |
+| `sdxl-refiner` | Optional finishing stage where the backend supports SDXL refiner workflows. |
+
+The UI should allow Etienne to render the same source image sequence, prompt schedule, seed, motion values, and preview resolution through multiple model profiles, then compare output takes side by side.
+
 ## Fresh Reference Analysis
 
 This section is based on a new pass over the two supplied YouTube links and downloaded low-resolution frames/subtitles for planning. Existing in-repo effect-analysis material was intentionally not used for this effect breakdown.
@@ -132,6 +158,8 @@ Prototype implication: the UI needs controls for source-image ordering, prompt/k
 | FR-11 | Keep render-engine integration behind an adapter so Automatic1111 Deforum, ComfyUI, custom img2img scripts, or TouchDesigner-facing exports can be swapped. | P0 |
 | FR-12 | Store local assets and generated preview outputs under the prototype folder or a configured local workspace path. | P0 |
 | FR-13 | Preserve the 1680x720 source frame in the UI preview, exported configs, and take-comparison metadata. | P0 |
+| FR-14 | Provide a model-profile dropdown populated from `config/model-options.json`, with model metadata saved into every exported preset and take. | P0 |
+| FR-15 | Allow the same preset to be queued against multiple model profiles for comparison. | P1 |
 
 ## Non-Functional Requirements
 
@@ -177,6 +205,7 @@ The first screen should be the actual tuning bench, not a landing page.
 Generation:
 
 - model profile
+- model status/risk note
 - sampler
 - scheduler
 - steps
@@ -252,6 +281,14 @@ The prototype should treat the exported preset as the main deliverable. Draft sh
     "aspectRatio": "7:3",
     "fps": 24,
     "durationSeconds": 30
+  },
+  "model": {
+    "modelId": "sdxl-base",
+    "label": "SDXL Base 1.0",
+    "repository": "stabilityai/stable-diffusion-xl-base-1.0",
+    "file": "sd_xl_base_1.0.safetensors",
+    "license": "openrail++",
+    "status": "approved-for-prototype-review"
   },
   "assets": [
     {
@@ -361,11 +398,11 @@ Key boundaries:
 
 ### T2: Preset And Asset Data Model
 
-**Do:** Add JSON schema, default preset, asset metadata shape, and file-path validation rules. Keep source image paths relative to the configured workspace.
+**Do:** Add JSON schema, default preset, model option schema, asset metadata shape, and file-path validation rules. Keep source image paths relative to the configured workspace.
 
-**Files:** `src/config/defaultPreset.js`, `src/services/presetSchema.js`, `docs/config-contract.md`
+**Files:** `src/config/defaultPreset.js`, `src/services/presetSchema.js`, `config/model-options.json`, `docs/config-contract.md`
 
-**Verify:** `pnpm test -- presetSchema`; manual: asset validation rejects non-1680x720 source images unless explicitly marked as a crop/pad test.
+**Verify:** `pnpm test -- presetSchema`; manual: asset validation rejects non-1680x720 source images unless explicitly marked as a crop/pad test, and exported presets include model metadata.
 
 ### T3: Workbench Layout
 
@@ -377,11 +414,11 @@ Key boundaries:
 
 ### T4: Parameter Controls
 
-**Do:** Implement sliders, dropdowns, toggles, and text inputs for the Generation, Image Morph, Motion, Prompt, Look, and Output groups.
+**Do:** Implement sliders, dropdowns, toggles, and text inputs for the Generation, Image Morph, Motion, Prompt, Look, and Output groups. The Generation group must include model profile selection from `config/model-options.json`.
 
 **Files:** `src/components/controls/*`, `src/stores/usePresetStore.js`
 
-**Verify:** `pnpm test -- controls`, manual: changing a control updates the preset preview JSON.
+**Verify:** `pnpm test -- controls`, manual: changing model profile updates the preset preview JSON and shows the model risk/status note.
 
 ### T5: Timeline And Keyframes
 
@@ -409,11 +446,19 @@ Key boundaries:
 
 ### T8: Take Comparison And Export
 
-**Do:** Add saved takes, side-by-side metadata comparison, mark-as-candidate, export config JSON, and export human-readable preset report.
+**Do:** Add saved takes, side-by-side metadata comparison, mark-as-candidate, export config JSON, and export human-readable preset report. Take metadata must include `modelId`, repository, checkpoint file, preview resolution, seed, and render duration.
 
 **Files:** `src/components/takes/*`, `src/services/exportPreset.js`, `docs/export-format.md`
 
 **Verify:** `pnpm test -- exportPreset`, manual: export a candidate and reopen it without losing values.
+
+### T10: Model Matrix Comparison
+
+**Do:** Add model download/setup docs, model option config, and comparison rubric so the same preset can be tested across SD 1.5, SDXL Base, RealVisXL, Juggernaut XL, and optional SDXL Refiner.
+
+**Files:** `config/model-options.json`, `docs/model-options.md`, `docs/evals/model-fallback-options-eval.md`
+
+**Verify:** Manual: every model profile has source URL, file name, licence/status note, intended use, and comparison criteria.
 
 ### T9: Prototype QA Pass
 
@@ -430,6 +475,8 @@ Key boundaries:
 - [ ] The provided 1680x720 exercise images are available from `assets/images/source/`.
 - [ ] The UI preserves a 7:3 preview frame and records source, preview, and final resolutions in exported configs.
 - [ ] Core Deforum-style parameters are editable through sliders, dropdowns, toggles, and text fields.
+- [ ] Model profile is selectable from `config/model-options.json`.
+- [ ] Candidate takes record model ID, checkpoint file, seed, resolution, and render duration.
 - [ ] Prompt keyframes can be scheduled by frame range.
 - [ ] A short preview clip can be rendered through at least one local adapter path.
 - [ ] Candidate takes can be compared and annotated.

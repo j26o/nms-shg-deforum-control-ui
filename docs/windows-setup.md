@@ -215,7 +215,7 @@ After restart, confirm the WebUI has a Deforum tab or extension entry.
 
 ## 9. Add A Model Checkpoint
 
-The WebUI needs at least one Stable Diffusion model checkpoint. Use a model that KR+D is allowed to use for this project.
+The WebUI needs at least one Stable Diffusion model checkpoint. Use only models that KR+D is allowed to use for this project.
 
 Place model files here:
 
@@ -226,6 +226,42 @@ D:\NMS-SHG\render-tools\stable-diffusion-webui\models\Stable-diffusion\
 Use `.safetensors` where possible.
 
 Do not store model licences, API tokens, client-private images, or credentials in the prototype repo.
+
+The prototype model matrix is documented in:
+
+```text
+docs\model-options.md
+config\model-options.json
+```
+
+Install the Hugging Face CLI:
+
+```powershell
+python -m pip install -U huggingface_hub
+huggingface-cli login
+```
+
+Some Hugging Face models require accepting terms in the browser before CLI download works.
+
+Set the model folder:
+
+```powershell
+$MODEL_DIR = "D:\NMS-SHG\render-tools\stable-diffusion-webui\models\Stable-diffusion"
+```
+
+Download fallback models for comparison:
+
+```powershell
+huggingface-cli download stable-diffusion-v1-5/stable-diffusion-v1-5 v1-5-pruned-emaonly.safetensors --local-dir $MODEL_DIR
+huggingface-cli download stabilityai/stable-diffusion-xl-base-1.0 sd_xl_base_1.0.safetensors --local-dir $MODEL_DIR
+huggingface-cli download SG161222/RealVisXL_V5.0 RealVisXL_V5.0_fp16.safetensors --local-dir $MODEL_DIR
+huggingface-cli download RunDiffusion/Juggernaut-XL-v9 Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors --local-dir $MODEL_DIR
+huggingface-cli download stabilityai/stable-diffusion-xl-refiner-1.0 sd_xl_refiner_1.0.safetensors --local-dir $MODEL_DIR
+```
+
+Restart Automatic1111 after downloading. Confirm the checkpoints appear in the WebUI checkpoint dropdown before launching a prototype render.
+
+Production caution: `juggernaut-xl-v9` is included for prototype comparison only until its model-card restrictions are reviewed for the intended production use.
 
 ## 10. Create Local Asset Folders
 
@@ -280,6 +316,8 @@ Suggested first render settings:
 | Seed mode | Fixed |
 | Denoise strength | 0.45-0.65 |
 | Cadence | 2 |
+| First model pass | `sd15-baseline`, then `sdxl-base` |
+| Comparison models | `realvisxl-v5`, `juggernaut-xl-v9`, optional `sdxl-refiner` |
 | Output format | MP4 preview plus exported JSON |
 
 Only move to longer or higher-resolution tests after a short preview renders successfully.
@@ -352,6 +390,9 @@ Keep only candidate renders and their exported JSON reports.
 - [ ] Prototype folder is on the Windows PC.
 - [ ] Source images folder exists at `assets\images\source`.
 - [ ] The exercise images are present and verified as 1680x720.
+- [ ] Hugging Face CLI works, if model downloads are needed.
+- [ ] At least `sd15-baseline` and `sdxl-base` checkpoints are downloaded.
+- [ ] Optional comparison checkpoints are downloaded only after licence review.
 - [ ] UI app is scaffolded or ready to be scaffolded.
 - [ ] Optional: AUTOMATIC1111 WebUI launches.
 - [ ] Optional: Deforum extension appears in WebUI.
@@ -365,3 +406,8 @@ Keep only candidate renders and their exported JSON reports.
 - AUTOMATIC1111 WebUI: `https://github.com/AUTOMATIC1111/stable-diffusion-webui`
 - AUTOMATIC1111 NVIDIA install guide: `https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs`
 - Deforum extension: `https://github.com/deforum-art/sd-webui-deforum`
+- Stable Diffusion 1.5: `https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5`
+- SDXL Base 1.0: `https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0`
+- SDXL Refiner 1.0: `https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0`
+- RealVisXL V5.0: `https://huggingface.co/SG161222/RealVisXL_V5.0`
+- Juggernaut XL v9: `https://huggingface.co/RunDiffusion/Juggernaut-XL-v9`

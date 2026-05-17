@@ -31,11 +31,14 @@ Read the PRD/spec plan here:
 - `docs/deforum-control-ui-prd-spec.md`
 - `docs/windows-setup.md`
 - `docs/source-assets.md`
+- `docs/model-options.md`
+- `config/model-options.json`
 
 ## Assumptions And Known Gaps
 
 - The prototype can run locally on the supplied RTX 4090 PC for short preview renders.
 - The current exercise source assets are 1680x720 PNGs, so the tuning UI should use a 7:3 canvas and avoid 16:9 assumptions.
+- Model choice is part of the exercise: the UI should expose the configured fallback model profiles so the same Deforum setup can be compared across checkpoints.
 - Final production resolution, projection mapping, and TouchDesigner integration details are still to be confirmed.
 - This plan assumes local-only assets and local render jobs. No cloud generation, visitor data, production network addresses, or credentials are part of the prototype.
 - The renderer adapter should remain replaceable: Automatic1111 Deforum, ComfyUI, a custom img2img loop, or a TouchDesigner-facing playback/export path can be swapped behind the same UI contract.
