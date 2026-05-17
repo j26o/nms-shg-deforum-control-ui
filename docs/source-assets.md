@@ -1,6 +1,6 @@
 # Source Assets
 
-Status: exercise assets added  
+Status: exercise assets added
 Canonical folder: `assets/images/source/`
 
 ## Current Asset Set
