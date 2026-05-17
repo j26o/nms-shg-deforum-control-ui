@@ -1,8 +1,8 @@
 # Eval: Deforum Model Fallback Options
 
-Date: 2026-05-17  
-Artifact scope: `config/model-options.json`, `docs/model-options.md`, `docs/deforum-control-ui-prd-spec.md`, `docs/windows-setup.md`, `README.md`  
-Evaluator: Codex using KR+D AI eval workflow  
+Date: 2026-05-17
+Artifact scope: `config/model-options.json`, `docs/model-options.md`, `docs/deforum-control-ui-prd-spec.md`, `docs/windows-setup.md`, `README.md`
+Evaluator: Codex using KR+D AI eval workflow
 Status: Pass with production-use caveats
 
 ## Eval Methodology

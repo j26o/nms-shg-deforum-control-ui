@@ -1,7 +1,7 @@
 # Model Options For Deforum Effect Review
 
-Status: prototype model matrix  
-Last updated: 2026-05-17  
+Status: prototype model matrix
+Last updated: 2026-05-17
 Config source: `config/model-options.json`
 
 ## Purpose
