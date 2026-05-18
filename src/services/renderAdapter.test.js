@@ -11,7 +11,10 @@ describe('render adapter contract', () => {
 
     expect(config.model.id).toBe('sdxl-base');
     expect(config.target.aspectRatio).toBe('7:3');
-    expect(config.timeline.length).toBe(3);
+    expect(config.assets.length).toBe(24);
+    expect(config.timeline.length).toBe(config.assets.length);
+    expect(config.timeline[0].prompt).toContain('primary visual reference frame');
+    expect(config.timeline.at(-1).toFrame).toBe(239);
   });
 
   it('creates deterministic mock job metadata and comparable takes', () => {

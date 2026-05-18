@@ -1,7 +1,7 @@
 # Deforum Control UI Prototype PRD / Technical Spec
 
 Generated: 2026-05-16  
-Status: draft for review  
+Status: draft for review; Hugging Face Deforum backend direction approved
 Location: `projects/NMS-SHG/04-development/prototypes/deforum-control-ui/`  
 Primary reviewer: Etienne Chia  
 Technical reviewer: Roland Baldovino
@@ -162,6 +162,7 @@ Prototype implication: the UI needs controls for source-image ordering, prompt/k
 | FR-13 | Preserve the 1680x720 source frame in the UI preview, exported configs, and take-comparison metadata. | P0 |
 | FR-14 | Provide a model-profile dropdown populated from `config/model-options.json`, with model metadata saved into every exported preset and take. | P0 |
 | FR-15 | Allow the same preset to be queued against multiple model profiles for comparison. | P1 |
+| FR-16 | Provide an optional Hugging Face Deforum backend plan/path that accepts the same image-keyframe preset contract and returns MP4 output plus take metadata. | P1 |
 
 ## Non-Functional Requirements
 
@@ -176,6 +177,21 @@ Prototype implication: the UI needs controls for source-image ordering, prompt/k
 | NFR-07 | Provide reduced-motion behaviour for the UI itself, even though rendered clips are motion-heavy. |
 | NFR-08 | Profile render duration, GPU memory, preview resolution, and output file size for each candidate take. |
 | NFR-09 | E2E verification must use Playwright CLI, not browser automation MCP tools. |
+| NFR-10 | Any Hugging Face integration must be optional, credential-safe, and limited to actual Deforum-like image-keyframe rendering; prompt-only text-to-video is not an acceptable substitute. |
+
+## Optional Hugging Face Deforum Backend
+
+The local Automatic1111 Deforum backend remains the first verified render path. A future Hugging Face option may be added only if it preserves the same Deforum-style image-reference workflow: frame-indexed source images, prompt/negative prompt schedules, motion controls, seed, model profile, FPS, preview resolution, and MP4 output.
+
+Decision status: approved direction as of 2026-05-18. Implement this as an optional backend that consumes the simplified UI preset contract and maps it internally to a Deforum-compatible remote render process.
+
+Implementation planning lives in:
+
+```text
+docs/huggingface-deforum-backend-plan.md
+```
+
+This cloud path should use a dedicated Hugging Face Inference Endpoint or private Space/API with a custom Deforum-compatible handler. It must not be implemented as generic text-to-video unless that backend can honour the prototype's image-keyframe Deforum contract.
 
 ## Proposed Prototype Shape
 

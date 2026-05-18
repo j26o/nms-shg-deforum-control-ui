@@ -1,56 +1,36 @@
 import { getDefaultModel } from './modelOptions.js';
 
-const sourceImages = [
-  {
-    path: 'assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._6a54c52c-a453-47d3-adee-34f15cbcdbba_0.png',
-    previewUrl: new URL(
-      '../../assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._6a54c52c-a453-47d3-adee-34f15cbcdbba_0.png',
-      import.meta.url,
-    ).href,
-  },
-  {
-    path: 'assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._6a54c52c-a453-47d3-adee-34f15cbcdbba_1.png',
-    previewUrl: new URL(
-      '../../assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._6a54c52c-a453-47d3-adee-34f15cbcdbba_1.png',
-      import.meta.url,
-    ).href,
-  },
-  {
-    path: 'assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._6a54c52c-a453-47d3-adee-34f15cbcdbba_2.png',
-    previewUrl: new URL(
-      '../../assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._6a54c52c-a453-47d3-adee-34f15cbcdbba_2.png',
-      import.meta.url,
-    ).href,
-  },
-  {
-    path: 'assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._6a54c52c-a453-47d3-adee-34f15cbcdbba_3.png',
-    previewUrl: new URL(
-      '../../assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._6a54c52c-a453-47d3-adee-34f15cbcdbba_3.png',
-      import.meta.url,
-    ).href,
-  },
-  {
-    path: 'assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._68952bf3-a981-440f-887e-75762f1e9c16_0.png',
-    previewUrl: new URL(
-      '../../assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._68952bf3-a981-440f-887e-75762f1e9c16_0.png',
-      import.meta.url,
-    ).href,
-  },
-  {
-    path: 'assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._68952bf3-a981-440f-887e-75762f1e9c16_1.png',
-    previewUrl: new URL(
-      '../../assets/images/source/20260430/kingsmendigitalexperience_httpss.mj.runtRaOGJpbHmk_httpss.mj._68952bf3-a981-440f-887e-75762f1e9c16_1.png',
-      import.meta.url,
-    ).href,
-  },
-];
+const sourceImageModules = import.meta.glob('../../assets/images/source/**/*.png', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+
+const sourceImages = Object.entries(sourceImageModules)
+  .sort(([leftPath], [rightPath]) => leftPath.localeCompare(rightPath))
+  .map(([modulePath, previewUrl]) => ({
+    path: modulePath.replace('../../', ''),
+    previewUrl,
+  }));
+
+function getSourceDate(path) {
+  return path.match(/assets\/images\/source\/([^/]+)\//)?.[1] ?? 'source';
+}
+
+function createImageReferencePrompt(asset) {
+  return [
+    `Use ${asset.label} as the primary visual reference frame.`,
+    'Preserve the pre-rendered image composition, skyline, atmosphere, silhouettes, and 1680x720 panoramic edges.',
+    'Blend smoothly into the next referenced source image with restrained Deforum motion.',
+  ].join(' ');
+}
 
 export function createDefaultAssets() {
   return sourceImages.map((source, index) => ({
     id: `image-${String(index + 1).padStart(3, '0')}`,
     path: source.path,
     previewUrl: source.previewUrl,
-    label: `Source ${String(index + 1).padStart(2, '0')}`,
+    label: `Source ${String(index + 1).padStart(2, '0')} / ${getSourceDate(source.path)}`,
     enabled: true,
     focalPoint: [0.5, 0.45],
     cropMode: 'contain-7x3',
@@ -59,20 +39,22 @@ export function createDefaultAssets() {
   }));
 }
 
-export function createDefaultTimeline(assets = createDefaultAssets()) {
-  return assets.slice(0, 3).map((asset, index) => {
-    const fromFrame = index * 120;
+export function createDefaultTimeline(assets = createDefaultAssets(), { fps = 24, previewDuration = 10 } = {}) {
+  const enabledAssets = assets.filter((asset) => asset.enabled !== false);
+  const totalFrames = Math.max(1, Math.round(fps * previewDuration));
+  const frameSpan = Math.max(1, Math.floor(totalFrames / Math.max(1, enabledAssets.length)));
+
+  return enabledAssets.map((asset, index) => {
+    const fromFrame = Math.min(index * frameSpan, totalFrames - 1);
+    const toFrame = index === enabledAssets.length - 1 ? totalFrames - 1 : Math.min((index + 1) * frameSpan - 1, totalFrames - 1);
     return {
       id: `segment-${String(index + 1).padStart(3, '0')}`,
       fromFrame,
-      toFrame: fromFrame + 119,
+      toFrame,
       sourceImageId: asset.id,
-      prompt:
-        index === 0
-          ? 'monochrome mist landscape, strong silhouettes, poetic future wall composition'
-          : 'dense futuristic city architecture, atmospheric depth, stable panoramic composition',
+      prompt: createImageReferencePrompt(asset),
       negativePrompt: 'low detail, text artifacts, flicker, broken geometry, hard crop',
-      transitionMode: index === 0 ? 'hold-then-morph' : 'sequential-morph',
+      transitionMode: index === 0 ? 'image-reference-start' : 'image-reference-morph',
     };
   });
 }
@@ -103,7 +85,7 @@ export function createDefaultPreset() {
       risk: model.risk,
     },
     assets,
-    timeline: createDefaultTimeline(assets),
+    timeline: createDefaultTimeline(assets, { fps: 24, previewDuration: 10 }),
     generation: {
       sampler: 'DPM++ 2M Karras',
       scheduler: 'Karras',
@@ -113,13 +95,13 @@ export function createDefaultPreset() {
       seed: 123456,
     },
     imageMorph: {
-      sourceImageStrength: 0.78,
-      denoiseStrength: 0.52,
-      imageInfluenceDecay: 0.35,
-      transitionDuration: 72,
+      sourceImageStrength: 0.84,
+      denoiseStrength: 0.38,
+      imageInfluenceDecay: 0.18,
+      transitionDuration: 10,
       transitionEasing: 'ease-in-out',
-      holdFramesBeforeMorph: 24,
-      structuralLockStrength: 0.65,
+      holdFramesBeforeMorph: 2,
+      structuralLockStrength: 0.78,
       fogMaskAssistance: true,
     },
     motion: {
@@ -134,9 +116,10 @@ export function createDefaultPreset() {
       fps: 24,
     },
     prompt: {
-      positive: 'poetic panoramic future wall, mist, architecture emerging from landscape, stable silhouette language',
+      positive:
+        'image-reference driven Future Wall morph using the selected pre-rendered source frame at each keyframe; preserve 1680x720 composition and panoramic edges',
       negative: 'text, watermark, flicker, edge collapse, low detail, duplicated objects',
-      stylePreset: 'mist-to-city',
+      stylePreset: 'image-reference-morph',
       interpolationMode: 'weighted-keyframes',
     },
     look: {

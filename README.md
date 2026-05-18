@@ -35,6 +35,7 @@ Read the PRD/spec plan here:
 - `docs/source-assets.md`
 - `docs/model-options.md`
 - `docs/local-render-setup.md`
+- `docs/huggingface-deforum-backend-plan.md`
 - `docs/todo.md`
 - `docs/ai-context.md`
 - `docs/decisions.md`
@@ -48,7 +49,8 @@ Read the PRD/spec plan here:
 - Model choice is part of the exercise: the UI should expose the configured fallback model profiles so the same Deforum setup can be compared across checkpoints.
 - Final production resolution, projection mapping, and TouchDesigner integration details are still to be confirmed.
 - This plan assumes local-only assets and local render jobs. No cloud generation, visitor data, production network addresses, or credentials are part of the prototype.
-- The renderer adapter should remain replaceable: Automatic1111 Deforum is the current in-repo runtime under `render-tools/`, while ComfyUI, a custom img2img loop, or a TouchDesigner-facing playback/export path can be swapped behind the same adapter contract later.
+- The renderer adapter should remain replaceable: Automatic1111 Deforum is the current in-repo runtime under `render-tools/`, while a Hugging Face Deforum-compatible endpoint, ComfyUI, a custom img2img loop, or a TouchDesigner-facing playback/export path can be swapped behind the same adapter contract later.
+- The Hugging Face path is planned only for actual Deforum-like output from the same image-keyframe preset contract, not for generic prompt-only text-to-video generation.
 
 ## How To Run It
 

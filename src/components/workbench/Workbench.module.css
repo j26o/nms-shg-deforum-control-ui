@@ -38,6 +38,7 @@
 .controlField textarea,
 .assetMeta input,
 .segmentEditor input,
+.segmentEditor select,
 .segmentEditor textarea,
 .takeCard textarea,
 .takeCandidate textarea {
@@ -57,6 +58,7 @@
 .controlField textarea:focus,
 .assetMeta input:focus,
 .segmentEditor input:focus,
+.segmentEditor select:focus,
 .segmentEditor textarea:focus {
   border-color: var(--color-accent);
 }
@@ -112,8 +114,9 @@
 
 .grid {
   min-height: 0;
+  overflow: hidden;
   display: grid;
-  grid-template-columns: 300px minmax(520px, 1fr) 360px;
+  grid-template-columns: 300px minmax(0, 1fr) 360px;
 }
 
 .assetRail,
@@ -133,6 +136,7 @@
 .centerStack {
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
 }
@@ -222,7 +226,9 @@
 }
 
 .previewPanel {
+  min-width: 0;
   min-height: 0;
+  overflow: hidden;
   padding: var(--space-4);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -259,6 +265,7 @@
 }
 
 .previewFrame img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -291,6 +298,8 @@
 }
 
 .timelinePanel {
+  min-width: 0;
+  overflow: hidden;
   border-top: 1px solid var(--color-border);
   background: var(--color-surface);
 }
@@ -350,6 +359,7 @@
 }
 
 .segmentEditor label:nth-child(3),
+.segmentEditor label:nth-child(4),
 .segmentActions {
   grid-column: 1 / -1;
 }

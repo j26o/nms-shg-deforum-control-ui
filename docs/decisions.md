@@ -55,3 +55,11 @@ Reason: Regular UI checks should remain fast and independent of a running GPU ba
 Decision: Use a single-choice runtime model control in the workbench instead of selecting multiple comparison models at once.
 
 Reason: The local Deforum backend renders one checkpoint schedule per job. One-at-a-time selection keeps runtime evidence, output paths, checkpoint metadata, and failed artifact detection unambiguous for each take.
+
+## 2026-05-18: Plan Hugging Face Only As A Deforum-Compatible Backend
+
+Decision: Treat Hugging Face as an optional future backend only when it can run the same image-keyframe Deforum-style preset contract as the local Automatic1111 path.
+
+Reason: The prototype's purpose is Deforum-like animation tuning from supplied pre-rendered images. A generic prompt-only text-to-video API would not validate the same controls, source-image retention, frame schedules, model comparison, or MP4 handoff contract.
+
+Status: Approved direction. Future implementation should build the Hugging Face path around the simplified UI preset contract and backend-specific translation, keeping local Automatic1111 as the comparison baseline and fallback.

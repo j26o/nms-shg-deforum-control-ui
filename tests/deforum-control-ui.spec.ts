@@ -53,7 +53,7 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await expect(page.locator('strong').filter({ hasText: 'RealVisXL V5.0' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Segment', exact: true }).click();
-  await expect(page.getByText(/360-479/)).toBeVisible();
+  await expect(page.getByText(/240-359/)).toHaveCount(1);
 
   await page.getByRole('button', { name: /Render preview/i }).click();
   await expect(page.getByText('complete').first()).toBeVisible();

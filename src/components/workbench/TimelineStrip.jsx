@@ -51,7 +51,20 @@ export function TimelineStrip() {
                     />
                   </label>
                   <label>
-                    Prompt
+                    Image reference
+                    <select
+                      value={segment.sourceImageId}
+                      onChange={(event) => updateSegment(segment.id, { sourceImageId: event.target.value })}
+                    >
+                      {preset.assets.map((sourceAsset) => (
+                        <option key={sourceAsset.id} value={sourceAsset.id}>
+                          {sourceAsset.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Image-reference prompt
                     <textarea
                       value={segment.prompt}
                       onChange={(event) => updateSegment(segment.id, { prompt: event.target.value })}

@@ -24,6 +24,9 @@ Last updated: 2026-05-18
 - [ ] Add output artifact validation so real backend jobs fail when no video or frame output is created.
 - [ ] Investigate SDXL Base and SDXL Refiner Deforum compatibility with a smaller direct API repro and captured backend logs.
 - [ ] Update the real-backend Playwright path to control its Vite server environment and wait long enough for a completed render artifact.
+- [ ] Implement the approved optional Hugging Face Deforum backend plan in `docs/huggingface-deforum-backend-plan.md`.
+- [ ] Add a Hugging Face backend selector state only after a credential-safe proxy and Deforum-compatible endpoint contract exist.
+- [ ] Run a Hugging Face vs local Automatic1111 eval using the same image-keyframe preset and MP4 artifact checks.
 
 ## Current Verified Baseline
 

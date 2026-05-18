@@ -22,15 +22,14 @@ describe('a1111 deforum adapter', () => {
     expect(settings.animation_mode).toBe('3D');
     expect(settings.use_depth_warping).toBe(true);
     expect(settings.diffusion_cadence).toBe(2);
-    expect(settings.prompts).toMatchObject({
-      0: expect.stringContaining('--neg'),
-      120: expect.stringContaining('--neg'),
-      240: expect.stringContaining('--neg'),
-    });
+    expect(Object.keys(settings.prompts)).toHaveLength(preset.assets.length);
+    expect(settings.prompts['0']).toContain('primary visual reference frame');
+    expect(settings.prompts['0']).toContain('--neg');
 
     const initImages = JSON.parse(settings.init_images);
-    expect(Object.keys(initImages)).toEqual(['0', '120', '240']);
+    expect(Object.keys(initImages)).toEqual(Object.keys(settings.prompts));
     expect(initImages['0']).toContain('assets/images/source/');
+    expect(Object.values(initImages)).toHaveLength(preset.assets.length);
     expect(settings.sampler_schedule).toBe('0: ("DPM++ 2M Karras")');
     expect(settings.enable_checkpoint_scheduling).toBe(true);
     expect(settings.checkpoint_schedule).toBe('0: ("sd_xl_base_1.0.safetensors")');
@@ -57,12 +56,13 @@ describe('a1111 deforum adapter', () => {
     expect(requestUrl.pathname).toBe('/a1111/deforum/run');
     expect(requestUrl.searchParams.get('allowed_params')).toContain('init_images');
     expect(settings.prompts['0']).toContain('--neg');
+    expect(settings.prompts['0']).toContain('primary visual reference frame');
     expect(settings.init_images).toContain('assets/images/source/');
     expect(job.status).toBe('complete');
     expect(job.outputPath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid');
     expect(job.backendSettingsFilePath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/runid.txt');
     expect(job.outputSettingsPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*_settings.txt');
     expect(job.outputVideoPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*.mp4');
-    expect(job.renderSettings.prompts['120']).toContain('--neg');
+    expect(Object.keys(job.renderSettings.prompts)).toHaveLength(preset.assets.length);
   });
 });
