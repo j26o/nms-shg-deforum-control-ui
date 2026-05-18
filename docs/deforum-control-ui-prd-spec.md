@@ -29,6 +29,8 @@ The prototype is not the final production renderer. It is a tuning and configura
 
 This plan follows the current KR+D Developer Guidelines in Notion:
 
+- Canonical database: `https://www.notion.so/2fd5ee5f238d41d3a720300e159f6a1d`
+
 - Section 1: keep modules small, input-driven, data/config separated from presentation/behaviour, with accessibility and performance by default.
 - Section 4: React + Vite standards, named exports, Zustand for global state, CSS Modules or Tailwind consistently, design tokens, kiosk/exhibit patterns, Leva for gated developer tuning controls, Vitest and Playwright CLI.
 - Section 6: TouchDesigner standards for parameter-driven configuration, replaceable modules, local assets, performance profiling, and final documentation if the output later feeds TouchDesigner.

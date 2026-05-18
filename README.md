@@ -33,6 +33,7 @@ Read the PRD/spec plan here:
 - `docs/source-assets.md`
 - `docs/model-options.md`
 - `config/model-options.json`
+- `.agents/skills/deforum-prototype-eval/SKILL.md`
 
 ## Assumptions And Known Gaps
 
