@@ -306,7 +306,7 @@ export async function handleHuggingFaceDeforumRequest(request, response, env = p
   }
 }
 
-export function createHuggingFaceDeforumProxyPlugin() {
+export function createHuggingFaceDeforumProxyPlugin(env = process.env) {
   return {
     name: 'hf-deforum-proxy',
     configureServer(server) {
@@ -316,7 +316,7 @@ export function createHuggingFaceDeforumProxyPlugin() {
           return;
         }
 
-        void handleHuggingFaceDeforumRequest(request, response);
+        void handleHuggingFaceDeforumRequest(request, response, env);
       });
     },
   };

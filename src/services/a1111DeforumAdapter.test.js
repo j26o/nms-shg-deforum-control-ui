@@ -28,7 +28,7 @@ describe('a1111 deforum adapter', () => {
 
     const initImages = JSON.parse(settings.init_images);
     expect(Object.keys(initImages)).toEqual(Object.keys(settings.prompts));
-    expect(initImages['0']).toContain('assets/images/source/');
+    expect(initImages['0']).toMatch(/assets[\\/]images[\\/]source[\\/]/);
     expect(Object.values(initImages)).toHaveLength(preset.assets.length);
     expect(settings.sampler_schedule).toBe('0: ("DPM++ 2M Karras")');
     expect(settings.enable_checkpoint_scheduling).toBe(true);
@@ -57,7 +57,7 @@ describe('a1111 deforum adapter', () => {
     expect(requestUrl.searchParams.get('allowed_params')).toContain('init_images');
     expect(settings.prompts['0']).toContain('--neg');
     expect(settings.prompts['0']).toContain('primary visual reference frame');
-    expect(settings.init_images).toContain('assets/images/source/');
+    expect(settings.init_images).toMatch(/assets[\\/]images[\\/]source[\\/]/);
     expect(job.status).toBe('complete');
     expect(job.outputPath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid');
     expect(job.backendSettingsFilePath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/runid.txt');
