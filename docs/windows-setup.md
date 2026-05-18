@@ -25,6 +25,9 @@ Recommended project folder:
 ```powershell
 mkdir D:\nms-shg-deforum-control-ui-main\render-tools
 mkdir D:\nms-shg-deforum-control-ui-main\outputs
+mkdir D:\nms-shg-deforum-control-ui-main\outputs\logs
+mkdir D:\nms-shg-deforum-control-ui-main\outputs\previews
+mkdir D:\nms-shg-deforum-control-ui-main\outputs\exports
 cd D:\nms-shg-deforum-control-ui-main
 ```
 
@@ -34,6 +37,9 @@ If the machine has only `C:`, use:
 mkdir C:\nms-shg-deforum-control-ui-main
 mkdir C:\nms-shg-deforum-control-ui-main\render-tools
 mkdir C:\nms-shg-deforum-control-ui-main\outputs
+mkdir C:\nms-shg-deforum-control-ui-main\outputs\logs
+mkdir C:\nms-shg-deforum-control-ui-main\outputs\previews
+mkdir C:\nms-shg-deforum-control-ui-main\outputs\exports
 cd C:\nms-shg-deforum-control-ui-main
 ```
 
@@ -282,6 +288,7 @@ Inside the prototype folder, create local output folders:
 ```powershell
 cd D:\nms-shg-deforum-control-ui-main
 New-Item -ItemType Directory -Force assets\images\source
+New-Item -ItemType Directory -Force outputs\logs
 New-Item -ItemType Directory -Force outputs\previews
 New-Item -ItemType Directory -Force outputs\exports
 ```
@@ -298,7 +305,7 @@ If additional exercise source images are added later, put them under a dated fol
 assets\images\source\
 ```
 
-Do not commit generated videos, model files, or temporary render outputs to Git.
+Do not commit generated videos, model files, runtime logs, or temporary render outputs to Git. Keep those files inside the project folder under `outputs\` or `render-tools\stable-diffusion-webui\outputs\`, not in external project folders.
 
 ## 11. Recommended First Test
 
@@ -378,7 +385,7 @@ D:\nms-shg-deforum-control-ui-main\outputs\
 and:
 
 ```text
-deforum-control-ui\outputs\previews\
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\outputs\
 ```
 
 Keep only candidate renders and their exported JSON reports.

@@ -15,6 +15,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - The source canvas is `1680x720`, aspect ratio `7:3`.
 - Do not assume `16:9` or crop away panoramic edges.
 - Keep images, prompts, presets, models, and generated outputs local.
+- Keep generated logs and output evidence inside this project folder: app/run logs under `outputs/logs/`, exports under `outputs/exports/`, previews under `outputs/previews/`, and Automatic1111 artifacts under `render-tools/stable-diffusion-webui/outputs/`.
 - Do not hardcode production show-control addresses, credentials, final model paths, or IPs.
 - Treat the app as a prototype workbench, not the final production renderer.
 

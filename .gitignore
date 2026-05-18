@@ -10,8 +10,19 @@ playwright-report/
 test-results/
 
 # Generated outputs
-outputs/
-exports/
+outputs/*
+!outputs/
+!outputs/README.md
+!outputs/exports/
+outputs/exports/*
+!outputs/exports/.gitkeep
+!outputs/logs/
+outputs/logs/*
+!outputs/logs/.gitkeep
+!outputs/previews/
+outputs/previews/*
+!outputs/previews/.gitkeep
+/exports/
 render-tools/
 *.mp4
 *.mov

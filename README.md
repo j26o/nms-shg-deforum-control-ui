@@ -144,6 +144,8 @@ The default preview action still uses deterministic mock metadata for fast UI re
 
 Backend runtime files live under `render-tools/` inside this project folder and are ignored by Git because they include a nested WebUI checkout, Python environment, model checkpoints, and generated render outputs. Backend setup details are in `docs/local-render-setup.md`.
 
+Project-level logs and handoff artifacts should stay under `outputs/` in this repo. Use `outputs/logs/` for run logs, `outputs/previews/` for lightweight preview artifacts, and `outputs/exports/` for reviewed JSON/report exports. Automatic1111 render evidence stays under `render-tools/stable-diffusion-webui/outputs/`.
+
 ## Next Steps
 
 The active implementation checklist is maintained in:

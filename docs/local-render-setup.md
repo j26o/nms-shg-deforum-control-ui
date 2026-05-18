@@ -33,6 +33,24 @@ set PATH=D:\nms-shg-deforum-control-ui-main\render-tools\ffmpeg\ffmpeg-8.1.1-ful
 
 `render-tools/` is intentionally ignored by Git because it contains the nested WebUI checkout, Python environment, model checkpoints, FFmpeg build, and generated render outputs.
 
+Project-level logs and handoff files should stay under:
+
+```text
+D:\nms-shg-deforum-control-ui-main\outputs\
+```
+
+Use:
+
+- `outputs\logs\` for frontend dev-server logs, Playwright/manual run logs, and local execution notes.
+- `outputs\previews\` for lightweight preview artifacts produced by the workbench.
+- `outputs\exports\` for reviewed preset JSON and readable reports.
+
+Automatic1111 Deforum frames, settings files, root settings logs, and MP4s stay inside:
+
+```text
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\outputs\
+```
+
 ## Models
 
 The backend has five verified checkpoints in the Automatic1111 model folder:
