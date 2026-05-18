@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createDefaultPreset } from '../config/defaultPreset.js';
 import { getModelById } from '../config/modelOptions.js';
-import { queueA1111DeforumSmokeRender } from '../services/a1111DeforumAdapter.js';
+import { queueA1111DeforumRender } from '../services/a1111DeforumAdapter.js';
 import { queueMockRender, createTakeFromJob } from '../services/mockRenderAdapter.js';
 
 const defaultPreset = createDefaultPreset();
@@ -47,6 +47,25 @@ export const usePresetStore = create((set, get) => ({
           },
         },
         compareModelIds: state.compareModelIds.includes(modelId) ? state.compareModelIds : [modelId],
+      };
+    }),
+  setRuntimeModelProfile: (modelId) =>
+    set((state) => {
+      const model = getModelById(modelId);
+      return {
+        preset: {
+          ...state.preset,
+          model: {
+            modelId: model.id,
+            label: model.label,
+            repository: model.repository,
+            file: model.file,
+            license: model.license,
+            status: model.status,
+            risk: model.risk,
+          },
+        },
+        compareModelIds: [modelId],
       };
     }),
   toggleCompareModel: (modelId) =>
@@ -139,7 +158,7 @@ export const usePresetStore = create((set, get) => ({
     const preset = get().preset;
     set({ backendError: '' });
     try {
-      const job = await queueA1111DeforumSmokeRender(preset);
+      const job = await queueA1111DeforumRender(preset);
       const take = createTakeFromJob(job);
       set((current) => ({ jobs: [job, ...current.jobs], takes: [take, ...current.takes] }));
       return job;

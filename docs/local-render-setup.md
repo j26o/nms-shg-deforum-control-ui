@@ -5,22 +5,22 @@ Last updated: 2026-05-18
 
 ## Installed Backend
 
-Automatic1111 WebUI is installed at:
+Automatic1111 WebUI is installed inside this project folder at:
 
 ```text
-D:\NMS-SHG\render-tools\stable-diffusion-webui
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui
 ```
 
 Deforum extension is installed at:
 
 ```text
-D:\NMS-SHG\render-tools\stable-diffusion-webui\extensions\deforum
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\extensions\deforum
 ```
 
 Portable FFmpeg is installed at:
 
 ```text
-D:\NMS-SHG\render-tools\ffmpeg\ffmpeg-8.1.1-full_build\bin\ffmpeg.exe
+D:\nms-shg-deforum-control-ui-main\render-tools\ffmpeg\ffmpeg-8.1.1-full_build\bin\ffmpeg.exe
 ```
 
 The WebUI launcher is configured in `webui-user.bat` with:
@@ -28,18 +28,28 @@ The WebUI launcher is configured in `webui-user.bat` with:
 ```bat
 set PYTHON=py -3.10
 set COMMANDLINE_ARGS=--api --deforum-api --deforum-simple-api
-set PATH=D:\NMS-SHG\render-tools\ffmpeg\ffmpeg-8.1.1-full_build\bin;%PATH%
+set PATH=D:\nms-shg-deforum-control-ui-main\render-tools\ffmpeg\ffmpeg-8.1.1-full_build\bin;%PATH%
 ```
 
-## Model
+`render-tools/` is intentionally ignored by Git because it contains the nested WebUI checkout, Python environment, model checkpoints, FFmpeg build, and generated render outputs.
 
-The backend has one verified checkpoint:
+## Models
+
+The backend has five verified checkpoints in the Automatic1111 model folder:
 
 ```text
-D:\NMS-SHG\render-tools\stable-diffusion-webui\models\Stable-diffusion\v1-5-pruned-emaonly.safetensors
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\models\Stable-diffusion\
 ```
 
-Automatic1111 reports it as:
+Verified files:
+
+- `v1-5-pruned-emaonly.safetensors`
+- `sd_xl_base_1.0.safetensors`
+- `RealVisXL_V5.0_fp16.safetensors`
+- `Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors`
+- `sd_xl_refiner_1.0.safetensors`
+
+Automatic1111 loaded each checkpoint successfully through `/sdapi/v1/options`. After verification, the active checkpoint was restored to:
 
 ```text
 v1-5-pruned-emaonly.safetensors [6ce0161689]
@@ -83,7 +93,7 @@ Invoke-RestMethod http://127.0.0.1:7860/deforum/version
 A tiny Deforum smoke render succeeded:
 
 ```text
-D:\NMS-SHG\render-tools\stable-diffusion-webui\outputs\img2img-images\deforum-control-ui-smoke-patched2\20260518121912.mp4
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\outputs\img2img-images\deforum-control-ui-smoke-patched2\20260518121912.mp4
 ```
 
 Settings:
@@ -110,6 +120,8 @@ Vite proxies `/a1111` to:
 ```text
 http://127.0.0.1:7860
 ```
+
+If the Deforum backend cannot resolve repository-relative source asset paths directly, set `VITE_SOURCE_ASSET_ROOT` to a backend-visible absolute path for `assets/images/source/` before starting Vite.
 
 Run the real backend E2E test with:
 

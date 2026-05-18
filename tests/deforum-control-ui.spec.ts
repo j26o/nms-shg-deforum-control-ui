@@ -48,6 +48,9 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
 
   await page.getByLabel('Deforum controls').getByLabel('Model profile').selectOption('sdxl-base');
   await expect(page.locator('strong').filter({ hasText: 'SDXL Base 1.0' })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'SDXL Base 1.0' })).toBeChecked();
+  await page.getByRole('radio', { name: 'RealVisXL V5.0' }).check();
+  await expect(page.locator('strong').filter({ hasText: 'RealVisXL V5.0' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Segment', exact: true }).click();
   await expect(page.getByText(/360-479/)).toBeVisible();

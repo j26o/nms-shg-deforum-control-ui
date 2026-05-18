@@ -22,6 +22,8 @@ describe('render adapter contract', () => {
     expect(job.status).toBe('complete');
     expect(job.outputPath).toContain('realvisxl-v5');
     expect(take.model.id).toBe('realvisxl-v5');
+    expect(take.backend).toBe('mock');
+    expect(take.checkpointFile).toBe('RealVisXL_V5.0_fp16.safetensors');
     expect(take.previewResolution).toEqual([896, 384]);
     expect(take.renderDurationMs).toBeGreaterThan(0);
   });

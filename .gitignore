@@ -12,6 +12,7 @@ test-results/
 # Generated outputs
 outputs/
 exports/
+render-tools/
 *.mp4
 *.mov
 *.webm

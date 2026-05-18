@@ -36,7 +36,7 @@ Checks run:
 
 ## Results
 
-Windows setup: Python 3.10 is available through `py -3.10`; NVIDIA RTX 4090 is visible through `nvidia-smi`; FFmpeg is available through a local portable install under `D:\NMS-SHG\render-tools\ffmpeg`.
+Windows setup: Python 3.10 is available through `py -3.10`; NVIDIA RTX 4090 is visible through `nvidia-smi`; FFmpeg is available through a local portable install under `D:\nms-shg-deforum-control-ui-main\render-tools\ffmpeg`.
 
 Backend: Automatic1111 WebUI launches at `http://127.0.0.1:7860` with API enabled. Deforum extension is installed, enabled, and reports API version `1.0` and extension version `5d63a339`.
 
@@ -49,7 +49,7 @@ v1-5-pruned-emaonly.safetensors [6ce0161689]
 Render evidence: A tiny Deforum API run succeeded:
 
 ```text
-D:\NMS-SHG\render-tools\stable-diffusion-webui\outputs\img2img-images\deforum-control-ui-smoke-patched2\20260518121912.mp4
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\outputs\img2img-images\deforum-control-ui-smoke-patched2\20260518121912.mp4
 ```
 
 Run metadata:

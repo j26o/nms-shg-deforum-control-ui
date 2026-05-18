@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createDefaultPreset } from '../config/defaultPreset.js';
-import { exportPresetJson, exportPresetReport } from './exportPreset.js';
+import { exportDeforumSettingsJson, exportPresetJson, exportPresetReport } from './exportPreset.js';
 import { validateAsset, validatePreset } from './presetSchema.js';
 
 describe('preset schema contract', () => {
@@ -43,5 +43,39 @@ describe('preset schema contract', () => {
     expect(json.model.modelId).toBe('sd15-baseline');
     expect(report).toContain('take-001');
     expect(report).toContain(preset.model.file);
+  });
+
+  it('exports candidate Deforum settings with backend metadata', () => {
+    const preset = createDefaultPreset();
+    const exported = JSON.parse(
+      exportDeforumSettingsJson({
+        id: 'take-real-001',
+        jobId: 'a1111-001',
+        backend: 'a1111-deforum',
+        model: preset.model,
+        checkpointFile: preset.model.file,
+        seed: preset.generation.seed,
+        previewResolution: preset.target.previewResolution,
+        frameCount: 240,
+        fps: 24,
+        renderDurationMs: 453000,
+        outputPath: 'D:\\outputs\\runid',
+        settingsFilePath: 'D:\\stable-diffusion-webui\\runid.txt',
+        outputSettingsPattern: 'D:\\outputs\\runid\\*_settings.txt',
+        outputVideoPattern: 'D:\\outputs\\runid\\*.mp4',
+        renderSettings: {
+          W: 896,
+          H: 384,
+          max_frames: 240,
+          prompts: {
+            0: 'prompt --neg negative',
+          },
+        },
+      }),
+    );
+
+    expect(exported.backend).toBe('a1111-deforum');
+    expect(exported.settings.max_frames).toBe(240);
+    expect(exported.settingsFilePath).toContain('runid.txt');
   });
 });

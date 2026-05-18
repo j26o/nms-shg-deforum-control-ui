@@ -4,6 +4,7 @@ export function normaliseRenderConfig(preset, modelOverride) {
     presetName: preset.presetName,
     model,
     target: preset.target,
+    assets: preset.assets.filter((asset) => asset.enabled !== false),
     timeline: preset.timeline.filter((segment) => {
       const asset = preset.assets.find((item) => item.id === segment.sourceImageId);
       return asset?.enabled !== false;

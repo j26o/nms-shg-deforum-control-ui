@@ -1,10 +1,11 @@
 {
   "schemaVersion": "0.1.0",
   "defaultModelId": "sd15-baseline",
-  "modelDirectory": "D:\\NMS-SHG\\render-tools\\stable-diffusion-webui\\models\\Stable-diffusion",
+  "modelDirectory": "D:\\nms-shg-deforum-control-ui-main\\render-tools\\stable-diffusion-webui\\models\\Stable-diffusion",
   "ui": {
     "controlGroup": "Generation",
     "controlType": "select",
+    "runtimeControlType": "radio",
     "label": "Model profile",
     "compareMode": true
   },

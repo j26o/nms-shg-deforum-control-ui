@@ -3,7 +3,7 @@
 Status: implemented draft  
 Last updated: 2026-05-18
 
-The exported preset JSON is the durable handoff between the tuning UI and any render adapter.
+The exported preset JSON is the durable handoff between the tuning workbench and any render adapter.
 
 Required invariants:
 

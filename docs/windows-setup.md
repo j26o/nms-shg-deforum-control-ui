@@ -1,6 +1,6 @@
 # Windows Setup Instructions
 
-Use this on the target Windows computer before implementing or running the Deforum Control UI prototype.
+Use this on the target Windows computer before implementing or running the full Deforum effect prototype.
 
 Target machine from the supplied screenshot:
 
@@ -10,33 +10,31 @@ Target machine from the supplied screenshot:
 - NVIDIA GeForce RTX 4090, 24 GB
 - Large local SSD storage
 
-These steps prepare the machine for two lanes:
+These steps prepare one local prototype workspace containing:
 
-1. the React/Vite tuning UI;
-2. an optional local Deforum-type render backend.
+1. the React/Vite tuning workbench;
+2. the local Deforum render backend under project-root `render-tools/`;
+3. local source assets, model checkpoints, generated render evidence, and export outputs.
 
 ## 1. Pick A Working Folder
 
 Use a short local path without spaces. This keeps Stable Diffusion, Python, and render scripts calmer on Windows.
 
-Recommended:
+Recommended project folder:
 
 ```powershell
-mkdir D:\NMS-SHG
-mkdir D:\NMS-SHG\prototype
-mkdir D:\NMS-SHG\render-tools
-mkdir D:\NMS-SHG\outputs
-cd D:\NMS-SHG
+mkdir D:\nms-shg-deforum-control-ui-main\render-tools
+mkdir D:\nms-shg-deforum-control-ui-main\outputs
+cd D:\nms-shg-deforum-control-ui-main
 ```
 
 If the machine has only `C:`, use:
 
 ```powershell
-mkdir C:\NMS-SHG
-mkdir C:\NMS-SHG\prototype
-mkdir C:\NMS-SHG\render-tools
-mkdir C:\NMS-SHG\outputs
-cd C:\NMS-SHG
+mkdir C:\nms-shg-deforum-control-ui-main
+mkdir C:\nms-shg-deforum-control-ui-main\render-tools
+mkdir C:\nms-shg-deforum-control-ui-main\outputs
+cd C:\nms-shg-deforum-control-ui-main
 ```
 
 ## 2. Update GPU Driver
@@ -92,7 +90,7 @@ ffmpeg -version
 
 ## 4. Enable pnpm
 
-The prototype UI should use `pnpm`.
+The prototype frontend should use `pnpm`.
 
 ```powershell
 corepack enable
@@ -109,30 +107,30 @@ pnpm --version
 
 ## 5. Get The Prototype Files
 
-Use whichever route matches how the KR+D repo is made available on the Windows PC.
+Use whichever route matches how this prototype repo is made available on the Windows PC.
 
 ### Option A: Clone From Git
 
 ```powershell
-cd D:\NMS-SHG\prototype
-git clone <KR+D_REPO_URL> KRD
-cd KRD\projects\NMS-SHG\04-development\prototypes\deforum-control-ui
+cd D:\
+git clone <PROTOTYPE_REPO_URL> nms-shg-deforum-control-ui-main
+cd D:\nms-shg-deforum-control-ui-main
 ```
 
-Replace `<KR+D_REPO_URL>` with the real repo URL.
+Replace `<PROTOTYPE_REPO_URL>` with the real repo URL.
 
 ### Option B: Copy From Shared Drive Or USB
 
-1. Copy the `KR+D` workspace folder into `D:\NMS-SHG\prototype\KRD`.
+1. Copy the prototype folder to `D:\nms-shg-deforum-control-ui-main`.
 2. Open PowerShell:
 
 ```powershell
-cd D:\NMS-SHG\prototype\KRD\projects\NMS-SHG\04-development\prototypes\deforum-control-ui
+cd D:\nms-shg-deforum-control-ui-main
 ```
 
 ## 6. Confirm Current Prototype State
 
-The prototype now includes a React/Vite app scaffold and local Automatic1111 Deforum smoke adapter.
+The prototype now includes a React/Vite workbench, source assets, model configuration, local Automatic1111 Deforum adapter, and an ignored `render-tools/` backend runtime folder.
 
 Check:
 
@@ -154,7 +152,7 @@ If `package.json` does not exist, the checkout is incomplete.
 Once `package.json` exists in this folder:
 
 ```powershell
-cd D:\NMS-SHG\prototype\KRD\projects\NMS-SHG\04-development\prototypes\deforum-control-ui
+cd D:\nms-shg-deforum-control-ui-main
 pnpm install
 pnpm dev
 ```
@@ -175,14 +173,14 @@ pnpm exec playwright test
 
 ## 8. Prepare A Local Deforum Backend
 
-This is required for the `Render Deforum` action and optional for mock-only UI review.
+This is required for the `Render Deforum` action. Mock-only frontend review can run without starting the backend, but the project itself owns both the workbench and the local runtime.
 
 Verified first backend: AUTOMATIC1111 Stable Diffusion WebUI with the Deforum extension, because the reference tutorial uses a Deforum-style control surface.
 
-Create a render-tools folder:
+Create or enter the project-local `render-tools` folder:
 
 ```powershell
-cd D:\NMS-SHG\render-tools
+cd D:\nms-shg-deforum-control-ui-main\render-tools
 git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
 cd stable-diffusion-webui
 ```
@@ -206,7 +204,7 @@ Stop the WebUI before installing the extension.
 Install Deforum:
 
 ```powershell
-cd D:\NMS-SHG\render-tools\stable-diffusion-webui
+cd D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui
 git clone https://github.com/deforum-art/sd-webui-deforum extensions\deforum
 .\webui-user.bat
 ```
@@ -226,12 +224,12 @@ The WebUI needs at least one Stable Diffusion model checkpoint. Use only models 
 Place model files here:
 
 ```text
-D:\NMS-SHG\render-tools\stable-diffusion-webui\models\Stable-diffusion\
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\models\Stable-diffusion\
 ```
 
 Use `.safetensors` where possible.
 
-Do not store model licences, API tokens, client-private images, or credentials in the prototype repo.
+Do not commit model licences, API tokens, client-private images, credentials, checkpoint files, venv files, or generated render outputs. The project-local `render-tools/` folder is intentionally ignored by Git.
 
 The prototype model matrix is documented in:
 
@@ -252,7 +250,7 @@ Some Hugging Face models require accepting terms in the browser before CLI downl
 Set the model folder:
 
 ```powershell
-$MODEL_DIR = "D:\NMS-SHG\render-tools\stable-diffusion-webui\models\Stable-diffusion"
+$MODEL_DIR = "D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\models\Stable-diffusion"
 ```
 
 Download fallback models for comparison:
@@ -282,7 +280,7 @@ They are 1680x720 PNG files. The UI and Deforum setup should treat them as a 7:3
 Inside the prototype folder, create local output folders:
 
 ```powershell
-cd D:\NMS-SHG\prototype\KRD\projects\NMS-SHG\04-development\prototypes\deforum-control-ui
+cd D:\nms-shg-deforum-control-ui-main
 New-Item -ItemType Directory -Force assets\images\source
 New-Item -ItemType Directory -Force outputs\previews
 New-Item -ItemType Directory -Force outputs\exports
@@ -360,7 +358,7 @@ npm install -g pnpm
 Check that this folder exists:
 
 ```text
-D:\NMS-SHG\render-tools\stable-diffusion-webui\extensions\deforum\
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\extensions\deforum\
 ```
 
 Then restart `webui-user.bat`.
@@ -374,7 +372,7 @@ Lower resolution first, then lower steps, duration, and FPS. Keep final-quality 
 Clean old previews from:
 
 ```text
-D:\NMS-SHG\outputs\
+D:\nms-shg-deforum-control-ui-main\outputs\
 ```
 
 and:
@@ -393,13 +391,13 @@ Keep only candidate renders and their exported JSON reports.
 - [x] Python 3.10 works through `py -3.10`.
 - [x] FFmpeg works through the local portable install documented in `docs\local-render-setup.md`.
 - [x] pnpm works.
-- [x] Prototype folder is on the Windows PC.
+- [x] Deforum effect prototype folder is on the Windows PC.
 - [x] Source images folder exists at `assets\images\source`.
 - [x] The exercise images are present and verified as 1680x720.
 - [ ] Hugging Face CLI works, if additional model downloads are needed.
 - [x] `sd15-baseline` checkpoint is downloaded and loaded.
-- [ ] `sdxl-base` checkpoint is downloaded.
-- [ ] Optional comparison checkpoints are downloaded only after licence review.
+- [x] `sdxl-base` checkpoint is downloaded and loaded.
+- [x] Optional comparison checkpoints are downloaded and load-tested for prototype review; production use still needs licence review where noted.
 - [x] UI app is scaffolded.
 - [x] AUTOMATIC1111 WebUI launches.
 - [x] Deforum extension appears in WebUI/API extension list.

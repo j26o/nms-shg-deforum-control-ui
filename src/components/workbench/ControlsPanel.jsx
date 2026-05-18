@@ -62,8 +62,8 @@ export function ControlsPanel() {
   const updateGroupValue = usePresetStore((state) => state.updateGroupValue);
   const updateTargetValue = usePresetStore((state) => state.updateTargetValue);
   const setModelProfile = usePresetStore((state) => state.setModelProfile);
+  const setRuntimeModelProfile = usePresetStore((state) => state.setRuntimeModelProfile);
   const compareModelIds = usePresetStore((state) => state.compareModelIds);
-  const toggleCompareModel = usePresetStore((state) => state.toggleCompareModel);
 
   const setPreviewSize = (value) => {
     updateTargetValue('previewResolution', value.split('x').map(Number));
@@ -83,13 +83,14 @@ export function ControlsPanel() {
           <span>{preset.model.status}</span>
           <p>{preset.model.risk}</p>
         </div>
-        <div className={styles.compareList} aria-label="Model comparison queue">
+        <div className={styles.compareList} role="radiogroup" aria-label="Runtime model test">
           {modelOptions.models.map((model) => (
             <label key={model.id}>
               <input
-                type="checkbox"
-                checked={compareModelIds.includes(model.id)}
-                onChange={() => toggleCompareModel(model.id)}
+                type="radio"
+                name="runtime-model-test"
+                checked={(compareModelIds[0] ?? preset.model.modelId) === model.id}
+                onChange={() => setRuntimeModelProfile(model.id)}
               />
               {model.label}
             </label>

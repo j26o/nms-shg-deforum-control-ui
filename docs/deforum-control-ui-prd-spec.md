@@ -339,7 +339,7 @@ The prototype should treat the exported preset as the main deliverable. Draft sh
 
 ```mermaid
 flowchart LR
-    A["React tuning UI"] --> B["Preset store"]
+    A["React tuning workbench"] --> B["Preset store"]
     A --> C["Asset manager"]
     A --> D["Render queue"]
     D --> E["Local render adapter"]
@@ -472,7 +472,7 @@ Key boundaries:
 
 ## Done
 
-- [ ] The prototype UI runs locally on the supplied PC.
+- [ ] The prototype workbench and local renderer run on the supplied PC.
 - [ ] Etienne can import multiple pre-generated images and arrange them into a sequence.
 - [ ] The provided 1680x720 exercise images are available from `assets/images/source/`.
 - [ ] The UI preserves a 7:3 preview frame and records source, preview, and final resolutions in exported configs.

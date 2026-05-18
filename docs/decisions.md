@@ -1,6 +1,6 @@
 # Decisions
 
-This file records product and implementation decisions for the Deforum Control UI prototype.
+This file records product and implementation decisions for the Deforum effect prototype.
 
 ## 2026-05-18: Use Browser-Local React Prototype First
 
@@ -26,14 +26,32 @@ Decision: `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` point to `docs/ai-context.md
 
 Reason: Multiple assistant-specific files drift quickly. A single source keeps repo context consistent while still supporting common tool conventions.
 
+## 2026-05-18: Keep Local Render Runtime Inside The Prototype Folder
+
+Decision: The local Automatic1111, Deforum, FFmpeg, checkpoint, venv, and generated-output runtime lives under project-root `render-tools/`.
+
+Reason: This project is the whole Deforum effect prototype, not only a UI shell. Keeping the runtime folder inside the prototype makes setup, path references, generated evidence, and handoff clearer while `.gitignore` prevents large model/backend artifacts from being committed.
+
 ## 2026-05-18: Use Automatic1111 Deforum As First Real Backend
 
 Decision: Use Automatic1111 WebUI with `sd-webui-deforum` as the first local render backend and expose a minimal `Render Deforum` UI action through a Vite `/a1111` proxy.
 
 Reason: This matches the PRD reference workflow, runs locally on the RTX 4090 PC, and lets the prototype verify real Deforum API connectivity before a fuller adapter contract is built.
 
+## 2026-05-18: Translate Presets Into Deforum Schedules
+
+Decision: Map reviewed presets into Deforum `prompts`, `init_images`, and schedule strings inside `src/services/a1111DeforumAdapter.js`, while keeping source-image paths local and configurable through `VITE_SOURCE_ASSET_ROOT` when the backend cannot resolve the repo-relative path directly.
+
+Reason: The installed Deforum simple API only copies keys that exist in its default settings, and the prototype needs an offline-friendly way to hand prompt keyframes and image sequences to the backend without inventing a separate transport format.
+
 ## 2026-05-18: Keep Real Backend Test Opt-In
 
 Decision: The Playwright smoke test only clicks the real `Render Deforum` path when `RUN_REAL_DEFORUM=1`.
 
 Reason: Regular UI checks should remain fast and independent of a running GPU backend. The opt-in test gives concrete backend evidence when Automatic1111 is running.
+
+## 2026-05-18: Compare One Runtime Model Per Render
+
+Decision: Use a single-choice runtime model control in the workbench instead of selecting multiple comparison models at once.
+
+Reason: The local Deforum backend renders one checkpoint schedule per job. One-at-a-time selection keeps runtime evidence, output paths, checkpoint metadata, and failed artifact detection unambiguous for each take.

@@ -91,6 +91,11 @@
   padding: 0;
 }
 
+.iconButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .primaryButton {
   background: var(--color-accent);
   color: #07110f;

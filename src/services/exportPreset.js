@@ -4,10 +4,54 @@ export function exportPresetJson(preset) {
   return JSON.stringify(createExportablePreset(preset), null, 2);
 }
 
+export function exportDeforumSettingsJson(candidateTake) {
+  if (!candidateTake?.renderSettings) {
+    throw new Error('No Deforum settings are available for the selected candidate take.');
+  }
+
+  return JSON.stringify(
+    {
+      exportedAt: new Date().toISOString(),
+      takeId: candidateTake.id,
+      jobId: candidateTake.jobId,
+      backend: candidateTake.backend,
+      model: candidateTake.model,
+      checkpointFile: candidateTake.checkpointFile,
+      seed: candidateTake.seed,
+      previewResolution: candidateTake.previewResolution,
+      frameCount: candidateTake.frameCount,
+      fps: candidateTake.fps,
+      renderDurationMs: candidateTake.renderDurationMs,
+      outputPath: candidateTake.outputPath,
+      settingsFilePath: candidateTake.settingsFilePath,
+      outputSettingsPattern: candidateTake.outputSettingsPattern,
+      outputVideoPattern: candidateTake.outputVideoPattern,
+      settings: candidateTake.renderSettings,
+    },
+    null,
+    2,
+  );
+}
+
 export function exportPresetReport(preset, candidateTake) {
   const exportable = createExportablePreset(preset);
   const take = candidateTake ?? null;
   const enabledAssets = exportable.assets.filter((asset) => asset.enabled !== false);
+  const candidateLines = take
+    ? [
+        `- ID: ${take.id}`,
+        `- Backend: ${take.backend ?? 'unknown'}`,
+        `- Model: ${take.model.modelId ?? take.model.id}`,
+        `- Checkpoint: ${take.checkpointFile ?? take.model.file ?? 'unknown'}`,
+        `- Seed: ${take.seed}`,
+        `- Preview: ${take.previewResolution.join('x')}`,
+        `- Frames/FPS: ${take.frameCount ?? 'unknown'} / ${take.fps ?? 'unknown'}`,
+        `- Render duration: ${take.renderDurationMs}ms`,
+        `- Output: ${take.outputPath ?? 'unknown'}`,
+        `- Settings file: ${take.settingsFilePath || 'not available'}`,
+        `- Output settings pattern: ${take.outputSettingsPattern || 'not available'}`,
+      ]
+    : ['- No candidate take selected.'];
 
   return [
     `# ${exportable.presetName}`,
@@ -38,9 +82,7 @@ export function exportPresetReport(preset, candidateTake) {
     '',
     '## Candidate Take',
     '',
-    take
-      ? `- ${take.id}: ${take.model.modelId ?? take.model.id}, seed ${take.seed}, ${take.previewResolution.join('x')}, ${take.renderDurationMs}ms`
-      : '- No candidate take selected.',
+    ...candidateLines,
     '',
     '## Production Notes',
     '',

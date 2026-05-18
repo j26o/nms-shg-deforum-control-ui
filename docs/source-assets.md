@@ -18,7 +18,7 @@ All files were checked locally and are:
 
 ## UI Implications
 
-The prototype UI should treat 1680x720 as the source canvas:
+The prototype workbench and render backend should treat 1680x720 as the source canvas:
 
 - preserve the full 7:3 frame in the centre preview;
 - show safe-frame guides against the full 1680x720 image;

@@ -1,12 +1,14 @@
-# Deforum Control UI Prototype
+# Deforum Effect Prototype
 
-Status: executable prototype scaffold  
+Status: executable end-to-end prototype scaffold
 Owner: Etienne Chia for creative tuning; Roland Baldovino for technical planning  
 Created: 2026-05-16
 
 ## Purpose
 
-This prototype defines a local tuning bench for Deforum-style image morphing so Etienne can load multiple pre-generated images, adjust motion and diffusion parameters through a modern UI, compare rendered passes, and export a final configuration for the NMS-SHG Conclusion Space visual system.
+This repository contains the whole local Deforum effect prototype for NMS-SHG Conclusion Space creative tuning: the React/Vite workbench, source assets, preset/export logic, local Automatic1111 Deforum runtime, model matrix, and generated review evidence.
+
+The tuning bench lets Etienne load multiple pre-generated images, adjust motion and diffusion parameters through a modern UI, compare rendered passes, and export a final configuration for the NMS-SHG Conclusion Space visual system.
 
 The prototype is a development workbench, not a final show-control build. Its job is to make the creative parameters reviewable before the production Conclusion Space renderer is locked.
 
@@ -42,33 +44,84 @@ Read the PRD/spec plan here:
 ## Assumptions And Known Gaps
 
 - The prototype can run locally on the supplied RTX 4090 PC for short preview renders.
-- The current exercise source assets are 1680x720 PNGs, so the tuning UI should use a 7:3 canvas and avoid 16:9 assumptions.
+- The current exercise source assets are 1680x720 PNGs, so the tuning workbench and renderer settings should use a 7:3 canvas and avoid 16:9 assumptions.
 - Model choice is part of the exercise: the UI should expose the configured fallback model profiles so the same Deforum setup can be compared across checkpoints.
 - Final production resolution, projection mapping, and TouchDesigner integration details are still to be confirmed.
 - This plan assumes local-only assets and local render jobs. No cloud generation, visitor data, production network addresses, or credentials are part of the prototype.
-- The renderer adapter should remain replaceable: Automatic1111 Deforum, ComfyUI, a custom img2img loop, or a TouchDesigner-facing playback/export path can be swapped behind the same UI contract.
+- The renderer adapter should remain replaceable: Automatic1111 Deforum is the current in-repo runtime under `render-tools/`, while ComfyUI, a custom img2img loop, or a TouchDesigner-facing playback/export path can be swapped behind the same adapter contract later.
 
 ## How To Run It
 
-The first executable React + Vite prototype scaffold now exists. It implements the PRD/spec workbench shape with a local mock render adapter, model-profile dropdown, 7:3 preview frame, timeline segments, take metadata, and export actions.
+The first executable React + Vite workbench now exists as part of the full local effect prototype. It implements the PRD/spec workbench shape with a local mock render adapter, model-profile dropdown, 7:3 preview frame, timeline segments, take metadata, export actions, and a real Automatic1111 Deforum backend path.
 
 Set up the Windows target PC first using:
 
 - `docs/windows-setup.md`
+- `docs/local-render-setup.md`
 
-Install and run:
+### 1. Start The Backend
 
-```bash
+Open a PowerShell window and start Automatic1111 from its install folder:
+
+```powershell
+cd D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui
+.\webui-user.bat
+```
+
+The launcher should include these backend flags in `webui-user.bat`:
+
+```bat
+set COMMANDLINE_ARGS=--api --deforum-api --deforum-simple-api
+```
+
+Leave this window running. Verify the backend from a second PowerShell window:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:7860/deforum/api_version
+Invoke-RestMethod http://127.0.0.1:7860/sdapi/v1/sd-models
+```
+
+### 2. Start The Frontend
+
+Open another PowerShell window from this repo:
+
+```powershell
+cd D:\nms-shg-deforum-control-ui-main
 pnpm install
+$env:VITE_SOURCE_ASSET_ROOT='D:\nms-shg-deforum-control-ui-main\assets\images\source'
 pnpm dev
-pnpm test
-pnpm exec playwright test
 ```
 
 The dev server defaults to:
 
 ```text
 http://127.0.0.1:5173
+```
+
+Use `Render preview` for the fast mock path. Use `Render Deforum` only when the Automatic1111 backend is running.
+
+### 3. Run Checks
+
+Mock/UI checks:
+
+```powershell
+pnpm test
+pnpm exec playwright test
+```
+
+Real backend Playwright path:
+
+```powershell
+$env:RUN_REAL_DEFORUM='1'
+$env:VITE_SOURCE_ASSET_ROOT='D:\nms-shg-deforum-control-ui-main\assets\images\source'
+pnpm exec playwright test --reporter=list
+```
+
+Build check:
+
+```powershell
+pnpm build
+git diff --check
 ```
 
 ## Implemented In This Pass
@@ -81,7 +134,7 @@ http://127.0.0.1:5173
 - Generation, Image Morph, Motion, Prompt, Look, and Output controls.
 - Frame-based prompt/image timeline with add, duplicate, reorder, and delete actions.
 - Mock render adapter that creates queue jobs and comparable take metadata.
-- Automatic1111 Deforum smoke adapter via the `Render Deforum` toolbar action.
+- Automatic1111 Deforum preset translator via the `Render Deforum` toolbar action.
 - Exportable reviewed JSON plus readable Markdown report.
 - Vitest contract tests and Playwright CLI smoke test.
 
@@ -89,7 +142,7 @@ http://127.0.0.1:5173
 
 The default preview action still uses deterministic mock metadata for fast UI review. The `Render Deforum` action calls a local Automatic1111 Deforum backend when it is running at `http://127.0.0.1:7860`.
 
-Backend setup details are in `docs/local-render-setup.md`.
+Backend runtime files live under `render-tools/` inside this project folder and are ignored by Git because they include a nested WebUI checkout, Python environment, model checkpoints, and generated render outputs. Backend setup details are in `docs/local-render-setup.md`.
 
 ## Next Steps
 

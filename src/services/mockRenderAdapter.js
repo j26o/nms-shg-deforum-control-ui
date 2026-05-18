@@ -21,6 +21,7 @@ export function queueMockRender(preset, modelOverride) {
 
 export function createTakeFromJob(job) {
   const config = job.renderConfig;
+  const renderSettings = job.renderSettings ?? null;
   return {
     id: `take-${Date.now()}`,
     jobId: job.id,
@@ -28,8 +29,18 @@ export function createTakeFromJob(job) {
     model: config.model,
     seed: config.generation.seed,
     previewResolution: config.target.previewResolution,
+    checkpointFile: config.model.file ?? '',
+    backend: job.backend ?? 'mock',
+    status: job.status,
+    fps: renderSettings?.fps ?? config.target.fps ?? config.motion?.fps,
+    frameCount: renderSettings?.max_frames,
+    settingsFilePath: job.backendSettingsFilePath ?? '',
+    outputSettingsPattern: job.outputSettingsPattern ?? '',
+    outputVideoPattern: job.outputVideoPattern ?? '',
     renderDurationMs: job.estimateSeconds * 1000,
     outputPath: job.outputPath,
+    renderSettings,
+    logs: job.logs,
     notes: '',
     createdAt: job.completedAt ?? new Date().toISOString(),
   };

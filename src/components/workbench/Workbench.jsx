@@ -1,6 +1,6 @@
-import { Activity, Download, FileJson, Layers, Play, Save } from 'lucide-react';
+import { Activity, Braces, Download, FileJson, Layers, Play, Save } from 'lucide-react';
 import { modelOptions } from '../../config/modelOptions.js';
-import { exportPresetJson, exportPresetReport, downloadTextFile } from '../../services/exportPreset.js';
+import { exportDeforumSettingsJson, exportPresetJson, exportPresetReport, downloadTextFile } from '../../services/exportPreset.js';
 import { validatePreset } from '../../services/presetSchema.js';
 import { usePresetStore } from '../../stores/usePresetStore.js';
 import { AssetRail } from './AssetRail.jsx';
@@ -30,6 +30,10 @@ export function Workbench() {
     downloadTextFile(`${preset.presetName}-report.md`, exportPresetReport(preset, candidateTake), 'text/markdown');
   };
 
+  const handleExportDeforumSettings = () => {
+    downloadTextFile(`${preset.presetName}-deforum-settings.json`, exportDeforumSettingsJson(candidateTake));
+  };
+
   return (
     <div className={styles.shell}>
       <header className={styles.toolbar}>
@@ -55,6 +59,15 @@ export function Workbench() {
           </button>
           <button type="button" className={styles.iconButton} onClick={handleExportJson} title="Export reviewed JSON">
             <FileJson size={17} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={handleExportDeforumSettings}
+            title="Export Deforum settings"
+            disabled={!candidateTake?.renderSettings}
+          >
+            <Braces size={17} aria-hidden="true" />
           </button>
           <button type="button" className={styles.iconButton} onClick={handleExportReport} title="Export readable report">
             <Download size={17} aria-hidden="true" />
@@ -106,7 +119,14 @@ export function Workbench() {
                   <div>
                     <strong>{take.model.modelId ?? take.model.id}</strong>
                     <span>{take.previewResolution.join('x')} / seed {take.seed}</span>
+                    <span>{take.backend} / {take.checkpointFile || 'checkpoint pending'}</span>
+                    <span>
+                      {take.frameCount ? `${take.frameCount} frames` : 'frames pending'} / {take.fps ? `${take.fps} fps` : 'fps pending'} /{' '}
+                      {take.renderDurationMs}ms
+                    </span>
                     <small>{take.outputPath}</small>
+                    {take.settingsFilePath ? <small>{take.settingsFilePath}</small> : null}
+                    {take.outputSettingsPattern ? <small>{take.outputSettingsPattern}</small> : null}
                   </div>
                   <textarea
                     aria-label={`Notes for ${take.id}`}
