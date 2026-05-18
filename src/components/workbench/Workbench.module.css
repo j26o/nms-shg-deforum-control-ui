@@ -33,6 +33,7 @@
 }
 
 .nameField input,
+.backendSelect select,
 .controlField input,
 .controlField select,
 .controlField textarea,
@@ -53,6 +54,7 @@
 }
 
 .nameField input:focus,
+.backendSelect select:focus,
 .controlField input:focus,
 .controlField select:focus,
 .controlField textarea:focus,
@@ -66,6 +68,18 @@
 .toolbarActions {
   justify-content: flex-end;
   gap: var(--space-2);
+}
+
+.backendSelect {
+  display: grid;
+  gap: 2px;
+  min-width: 138px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.backendSelect select {
+  min-height: 34px;
 }
 
 .iconButton,

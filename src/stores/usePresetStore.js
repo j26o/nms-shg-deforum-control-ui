@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createDefaultPreset } from '../config/defaultPreset.js';
 import { getModelById } from '../config/modelOptions.js';
 import { queueA1111DeforumRender } from '../services/a1111DeforumAdapter.js';
+import { queueHuggingFaceDeforumRender } from '../services/huggingFaceDeforumAdapter.js';
 import { queueMockRender, createTakeFromJob } from '../services/mockRenderAdapter.js';
 
 const defaultPreset = createDefaultPreset();
@@ -23,11 +24,13 @@ export const usePresetStore = create((set, get) => ({
   jobs: [],
   takes: [],
   backendError: '',
+  renderBackend: 'a1111-deforum',
   compareModelIds: [defaultPreset.model.modelId],
 
   updatePresetName: (presetName) => set((state) => ({ preset: { ...state.preset, presetName } })),
   updateGroupValue: (group, key, value) => set((state) => ({ preset: updateNested(state.preset, group, key, value) })),
   updateTargetValue: (key, value) => set((state) => ({ preset: updateNested(state.preset, 'target', key, value) })),
+  setRenderBackend: (renderBackend) => set({ renderBackend }),
   selectAsset: (assetId) => set({ selectedAssetId: assetId }),
   selectSegment: (segmentId) => set({ selectedSegmentId: segmentId }),
   setModelProfile: (modelId) =>
@@ -155,10 +158,13 @@ export const usePresetStore = create((set, get) => ({
     set((current) => ({ jobs: [...jobs, ...current.jobs], takes: [...takes, ...current.takes] }));
   },
   queueDeforumRender: async () => {
-    const preset = get().preset;
+    const { preset, renderBackend } = get();
     set({ backendError: '' });
     try {
-      const job = await queueA1111DeforumRender(preset);
+      const job =
+        renderBackend === 'huggingface-deforum'
+          ? await queueHuggingFaceDeforumRender(preset)
+          : await queueA1111DeforumRender(preset);
       const take = createTakeFromJob(job);
       set((current) => ({ jobs: [job, ...current.jobs], takes: [take, ...current.takes] }));
       return job;

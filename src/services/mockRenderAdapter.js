@@ -39,6 +39,8 @@ export function createTakeFromJob(job) {
     outputVideoPattern: job.outputVideoPattern ?? '',
     renderDurationMs: job.estimateSeconds * 1000,
     outputPath: job.outputPath,
+    artifactUrl: job.artifactUrl ?? '',
+    remoteJobId: job.remoteJobId ?? '',
     renderSettings,
     logs: job.logs,
     notes: '',

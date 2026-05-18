@@ -1,6 +1,6 @@
 # Hugging Face Deforum Backend Plan
 
-Status: approved implementation plan  
+Status: local proxy and UI adapter implemented; remote endpoint runtime pending
 Last updated: 2026-05-18
 
 Approval: Proceed with this direction. Hugging Face is an optional Deforum-compatible backend for the shared image-keyframe preset contract, not a generic video-generation path.
@@ -84,6 +84,27 @@ React/Vite Workbench
 
 The browser should only call the local proxy. The proxy owns authentication, upload preparation, job submission, polling, artifact download, and error normalisation.
 
+## Local Implementation Status
+
+Implemented locally:
+
+- `server/hfDeforumProxy.js`: Vite middleware for `/hf-deforum/status`, `/hf-deforum/jobs`, `/hf-deforum/jobs/:id`, and `/hf-deforum/jobs/:id/artifact`.
+- `src/services/huggingFaceDeforumAdapter.js`: frontend adapter that sends the simplified image-keyframe preset payload to the local proxy and normalises remote job metadata into the take flow.
+- `src/stores/usePresetStore.js`: backend selection between `a1111-deforum` and `huggingface-deforum`.
+- `src/components/workbench/Workbench.jsx`: toolbar backend selector and Hugging Face render action label.
+- `.env.example`: local configuration keys for the proxy and endpoint paths.
+
+Pending:
+
+- an actual Hugging Face Inference Endpoint or private Space/API that accepts this payload and performs the Deforum-compatible render;
+- a real remote MP4 artifact eval against the same preset as the local A1111 baseline.
+
+Token handling:
+
+- The proxy reads `HF_TOKEN`, `HUGGING_FACE_HUB_TOKEN`, or a named Hugging Face CLI cache token.
+- The default named token is `nms-shg`; override with `HF_TOKEN_NAME`.
+- The token is never sent to browser JavaScript.
+
 ## Payload Contract
 
 The Hugging Face backend should receive a versioned payload derived from `normaliseRenderConfig()`:
@@ -146,15 +167,19 @@ The Hugging Face backend should receive a versioned payload derived from `normal
 
 ### T1: Backend Mode Planning Contract
 
+Status: done.
+
 Do: Add a `huggingface-deforum` backend mode to the render adapter plan and document the required payload/metadata contract.
 
 Files: `docs/render-adapter-contract.md`, `docs/export-format.md`
 
 Verify: Manual review confirms Hugging Face is described only as a Deforum-compatible backend, not generic text-to-video.
 
-### T2: UI Backend Selector Spec
+### T2: UI Backend Selector
 
-Do: Plan a UI control for choosing `Mock Preview`, `Local A1111 Deforum`, or `Hugging Face Deforum`, with Hugging Face disabled until endpoint/proxy config exists.
+Status: done. The UI exposes `Local A1111` and `Hugging Face`; the Hugging Face path reports a configuration error until `HF_DEFORUM_ENDPOINT_URL` is set.
+
+Do: Add a UI control for choosing `Local A1111 Deforum` or `Hugging Face Deforum`.
 
 Files: `src/components/workbench/Workbench.jsx`, `src/stores/usePresetStore.js`, future `src/services/huggingFaceDeforumAdapter.js`
 
@@ -162,25 +187,31 @@ Verify: `pnpm test`, `pnpm exec playwright test`, and manual check that the sele
 
 ### T3: Local Proxy
 
-Do: Add a local Node/Vite-side or small Express proxy that reads `HF_TOKEN`, `HF_DEFORUM_ENDPOINT_URL`, and optional upload settings from environment variables, then exposes:
+Status: done.
+
+Do: Add a local Node/Vite-side proxy that reads `HF_TOKEN`, `HF_DEFORUM_ENDPOINT_URL`, and optional upload settings from environment variables, then exposes:
 
 - `POST /hf-deforum/jobs`
 - `GET /hf-deforum/jobs/:id`
 - `GET /hf-deforum/jobs/:id/artifact`
 
-Files: future `server/hfDeforumProxy.js`, `.env.example`, `docs/huggingface-deforum-backend-plan.md`
+Files: `server/hfDeforumProxy.js`, `.env.example`, `docs/huggingface-deforum-backend-plan.md`
 
 Verify: proxy unit tests mock Hugging Face responses without exposing credentials.
 
 ### T4: Hugging Face Deforum Adapter
 
-Do: Implement `src/services/huggingFaceDeforumAdapter.js` to translate the normalised preset into the payload above, upload or attach source images, submit the job through the proxy, poll status, and create take metadata.
+Status: done.
+
+Do: Implement `src/services/huggingFaceDeforumAdapter.js` to translate the normalised preset into the payload above, submit the job through the proxy, poll status, and create take metadata.
 
 Files: `src/services/huggingFaceDeforumAdapter.js`, `src/services/huggingFaceDeforumAdapter.test.js`
 
 Verify: `pnpm test` validates payload generation, image-keyframe preservation, credential omission, and MP4 artifact metadata handling.
 
 ### T5: Remote Deforum Runtime
+
+Status: pending.
 
 Do: Create the remote endpoint/Space runtime that actually runs Deforum-style image-to-image animation from the submitted keyframes. The first acceptable version can be a private Space wrapper around Automatic1111 Deforum or a custom endpoint handler that reproduces the same settings.
 
@@ -190,6 +221,8 @@ Verify: A 3-5 second `896x384` render from at least three bundled source images 
 
 ### T6: Eval And Handoff
 
+Status: pending until a remote endpoint produces an MP4.
+
 Do: Add an eval comparing local Automatic1111 and Hugging Face Deforum outputs using the same preset, seed, source images, preview resolution, and model where feasible.
 
 Files: `docs/evals/huggingface-deforum-backend-eval.md`, `docs/todo.md`
@@ -198,10 +231,10 @@ Verify: Eval records source faithfulness, Deforum-like behavior, MP4 artifact ev
 
 ## Done
 
-- [ ] UI exposes Hugging Face only as a Deforum-compatible backend option.
-- [ ] Hugging Face requests use a proxy and never expose `HF_TOKEN` in browser code.
+- [x] UI exposes Hugging Face only as a Deforum-compatible backend option.
+- [x] Hugging Face requests use a proxy and never expose `HF_TOKEN` in browser code.
 - [ ] Remote backend produces MP4 by default from image-keyed source frames.
-- [ ] Take metadata includes backend id `huggingface-deforum`, output artifact URL/path, settings payload, model, seed, resolution, frame count, FPS, and render duration.
-- [ ] Local A1111 Deforum remains supported and uses the same reviewed preset.
-- [ ] `pnpm test`, `pnpm build`, and `pnpm exec playwright test` pass after implementation.
+- [x] Take metadata includes backend id `huggingface-deforum`, output artifact URL/path, settings payload, model, seed, resolution, frame count, FPS, and render duration when the remote endpoint returns those fields.
+- [x] Local A1111 Deforum remains supported and uses the same reviewed preset.
+- [x] `pnpm test`, `pnpm build`, and `pnpm exec playwright test` pass after local proxy/adapter implementation.
 - [ ] A dedicated eval compares the Hugging Face render against the local A1111 baseline.

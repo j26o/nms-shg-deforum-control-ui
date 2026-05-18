@@ -45,6 +45,10 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await expect(page.getByText('Deforum Control UI')).toBeVisible();
   await expect(page.getByLabel('Seven by three preview frame')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Sources' })).toBeVisible();
+  await expect(page.getByLabel('Backend')).toHaveValue('a1111-deforum');
+  await page.getByLabel('Backend').selectOption('huggingface-deforum');
+  await expect(page.getByRole('button', { name: /Render HF Deforum/i })).toBeVisible();
+  await page.getByLabel('Backend').selectOption('a1111-deforum');
 
   await page.getByLabel('Deforum controls').getByLabel('Model profile').selectOption('sdxl-base');
   await expect(page.locator('strong').filter({ hasText: 'SDXL Base 1.0' })).toBeVisible();

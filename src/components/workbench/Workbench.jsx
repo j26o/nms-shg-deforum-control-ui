@@ -15,6 +15,8 @@ export function Workbench() {
   const takes = usePresetStore((state) => state.takes);
   const queueRender = usePresetStore((state) => state.queueRender);
   const queueDeforumRender = usePresetStore((state) => state.queueDeforumRender);
+  const renderBackend = usePresetStore((state) => state.renderBackend);
+  const setRenderBackend = usePresetStore((state) => state.setRenderBackend);
   const updatePresetName = usePresetStore((state) => state.updatePresetName);
   const markCandidate = usePresetStore((state) => state.markCandidate);
   const updateTakeNotes = usePresetStore((state) => state.updateTakeNotes);
@@ -46,6 +48,13 @@ export function Workbench() {
           <input value={preset.presetName} onChange={(event) => updatePresetName(event.target.value)} />
         </label>
         <div className={styles.toolbarActions}>
+          <label className={styles.backendSelect}>
+            <span>Backend</span>
+            <select value={renderBackend} onChange={(event) => setRenderBackend(event.target.value)}>
+              <option value="a1111-deforum">Local A1111</option>
+              <option value="huggingface-deforum">Hugging Face</option>
+            </select>
+          </label>
           <button type="button" className={styles.iconButton} title="Save preset draft">
             <Save size={17} aria-hidden="true" />
           </button>
@@ -55,7 +64,7 @@ export function Workbench() {
           </button>
           <button type="button" className={styles.secondaryButton} onClick={() => void queueDeforumRender()}>
             <Play size={17} aria-hidden="true" />
-            Render Deforum
+            {renderBackend === 'huggingface-deforum' ? 'Render HF Deforum' : 'Render Deforum'}
           </button>
           <button type="button" className={styles.iconButton} onClick={handleExportJson} title="Export reviewed JSON">
             <FileJson size={17} aria-hidden="true" />

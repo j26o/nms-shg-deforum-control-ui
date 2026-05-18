@@ -142,7 +142,7 @@ git diff --check
 
 ## Current Adapter Status
 
-The default preview action still uses deterministic mock metadata for fast UI review. The `Render Deforum` action calls a local Automatic1111 Deforum backend when it is running at `http://127.0.0.1:7860`.
+The default preview action still uses deterministic mock metadata for fast UI review. The `Render Deforum` action calls the selected real backend. `Local A1111` uses the Automatic1111 Deforum backend when it is running at `http://127.0.0.1:7860`; `Hugging Face` uses the local `/hf-deforum/*` proxy and requires `HF_DEFORUM_ENDPOINT_URL` plus a valid `HF_TOKEN` or named Hugging Face CLI token.
 
 Backend runtime files live under `render-tools/` inside this project folder and are ignored by Git because they include a nested WebUI checkout, Python environment, model checkpoints, and generated render outputs. Backend setup details are in `docs/local-render-setup.md`.
 
