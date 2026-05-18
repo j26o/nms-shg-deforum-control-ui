@@ -1,6 +1,6 @@
 # Deforum Control UI Prototype
 
-Status: draft plan  
+Status: executable prototype scaffold  
 Owner: Etienne Chia for creative tuning; Roland Baldovino for technical planning  
 Created: 2026-05-16
 
@@ -32,6 +32,10 @@ Read the PRD/spec plan here:
 - `docs/windows-setup.md`
 - `docs/source-assets.md`
 - `docs/model-options.md`
+- `docs/local-render-setup.md`
+- `docs/todo.md`
+- `docs/ai-context.md`
+- `docs/decisions.md`
 - `config/model-options.json`
 - `.agents/skills/deforum-prototype-eval/SKILL.md`
 
@@ -46,13 +50,13 @@ Read the PRD/spec plan here:
 
 ## How To Run It
 
-No prototype code exists yet. The first implementation task should scaffold the local app and render adapter described in the PRD/spec.
+The first executable React + Vite prototype scaffold now exists. It implements the PRD/spec workbench shape with a local mock render adapter, model-profile dropdown, 7:3 preview frame, timeline segments, take metadata, and export actions.
 
 Set up the Windows target PC first using:
 
 - `docs/windows-setup.md`
 
-Expected future command shape:
+Install and run:
 
 ```bash
 pnpm install
@@ -60,6 +64,38 @@ pnpm dev
 pnpm test
 pnpm exec playwright test
 ```
+
+The dev server defaults to:
+
+```text
+http://127.0.0.1:5173
+```
+
+## Implemented In This Pass
+
+- React + Vite scaffold with named exports.
+- CSS token file and dense workbench layout.
+- Asset rail seeded from `assets/images/source/`.
+- 1680x720 / 7:3 preview frame with safe-frame guides.
+- Model profile control populated from `config/model-options.json`.
+- Generation, Image Morph, Motion, Prompt, Look, and Output controls.
+- Frame-based prompt/image timeline with add, duplicate, reorder, and delete actions.
+- Mock render adapter that creates queue jobs and comparable take metadata.
+- Automatic1111 Deforum smoke adapter via the `Render Deforum` toolbar action.
+- Exportable reviewed JSON plus readable Markdown report.
+- Vitest contract tests and Playwright CLI smoke test.
+
+## Current Adapter Status
+
+The default preview action still uses deterministic mock metadata for fast UI review. The `Render Deforum` action calls a local Automatic1111 Deforum backend when it is running at `http://127.0.0.1:7860`.
+
+Backend setup details are in `docs/local-render-setup.md`.
+
+## Next Steps
+
+The active implementation checklist is maintained in:
+
+- `docs/todo.md`
 
 ## Production Relevance
 

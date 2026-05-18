@@ -1,0 +1,28 @@
+import { describe, expect, it } from 'vitest';
+import { createDefaultPreset } from '../config/defaultPreset.js';
+import { getModelById } from '../config/modelOptions.js';
+import { normaliseRenderConfig } from './renderAdapter.js';
+import { createTakeFromJob, queueMockRender } from './mockRenderAdapter.js';
+
+describe('render adapter contract', () => {
+  it('normalises preset data without exposing UI-only state', () => {
+    const preset = createDefaultPreset();
+    const config = normaliseRenderConfig(preset, getModelById('sdxl-base'));
+
+    expect(config.model.id).toBe('sdxl-base');
+    expect(config.target.aspectRatio).toBe('7:3');
+    expect(config.timeline.length).toBe(3);
+  });
+
+  it('creates deterministic mock job metadata and comparable takes', () => {
+    const preset = createDefaultPreset();
+    const job = queueMockRender(preset, getModelById('realvisxl-v5'));
+    const take = createTakeFromJob(job);
+
+    expect(job.status).toBe('complete');
+    expect(job.outputPath).toContain('realvisxl-v5');
+    expect(take.model.id).toBe('realvisxl-v5');
+    expect(take.previewResolution).toEqual([896, 384]);
+    expect(take.renderDurationMs).toBeGreaterThan(0);
+  });
+});

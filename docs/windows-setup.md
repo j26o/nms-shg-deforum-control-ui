@@ -132,7 +132,7 @@ cd D:\NMS-SHG\prototype\KRD\projects\NMS-SHG\04-development\prototypes\deforum-c
 
 ## 6. Confirm Current Prototype State
 
-At the time this setup guide was written, this prototype folder contains the plan but not the app code yet.
+The prototype now includes a React/Vite app scaffold and local Automatic1111 Deforum smoke adapter.
 
 Check:
 
@@ -147,9 +147,9 @@ Expected result:
 - `docs\deforum-control-ui-prd-spec.md`
 - `docs\windows-setup.md`
 
-If `package.json` does not exist yet, the app has not been scaffolded. Implement task `T1: Prototype Scaffold` from `docs\deforum-control-ui-prd-spec.md` before trying to run the UI.
+If `package.json` does not exist, the checkout is incomplete.
 
-## 7. Run The UI After It Is Scaffolded
+## 7. Run The UI
 
 Once `package.json` exists in this folder:
 
@@ -175,9 +175,9 @@ pnpm exec playwright test
 
 ## 8. Prepare A Local Deforum Backend
 
-This is optional for the first UI scaffold. Do it when the render adapter work starts.
+This is required for the `Render Deforum` action and optional for mock-only UI review.
 
-Recommended first backend: AUTOMATIC1111 Stable Diffusion WebUI with the Deforum extension, because the reference tutorial uses a Deforum-style control surface.
+Verified first backend: AUTOMATIC1111 Stable Diffusion WebUI with the Deforum extension, because the reference tutorial uses a Deforum-style control surface.
 
 Create a render-tools folder:
 
@@ -212,6 +212,12 @@ git clone https://github.com/deforum-art/sd-webui-deforum extensions\deforum
 ```
 
 After restart, confirm the WebUI has a Deforum tab or extension entry.
+
+For the verified local setup, also enable the APIs in `webui-user.bat`:
+
+```bat
+set COMMANDLINE_ARGS=--api --deforum-api --deforum-simple-api
+```
 
 ## 9. Add A Model Checkpoint
 
@@ -381,22 +387,24 @@ Keep only candidate renders and their exported JSON reports.
 
 ## 13. Setup Checklist
 
-- [ ] NVIDIA driver updated and `nvidia-smi` works.
-- [ ] Git works.
-- [ ] Node.js LTS works.
-- [ ] Python 3.10 works.
-- [ ] FFmpeg works.
-- [ ] pnpm works.
-- [ ] Prototype folder is on the Windows PC.
-- [ ] Source images folder exists at `assets\images\source`.
-- [ ] The exercise images are present and verified as 1680x720.
-- [ ] Hugging Face CLI works, if model downloads are needed.
-- [ ] At least `sd15-baseline` and `sdxl-base` checkpoints are downloaded.
+- [x] NVIDIA driver updated and `nvidia-smi` works.
+- [x] Git works.
+- [x] Node.js works.
+- [x] Python 3.10 works through `py -3.10`.
+- [x] FFmpeg works through the local portable install documented in `docs\local-render-setup.md`.
+- [x] pnpm works.
+- [x] Prototype folder is on the Windows PC.
+- [x] Source images folder exists at `assets\images\source`.
+- [x] The exercise images are present and verified as 1680x720.
+- [ ] Hugging Face CLI works, if additional model downloads are needed.
+- [x] `sd15-baseline` checkpoint is downloaded and loaded.
+- [ ] `sdxl-base` checkpoint is downloaded.
 - [ ] Optional comparison checkpoints are downloaded only after licence review.
-- [ ] UI app is scaffolded or ready to be scaffolded.
-- [ ] Optional: AUTOMATIC1111 WebUI launches.
-- [ ] Optional: Deforum extension appears in WebUI.
-- [ ] Optional: first 5-10 second preview render succeeds.
+- [x] UI app is scaffolded.
+- [x] AUTOMATIC1111 WebUI launches.
+- [x] Deforum extension appears in WebUI/API extension list.
+- [x] Tiny 4-frame Deforum smoke render succeeds.
+- [ ] First 5-10 second review preview render succeeds.
 
 ## 14. Source Links
 
