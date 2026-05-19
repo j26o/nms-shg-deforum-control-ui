@@ -58,10 +58,14 @@ async function waitForA1111(signal, timeoutMs) {
 
   while (performance.now() - startedAt < timeoutMs) {
     try {
-      const status = await fetchJson('/a1111-deforum/api_version', signal);
+      const status = await fetchJson('/a1111-deforum/status', signal);
+      if (!status.ready) {
+        await sleep(POLL_INTERVAL_MS);
+        continue;
+      }
       return {
         status: 'ready',
-        detail: `Local Deforum API ready${status.version ? `: ${status.version}` : '.'}`,
+        detail: `Local Deforum API ready${status.apiVersion ? `: ${status.apiVersion}` : '.'}`,
       };
     } catch {
       await sleep(POLL_INTERVAL_MS);

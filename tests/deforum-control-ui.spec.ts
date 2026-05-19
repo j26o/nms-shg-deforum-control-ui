@@ -60,10 +60,12 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await expect(promptNodes.getByText(/folder images loaded/)).toBeVisible();
   await expect(promptNodes.getByAltText(/preview/i).first()).toBeVisible();
 
-  await expect(page.getByLabel('Backend')).toHaveValue('a1111-deforum');
-  await page.getByLabel('Backend').selectOption('huggingface-deforum');
+  const backendSelect = page.getByLabel('Backend', { exact: true });
+  await expect(backendSelect).toHaveValue('a1111-deforum');
+  await expect(page.getByLabel('Backend server status')).toBeVisible();
+  await backendSelect.selectOption('huggingface-deforum');
   await expect(page.getByRole('button', { name: /Render HF Deforum/i })).toBeVisible();
-  await page.getByLabel('Backend').selectOption('a1111-deforum');
+  await backendSelect.selectOption('a1111-deforum');
 
   await page.getByLabel('Deforum controls').getByLabel('Model profile').selectOption('sdxl-base');
   await expect(page.locator('strong').filter({ hasText: 'SDXL Base 1.0' })).toBeVisible();
@@ -94,6 +96,7 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await expect(page.getByRole('button', { name: /Render Deforum/i })).toBeVisible();
 
   if (process.env.RUN_REAL_DEF0RUM === '1' || process.env.RUN_REAL_DEFORUM === '1') {
+    await expect(page.getByRole('button', { name: /Render Deforum/i })).toBeEnabled({ timeout: 15_000 });
     await page.getByRole('button', { name: /Render Deforum/i }).click();
     await expect(page.getByText(/stable-diffusion-webui/i).first()).toBeVisible({ timeout: 120_000 });
   }

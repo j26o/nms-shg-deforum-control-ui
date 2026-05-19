@@ -133,6 +133,14 @@ The React app has a `Render Deforum` action that calls the local body bridge:
 /a1111-deforum/run
 ```
 
+It also polls the backend status bridge:
+
+```text
+/a1111-deforum/status
+```
+
+The toolbar status chip uses that route to show whether the selected backend is ready, offline, or not configured. If it says Local A1111 is offline, start `pnpm dev:backend` or start Automatic1111 manually with the Deforum extension enabled, then refresh the status chip.
+
 The bridge submits the settings JSON to the Deforum batch API when available:
 
 ```text

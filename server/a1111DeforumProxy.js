@@ -5,6 +5,10 @@ const DEFAULT_MAX_POLLS = 3600;
 const COMPLETE_STATUSES = new Set(['succeeded', 'success', 'complete', 'completed', 'done']);
 const FAILED_STATUSES = new Set(['failed', 'error', 'cancelled', 'canceled']);
 
+function getA1111BaseUrl(env = process.env) {
+  return env.A1111_BASE_URL || 'http://127.0.0.1:7860';
+}
+
 function createJsonResponse(response, statusCode, payload) {
   response.statusCode = statusCode;
   response.setHeader('content-type', 'application/json; charset=utf-8');
@@ -34,6 +38,18 @@ function createA1111Url(baseUrl, routePath) {
   return `${baseUrl.replace(/\/+$/, '')}/${routePath.replace(/^\/+/, '')}`;
 }
 
+function isFetchConnectionError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message === 'fetch failed' || message.includes('ECONNREFUSED') || message.includes('UND_ERR_CONNECT_TIMEOUT');
+}
+
+function createA1111UnavailableMessage(baseUrl) {
+  return [
+    `Local A1111 backend is not reachable at ${baseUrl}.`,
+    'Start it with `pnpm dev:backend` from this prototype folder, or start Automatic1111 manually with the Deforum extension enabled.',
+  ].join(' ');
+}
+
 function sleep(ms) {
   return new Promise((resolve) => {
     globalThis.setTimeout(resolve, ms);
@@ -58,7 +74,7 @@ function isFailedStatus(value) {
 }
 
 async function submitFullDeforumApi(settings, env) {
-  const baseUrl = env.A1111_BASE_URL || 'http://127.0.0.1:7860';
+  const baseUrl = getA1111BaseUrl(env);
   const response = await fetch(createA1111Url(baseUrl, '/deforum_api/batches'), {
     method: 'POST',
     headers: {
@@ -80,7 +96,7 @@ async function submitFullDeforumApi(settings, env) {
 }
 
 async function pollFullDeforumJob(jobId, env) {
-  const baseUrl = env.A1111_BASE_URL || 'http://127.0.0.1:7860';
+  const baseUrl = getA1111BaseUrl(env);
   const pollIntervalMs = Number(env.A1111_DEFORUM_POLL_INTERVAL_MS || DEFAULT_POLL_INTERVAL_MS);
   const maxPolls = Number(env.A1111_DEFORUM_MAX_POLLS || DEFAULT_MAX_POLLS);
 
@@ -119,7 +135,7 @@ async function submitSimpleDeforumApi(payload, env) {
     settings_json: settingsJson,
     allowed_params: allowedParams,
   });
-  const baseUrl = env.A1111_BASE_URL || 'http://127.0.0.1:7860';
+  const baseUrl = getA1111BaseUrl(env);
   const response = await fetch(`${createA1111Url(baseUrl, '/deforum/run')}?${params.toString()}`, {
     method: 'POST',
   });
@@ -133,6 +149,56 @@ async function submitSimpleDeforumApi(payload, env) {
     return JSON.parse(text);
   } catch {
     return { raw: text };
+  }
+}
+
+export async function checkA1111DeforumStatus(env = process.env) {
+  const baseUrl = getA1111BaseUrl(env);
+
+  try {
+    const apiVersionResponse = await fetch(createA1111Url(baseUrl, '/deforum/api_version'));
+    const apiVersion = await readUpstreamJson(apiVersionResponse);
+
+    if (!apiVersionResponse.ok) {
+      return {
+        backend: 'a1111-deforum',
+        configured: true,
+        ready: false,
+        status: 'offline',
+        baseUrl,
+        error: `Deforum API status failed: ${apiVersionResponse.status} ${apiVersion.message || apiVersion.error || apiVersion.raw || apiVersionResponse.statusText}`,
+      };
+    }
+
+    let modelCount = null;
+    try {
+      const modelsResponse = await fetch(createA1111Url(baseUrl, '/sdapi/v1/sd-models'));
+      if (modelsResponse.ok) {
+        const models = await readUpstreamJson(modelsResponse);
+        modelCount = Array.isArray(models) ? models.length : null;
+      }
+    } catch {
+      modelCount = null;
+    }
+
+    return {
+      backend: 'a1111-deforum',
+      configured: true,
+      ready: true,
+      status: 'ready',
+      baseUrl,
+      apiVersion: apiVersion.version ?? apiVersion.api_version ?? apiVersion,
+      modelCount,
+    };
+  } catch (error) {
+    return {
+      backend: 'a1111-deforum',
+      configured: true,
+      ready: false,
+      status: 'offline',
+      baseUrl,
+      error: isFetchConnectionError(error) ? createA1111UnavailableMessage(baseUrl) : error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
@@ -174,7 +240,13 @@ export async function handleA1111DeforumProxyRequest(request, response, env = pr
   try {
     const requestUrl = new URL(request.url ?? '/', 'http://127.0.0.1');
     const pathName = requestUrl.pathname;
-    const baseUrl = env.A1111_BASE_URL || 'http://127.0.0.1:7860';
+    const baseUrl = getA1111BaseUrl(env);
+
+    if (request.method === 'GET' && pathName === '/a1111-deforum/status') {
+      const status = await checkA1111DeforumStatus(env);
+      createJsonResponse(response, 200, status);
+      return;
+    }
 
     if (request.method === 'GET' && pathName === '/a1111-deforum/api_version') {
       const upstream = await fetch(createA1111Url(baseUrl, '/deforum/api_version'));
@@ -194,7 +266,17 @@ export async function handleA1111DeforumProxyRequest(request, response, env = pr
 
     createJsonResponse(response, 404, { error: 'Unknown A1111 Deforum proxy route.' });
   } catch (error) {
-    createJsonResponse(response, 500, { error: error instanceof Error ? error.message : String(error) });
+    const baseUrl = getA1111BaseUrl(env);
+    const message = isFetchConnectionError(error)
+      ? createA1111UnavailableMessage(baseUrl)
+      : error instanceof Error
+        ? error.message
+        : String(error);
+    createJsonResponse(response, isFetchConnectionError(error) ? 503 : 500, {
+      error: message,
+      backend: 'a1111-deforum',
+      baseUrl,
+    });
   }
 }
 

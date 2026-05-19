@@ -17,7 +17,7 @@ describe('startup health checks', () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((url) => {
-        if (url === '/a1111-deforum/api_version') return Promise.resolve(jsonResponse({ version: '1.0' }));
+        if (url === '/a1111-deforum/status') return Promise.resolve(jsonResponse({ ready: true, apiVersion: '1.0' }));
         if (url === '/hf-deforum/status') return Promise.resolve(jsonResponse({ configured: false }));
         return Promise.reject(new Error(`Unexpected URL ${url}`));
       }),

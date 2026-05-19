@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { submitA1111DeforumRun } from './a1111DeforumProxy.js';
+import { checkA1111DeforumStatus, submitA1111DeforumRun } from './a1111DeforumProxy.js';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -7,6 +7,41 @@ afterEach(() => {
 });
 
 describe('a1111 deforum body proxy', () => {
+  it('reports local Deforum status through the A1111 bridge', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ version: '1.0' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify([{ title: 'sd15' }]),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const status = await checkA1111DeforumStatus({ A1111_BASE_URL: 'http://127.0.0.1:7860' });
+
+    expect(status.ready).toBe(true);
+    expect(status.status).toBe('ready');
+    expect(status.apiVersion).toBe('1.0');
+    expect(status.modelCount).toBe(1);
+    expect(fetchMock.mock.calls[0][0]).toBe('http://127.0.0.1:7860/deforum/api_version');
+  });
+
+  it('returns actionable status text when local A1111 is unreachable', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('fetch failed')));
+
+    const status = await checkA1111DeforumStatus({ A1111_BASE_URL: 'http://127.0.0.1:7860' });
+
+    expect(status.ready).toBe(false);
+    expect(status.status).toBe('offline');
+    expect(status.error).toContain('Local A1111 backend is not reachable');
+    expect(status.error).toContain('pnpm dev:backend');
+  });
+
   it('submits body settings through the Deforum batch API and polls for output', async () => {
     const fetchMock = vi
       .fn()

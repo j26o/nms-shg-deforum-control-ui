@@ -78,7 +78,7 @@ Reason: Silent render actions make the prototype hard to evaluate. Even the mock
 
 ## 2026-05-19: Show Startup Readiness Before The Workbench
 
-Decision: Add a full-screen startup/loading view before the workbench mounts. It checks the Vite workbench server, Local A1111 Deforum API through `/a1111/deforum/api_version`, and the Hugging Face proxy through `/hf-deforum/status`. If Local A1111 is not ready within the short startup window, the UI can continue in UI-only preview mode.
+Decision: Add a full-screen startup/loading view before the workbench mounts. It checks the Vite workbench server, Local A1111 Deforum API through `/a1111-deforum/status`, and the Hugging Face proxy through `/hf-deforum/status`. If Local A1111 is not ready within the short startup window, the UI can continue in UI-only preview mode.
 
 Reason: The reviewer needs visible feedback while local services are booting, but `pnpm dev` must remain frontend-only and should not hang the UI when the GPU backend is intentionally offline.
 
@@ -93,3 +93,9 @@ Reason: The 24-image default prompt-node payload is too large for browser URL/qu
 Decision: `Render preview` creates a saved simulated take for UI review, including an inline simulated visual preview, but does not write a media file or display a fake output path. Only real backend renders should display output file paths or artifact URLs.
 
 Reason: Showing a placeholder `outputs/previews/*.webm` path made the mock preview look like a real generated file. The prototype should keep fast preview metadata useful without implying a render artifact exists.
+
+## 2026-05-19: Show Persistent Backend Server Status
+
+Decision: Add a persistent backend status chip in the workbench toolbar. Local A1111 status is checked through `/a1111-deforum/status`, Hugging Face status through `/hf-deforum/status`, and the real render button is disabled when the selected backend is offline or not configured.
+
+Reason: A failed real Deforum render can otherwise look like a generic UI error. The reviewer needs to know whether the selected backend server is reachable before sending a long image-keyframe render payload.

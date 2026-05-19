@@ -155,6 +155,7 @@ Prototype implication: the UI needs controls for source-image ordering, prompt/k
 | FR-06 | Support keyframed prompt schedules similar to Deforum frame-indexed prompts. | P0 |
 | FR-07 | Support multiple source image transition modes: sequential morph, hold-then-morph, crossfade-assisted img2img, and loopable return. | P1 |
 | FR-08 | Provide a render queue for preview clips, with status, estimated duration, output path, and error messages. | P0 |
+| FR-08A | Show persistent selected-backend server status before real Deforum renders are submitted. | P0 |
 | FR-09 | Provide take comparison: thumbnail strip, metadata summary, preview playback, and mark-as-candidate action. | P1 |
 | FR-10 | Export a reviewed config JSON plus a human-readable preset report. | P0 |
 | FR-11 | Keep render-engine integration behind an adapter so Automatic1111 Deforum, ComfyUI, custom img2img scripts, or TouchDesigner-facing exports can be swapped. | P0 |

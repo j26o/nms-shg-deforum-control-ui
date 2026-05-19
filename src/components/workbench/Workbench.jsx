@@ -1,5 +1,7 @@
-import { Activity, Braces, Download, FileJson, Layers, Play, Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Activity, Braces, Download, FileJson, Layers, Play, RefreshCw, Save, Server } from 'lucide-react';
 import { modelOptions } from '../../config/modelOptions.js';
+import { checkBackendStatus, createInitialBackendStatus } from '../../services/backendStatus.js';
 import { exportDeforumSettingsJson, exportPresetJson, exportPresetReport, downloadTextFile } from '../../services/exportPreset.js';
 import { validatePreset } from '../../services/presetSchema.js';
 import { usePresetStore } from '../../stores/usePresetStore.js';
@@ -27,6 +29,38 @@ export function Workbench() {
   const candidateTake = takes.find((take) => take.candidate);
   const renderBusy = renderStatus === 'running';
   const showRenderNotice = renderStatus !== 'idle' || Boolean(backendError);
+  const [statusRefreshTick, setStatusRefreshTick] = useState(0);
+  const [backendStatus, setBackendStatus] = useState(() => createInitialBackendStatus(renderBackend));
+  const backendStatusClassName = [styles.backendStatus, styles[`backendStatus_${backendStatus.status}`]].filter(Boolean).join(' ');
+  const realBackendUnavailable = backendStatus.status === 'offline' || backendStatus.status === 'not-configured';
+  const realRenderDisabled = renderBusy || realBackendUnavailable;
+
+  useEffect(() => {
+    let cancelled = false;
+    let controller;
+
+    const runCheck = (showChecking = false) => {
+      controller?.abort();
+      controller = new AbortController();
+      if (showChecking) {
+        setBackendStatus(createInitialBackendStatus(renderBackend));
+      }
+      void checkBackendStatus(renderBackend, controller.signal).then((nextStatus) => {
+        if (!cancelled) {
+          setBackendStatus(nextStatus);
+        }
+      });
+    };
+
+    runCheck(true);
+    const intervalId = globalThis.setInterval(runCheck, 8000);
+
+    return () => {
+      cancelled = true;
+      controller?.abort();
+      globalThis.clearInterval(intervalId);
+    };
+  }, [renderBackend, statusRefreshTick]);
 
   const handleExportJson = () => {
     downloadTextFile(`${preset.presetName}.json`, exportPresetJson(preset));
@@ -54,11 +88,22 @@ export function Workbench() {
         <div className={styles.toolbarActions}>
           <label className={styles.backendSelect}>
             <span>Backend</span>
-            <select value={renderBackend} onChange={(event) => setRenderBackend(event.target.value)}>
+            <select aria-label="Backend" value={renderBackend} onChange={(event) => setRenderBackend(event.target.value)}>
               <option value="a1111-deforum">Local A1111</option>
               <option value="huggingface-deforum">Hugging Face</option>
             </select>
           </label>
+          <div className={backendStatusClassName} aria-label="Backend server status" title={backendStatus.detail}>
+            <Server size={15} aria-hidden="true" />
+            <span className={styles.statusDot} aria-hidden="true" />
+            <div>
+              <strong>{backendStatus.label}</strong>
+              <span>{backendStatus.status === 'not-configured' ? 'not configured' : backendStatus.status}</span>
+            </div>
+            <button type="button" onClick={() => setStatusRefreshTick((tick) => tick + 1)} title="Refresh backend status" aria-label="Refresh backend status">
+              <RefreshCw size={14} aria-hidden="true" />
+            </button>
+          </div>
           <button type="button" className={styles.iconButton} title="Save preset draft">
             <Save size={17} aria-hidden="true" />
           </button>
@@ -66,7 +111,13 @@ export function Workbench() {
             <Play size={17} aria-hidden="true" />
             Render preview
           </button>
-          <button type="button" className={styles.secondaryButton} onClick={() => void queueDeforumRender()} disabled={renderBusy}>
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={() => void queueDeforumRender()}
+            disabled={realRenderDisabled}
+            title={realBackendUnavailable ? backendStatus.detail : undefined}
+          >
             <Play size={17} aria-hidden="true" />
             {renderBackend === 'huggingface-deforum' ? 'Render HF Deforum' : 'Render Deforum'}
           </button>

@@ -353,6 +353,16 @@ export async function getDeforumApiStatus() {
   return response.json();
 }
 
+async function readDeforumError(response) {
+  const text = await response.text();
+  try {
+    const json = JSON.parse(text);
+    return json.error || json.message || text;
+  } catch {
+    return text;
+  }
+}
+
 export async function queueA1111DeforumRender(preset, modelOverride) {
   const renderConfig = normaliseRenderConfig(preset, modelOverride);
   const settings = createDeforumRenderSettings(preset, modelOverride);
@@ -370,8 +380,8 @@ export async function queueA1111DeforumRender(preset, modelOverride) {
   });
 
   if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Deforum render failed: ${response.status} ${text}`);
+    const message = await readDeforumError(response);
+    throw new Error(`Deforum render failed: ${response.status} ${message}`);
   }
 
   const result = await response.json();

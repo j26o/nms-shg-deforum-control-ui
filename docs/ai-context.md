@@ -36,6 +36,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - `src/config/defaultPreset.js`: default exportable preset, all bundled source assets, and image-keyframe prompt node defaults.
 - `src/config/creativePromptGuides.js`: creative director prompt guide presets and negative guardrails for per-node application.
 - `src/services/startupHealth.js`: startup readiness checks for Vite, Local A1111 Deforum, and the Hugging Face proxy.
+- `src/services/backendStatus.js`: persistent toolbar backend status checks for Local A1111 and Hugging Face.
 - `src/components/workbench/StartupScreen.jsx`: boot/loading screen shown while startup checks run.
 - `src/components/workbench/PromptNodesPanel.jsx`: frame-keyed prompt JSON node editor.
 - `src/services/presetSchema.js`: export validation rules.

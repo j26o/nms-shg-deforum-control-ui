@@ -109,9 +109,11 @@ The dev server defaults to:
 http://127.0.0.1:5173
 ```
 
-When the browser opens, the UI first shows a startup screen while it checks the workbench server, Local A1111 Deforum, and the Hugging Face proxy. If the real backend is still offline, continue in UI-only mode and use `Render preview` until `pnpm dev:backend` or a manually started Automatic1111 instance is ready.
+When the browser opens, the UI first shows a startup screen while it checks the workbench server, Local A1111 Deforum, and the Hugging Face proxy. If the real backend is still offline, continue in UI-only mode and use `Render preview` until `pnpm dev:backend` or a manually started Automatic1111 instance is ready. The workbench toolbar keeps showing the selected backend status so you can see whether Local A1111 or Hugging Face is ready before pressing the real render button.
 
 Use `Render preview` for the fast mock path. Preview takes show an inline simulated visual preview in the Takes area, but do not write video files. Use `Render Deforum` after `pnpm dev:backend` reports the backend is ready, or after you manually start Automatic1111. The real render action posts to the local `/a1111-deforum/run` bridge so full prompt-node payloads do not hit browser URL-length limits.
+
+If `Render Deforum` reports that Local A1111 is not reachable, keep the UI open and start the backend in another terminal with `pnpm dev:backend`. The status chip should change from offline to ready once `/a1111-deforum/status` can reach `http://127.0.0.1:7860/deforum/api_version`.
 
 Frontend-only development and smoke tests can use:
 
