@@ -40,7 +40,7 @@ describe('preset schema contract', () => {
       renderDurationMs: 9000,
     });
 
-    expect(json.model.modelId).toBe('sd15-baseline');
+    expect(json.model.modelId).toBe('realvisxl-v5');
     expect(report).toContain('take-001');
     expect(report).toContain(preset.model.file);
   });

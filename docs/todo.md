@@ -23,6 +23,10 @@ Last updated: 2026-05-19
 - [x] Keep generated logs and output evidence inside project-local `outputs/` or `render-tools/stable-diffusion-webui/outputs/` folders.
 - [x] Add output artifact validation so real backend jobs fail when no video output is created.
 - [x] Set the initial creative-review preset to 8 source images, 8 seconds, 60 fps, and default creative-direction prompts plus source-asset-specific `--neg` guardrails on every node.
+- [x] Make RealVisXL V5.0 the default model profile for new presets.
+- [x] Move Local A1111 negative prompt guardrails into Deforum's native negative prompt field while keeping UI/Hugging Face prompt payloads visible with `--neg`.
+- [x] Run E2E/default RealVisXL eval and capture the current Local A1111 Deforum failure evidence.
+- [ ] Fix or work around the current Deforum looper/batch limit where 3+ guided images fail in `PREPARING` with `Invalid arguments`.
 - [ ] Investigate SDXL Base and SDXL Refiner Deforum compatibility with a smaller direct API repro and captured backend logs.
 - [ ] Update the real-backend Playwright path to control its Vite server environment and wait long enough for a completed render artifact.
 - [ ] Complete the approved optional Hugging Face Deforum backend plan in `docs/huggingface-deforum-backend-plan.md`.
@@ -38,12 +42,13 @@ Last updated: 2026-05-19
 - React/Vite UI builds and passes unit and Playwright smoke tests.
 - Automatic1111 WebUI runs locally at `http://127.0.0.1:7860`.
 - Deforum API responds at `/deforum/api_version`.
-- SD 1.5 baseline checkpoint is installed and loaded.
+- RealVisXL V5.0 is the default model profile for new workbench presets; SD 1.5 remains installed and selectable as the compatibility fallback.
 - SDXL Base, RealVisXL V5.0, Juggernaut XL v9, and SDXL Refiner checkpoints are installed and load-tested in Automatic1111.
 - A 4-frame `256x128` Deforum smoke render succeeded.
 - A 10-second `896x384` SD 1.5 review render succeeded with 3 source images and fixed seed.
 - Comparative runtime renders produced 10-second `896x384` MP4s for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9; SDXL Base and SDXL Refiner produced settings files but no frames or MP4.
 - A controlled end-to-end browser-to-Deforum RealVisXL run produced a 10-second `896x384` MP4, but the automated real-backend Playwright assertion timed out before the backend finished.
 - The optional real-backend Playwright path reaches the backend with `RUN_REAL_DEFORUM=1`, but its current assertion timeout is too short for the review-length RealVisXL render.
-- Local A1111 batch payloads now include Deforum `options_overrides`, legacy scale/prompt fields, and disabled ControlNet slot defaults to address `Invalid arguments` failures from stricter Deforum API builds.
+- Local A1111 batch payloads now include Deforum `options_overrides`, legacy scale/prompt fields, disabled ControlNet slot defaults, compact per-keyframe prompts, shared `animation_prompts_positive`, and native `animation_prompts_negative` values.
 - The initial workbench preset now starts with 8 source images over 8 seconds at 60 fps, producing 480 Deforum frames before any user edits, with source-asset-specific negative prompts applied to each node.
+- Latest E2E eval: the UI confirms RealVisXL as the default and normal tests pass, but the live Local A1111 Deforum render still fails before artifact creation. Direct repros show 2 guided images reach `GENERATING`, while 3+ guided images fail in `PREPARING` with `Invalid arguments`.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "0.1.0",
-  "defaultModelId": "sd15-baseline",
+  "defaultModelId": "realvisxl-v5",
   "modelDirectory": "D:\\nms-shg-deforum-control-ui-main\\render-tools\\stable-diffusion-webui\\models\\Stable-diffusion",
   "ui": {
     "controlGroup": "Generation",

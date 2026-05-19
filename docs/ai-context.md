@@ -7,7 +7,7 @@ This repository contains the whole local Deforum effect prototype for NMS-SHG Co
 
 ## Current Goal
 
-Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne tune Deforum-style image morph presets, render comparison passes locally, and review/export results without editing raw JSON by hand. The current UI default is image-reference led: the first 8 bundled 1680x720 source PNGs from `assets/images/source/**/*.png` are shown through frame-keyed Prompt JSON Nodes, with the approved creative direction and source-asset-specific negative prompt applied by default on every node, and exported as Deforum-compatible prompt schedules.
+Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne tune Deforum-style image morph presets, render comparison passes locally, and review/export results without editing raw JSON by hand. The current UI default is image-reference led: RealVisXL V5.0 is the default model profile, and the first 8 bundled 1680x720 source PNGs from `assets/images/source/**/*.png` are shown through frame-keyed Prompt JSON Nodes, with the approved creative direction and source-asset-specific negative prompt applied by default on every node, and exported as Deforum-compatible prompt schedules.
 
 ## Product Constraints
 
@@ -33,7 +33,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 ## Important Files
 
 - `docs/deforum-control-ui-prd-spec.md`: source PRD/spec.
-- `config/model-options.json`: canonical model profile matrix.
+- `config/model-options.json`: canonical model profile matrix; `realvisxl-v5` is the current default.
 - `src/config/defaultPreset.js`: default exportable 8-image, 8-second, 60 fps preset with creative-direction prompt, source-asset-specific negative prompt, and image-keyframe node defaults.
 - `src/config/creativePromptGuides.js`: legacy creative director prompt guide definitions retained for older saved presets and adapter compatibility.
 - `src/services/startupHealth.js`: startup readiness checks for Vite, Local A1111 Deforum, and the Hugging Face proxy.
@@ -96,6 +96,6 @@ RUN_REAL_DEFORUM=1 pnpm exec playwright test
 
 ## Current Known Gap
 
-The current verified real backend path is a local Automatic1111 Deforum preset translator backed by the in-repo ignored `render-tools/` runtime. Runtime comparison is proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9. The adapter now requires a non-empty MP4 artifact before reporting a real A1111 job as complete; settings-only Deforum outputs are treated as failed/incomplete renders. The local A1111 payload includes Deforum batch `options_overrides`, legacy prompt/scale fields, and disabled ControlNet defaults; the target Windows setup should install ControlNet even when the default prototype render keeps it disabled. SDXL Base/SDXL Refiner compatibility still needs investigation. The Hugging Face path now has a local proxy, frontend adapter, and deployed private Space smoke endpoint, but no remote real Deforum MP4 render has been verified yet. A full production-grade Deforum preset exporter is still future work.
+The current verified real backend path is a local Automatic1111 Deforum preset translator backed by the in-repo ignored `render-tools/` runtime. Runtime comparison is proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9, and RealVisXL V5.0 is now the default model profile for new presets. The adapter now requires a non-empty MP4 artifact before reporting a real A1111 job as complete; settings-only Deforum outputs are treated as failed/incomplete renders. The local A1111 payload includes Deforum batch `options_overrides`, legacy prompt/scale fields, disabled ControlNet defaults, compact per-keyframe prompts, shared creative direction in `animation_prompts_positive`, and native `animation_prompts_negative` values instead of repeating a long inline `--neg` block in every local Deforum scheduled prompt. The latest E2E eval shows the UI/default-model path works, but the live Deforum looper/batch path still rejects the default 8-image guided schedule with `Invalid arguments` during `PREPARING`; a 2-image guided repro reaches `GENERATING`, while 3+ guided images fail preparation in the current backend session. The target Windows setup should install ControlNet even when the default prototype render keeps it disabled. SDXL Base/SDXL Refiner compatibility still needs investigation. The Hugging Face path now has a local proxy, frontend adapter, and deployed private Space smoke endpoint, but no remote real Deforum MP4 render has been verified yet. A full production-grade Deforum preset exporter is still future work.
 
 Use `docs/todo.md` for the active next-step list.

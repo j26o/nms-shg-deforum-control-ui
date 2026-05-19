@@ -41,6 +41,55 @@ function createPromptSchedule(renderConfig) {
   return createDeforumPromptSchedule(renderConfig);
 }
 
+function splitInlineNegativePrompt(promptText) {
+  const marker = '--neg';
+  const markerIndex = promptText.indexOf(marker);
+  if (markerIndex < 0) {
+    return {
+      positive: promptText.trim(),
+      negative: '',
+    };
+  }
+
+  return {
+    positive: promptText.slice(0, markerIndex).trim(),
+    negative: promptText.slice(markerIndex + marker.length).trim(),
+  };
+}
+
+function uniquePromptTerms(promptText) {
+  return promptText
+    .split(',')
+    .map((term) => term.trim())
+    .filter(Boolean);
+}
+
+function stripSharedPositivePrompt(promptText, sharedPositive = '') {
+  const normalizedShared = sharedPositive.trim();
+  const normalizedPrompt = promptText.trim();
+  if (!normalizedShared || !normalizedPrompt.startsWith(normalizedShared)) {
+    return normalizedPrompt;
+  }
+
+  return normalizedPrompt.slice(normalizedShared.length).trim();
+}
+
+function createA1111PromptFields(promptSchedule, fallbackPositive = '', fallbackNegative = '') {
+  const negativeTerms = new Set(uniquePromptTerms(fallbackNegative));
+  const prompts = Object.fromEntries(
+    Object.entries(promptSchedule).map(([frame, promptText]) => {
+      const { positive, negative } = splitInlineNegativePrompt(promptText);
+      uniquePromptTerms(negative).forEach((term) => negativeTerms.add(term));
+      return [frame, stripSharedPositivePrompt(positive, fallbackPositive)];
+    }),
+  );
+
+  return {
+    prompts,
+    negativePrompt: Array.from(negativeTerms).join(', '),
+  };
+}
+
 function createInitImageSchedule(renderConfig) {
   const assetsById = new Map(getEnabledAssets(renderConfig).map((asset) => [asset.id, asset]));
   const segments = renderConfig.timeline.length > 0 ? renderConfig.timeline : [];
@@ -139,6 +188,7 @@ export function createDeforumRenderSettings(preset, modelOverride) {
   const previewSeconds = renderConfig.output?.previewDuration ?? renderConfig.target?.durationSeconds ?? 10;
   const maxFrames = Math.max(1, Math.round(previewSeconds * fps));
   const promptSchedule = createPromptSchedule(renderConfig);
+  const a1111PromptFields = createA1111PromptFields(promptSchedule, renderConfig.prompt?.positive ?? '', renderConfig.prompt?.negative ?? '');
   const initImages = createInitImageSchedule(renderConfig);
   const hasInitImages = Object.keys(initImages).length > 0;
   const useDepthWarping = (renderConfig.motion?.depthWarpStrength ?? 0) > 0;
@@ -177,11 +227,11 @@ export function createDeforumRenderSettings(preset, modelOverride) {
     init_image: hasInitImages ? Object.values(initImages)[0] : '',
     use_mask: false,
     use_alpha_as_mask: false,
-    prompts: promptSchedule,
+    prompts: a1111PromptFields.prompts,
     positive_prompts: renderConfig.prompt?.positive ?? '',
-    negative_prompts: renderConfig.prompt?.negative ?? '',
+    negative_prompts: a1111PromptFields.negativePrompt,
     animation_prompts_positive: renderConfig.prompt?.positive ?? '',
-    animation_prompts_negative: renderConfig.prompt?.negative ?? '',
+    animation_prompts_negative: a1111PromptFields.negativePrompt,
     animation_mode: useDepthWarping ? '3D' : '2D',
     border: 'replicate',
     angle: formatNumberSchedule(rotation),

@@ -135,3 +135,15 @@ Reason: The prototype needs a cloud backend integration path without changing th
 Decision: Submit local A1111 renders to `/deforum_api/batches` as `deforum_settings` plus `options_overrides`, include legacy-compatible fields such as `scale`, `animation_prompts_positive`, and `animation_prompts_negative`, and send disabled ControlNet defaults for slots 1-5. The Windows setup now installs ControlNet even though the prototype keeps it disabled by default.
 
 Reason: Recent Deforum API builds can reject batch jobs with `Invalid arguments` when the payload shape does not match their expected argument set. Installing ControlNet and sending a conservative disabled ControlNet shape makes the local runtime closer to standard Automatic1111 Deforum installs while preserving the prototype's image-reference workflow.
+
+## 2026-05-19: Default New Presets To RealVisXL
+
+Decision: Set `realvisxl-v5` as the default model profile in `config/model-options.json`, so new workbench presets and first render attempts use `RealVisXL_V5.0_fp16.safetensors`.
+
+Reason: Runtime comparison and end-to-end evidence showed RealVisXL V5.0 as a stronger visual candidate than the SD 1.5 compatibility baseline for the Future Wall skyline/maritime direction. SD 1.5 remains selectable for fallback and fast compatibility checks.
+
+## 2026-05-19: Send Local Deforum Negatives Through Native Fields
+
+Decision: Keep the UI prompt payload and Hugging Face contract with visible `--neg` prompt text, but translate Local A1111 render settings into compact per-keyframe Deforum `prompts`, shared creative direction in `animation_prompts_positive`, and a merged `animation_prompts_negative` field.
+
+Reason: The latest 480-frame, 60 fps local batch failed during Deforum argument preparation with `Invalid arguments` and prior prompt JSON parse errors. Sending a shorter prompt schedule and putting shared positive/negative guidance in Deforum's native fields avoids duplicating long text across every keyframe while preserving the same effective guidance for local renders.

@@ -25,9 +25,9 @@ describe('a1111 deforum adapter', () => {
     expect(settings.use_depth_warping).toBe(true);
     expect(settings.diffusion_cadence).toBe(2);
     expect(Object.keys(settings.prompts)).toHaveLength(8);
-    expect(settings.prompts['0']).toContain('visionary future Singapore cityscape');
+    expect(settings.prompts['0']).not.toContain('visionary future Singapore cityscape');
     expect(settings.prompts['0']).toContain('image-reference source for this keyframe');
-    expect(settings.prompts['0']).toContain('--neg');
+    expect(settings.prompts['0']).not.toContain('--neg');
     expect(settings.animation_prompts_positive).toContain('Extreme long-distance maritime view');
     expect(settings.animation_prompts_negative).toContain('strong vanishing point');
     expect(settings.controlnet_enabled).toBe(false);
@@ -68,9 +68,11 @@ describe('a1111 deforum adapter', () => {
     expect(init.method).toBe('POST');
     expect(init.headers).toEqual({ 'content-type': 'application/json' });
     expect(body.allowedParams).toContain('init_images');
-    expect(settings.prompts['0']).toContain('--neg');
-    expect(settings.prompts['0']).toContain('visionary future Singapore cityscape');
+    expect(settings.prompts['0']).not.toContain('--neg');
+    expect(settings.prompts['0']).not.toContain('visionary future Singapore cityscape');
     expect(settings.prompts['0']).toContain('image-reference source for this keyframe');
+    expect(settings.animation_prompts_positive).toContain('visionary future Singapore cityscape');
+    expect(settings.animation_prompts_negative).toContain('strong vanishing point');
     expect(settings.init_images).toMatch(/assets[\\/]images[\\/]source[\\/]/);
     expect(job.status).toBe('complete');
     expect(job.outputPath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid');
@@ -83,7 +85,7 @@ describe('a1111 deforum adapter', () => {
     expect(Object.keys(job.renderSettings.prompts)).toHaveLength(8);
   });
 
-  it('preserves inline --neg prompt nodes without duplicating negative params', () => {
+  it('moves inline --neg prompt nodes into the Deforum negative field', () => {
     const preset = {
       ...createDefaultPreset(),
       timeline: [
@@ -101,8 +103,10 @@ describe('a1111 deforum adapter', () => {
     const settings = createDeforumRenderSettings(preset);
 
     expect(settings.prompts).toEqual({
-      60: 'a beautiful coconut --neg photo, realistic',
+      60: 'a beautiful coconut',
     });
+    expect(settings.animation_prompts_negative).toContain('photo');
+    expect(settings.animation_prompts_negative).toContain('realistic');
   });
 
   it('resolves creative prompt guides into Deforum prompt schedules', () => {
@@ -122,6 +126,8 @@ describe('a1111 deforum adapter', () => {
     const settings = createDeforumRenderSettings(preset);
 
     expect(settings.prompts['0']).toContain('visionary future Singapore cityscape');
-    expect(settings.prompts['0']).toContain('--neg hard frame');
+    expect(settings.prompts['0']).not.toContain('--neg');
+    expect(settings.animation_prompts_positive).toContain('visionary future Singapore cityscape');
+    expect(settings.animation_prompts_negative).toContain('hard frame');
   });
 });
