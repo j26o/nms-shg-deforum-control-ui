@@ -111,3 +111,9 @@ Reason: The project-local Automatic1111 runtime contains Gradio frontend assets 
 Decision: The centre preview panel is the primary rendered-output surface. Real backend MP4 artifacts are exposed through `/render-artifacts/*`, played in the centre panel, and the fullscreen control opens the playable artifact or fullscreen preview frame.
 
 Reason: Showing only source images in the main preview while burying real output paths in Takes made the prototype feel like the render had no visible result. Creative review needs a stable 7:3 output viewport first, with file paths as supporting metadata.
+
+## 2026-05-19: Require MP4 Artifact Before A1111 Completion
+
+Decision: Local A1111 Deforum jobs are only reported as complete after the bridge finds a non-empty MP4 in the returned output folder. Output folders containing only Deforum settings txt files now fail artifact validation.
+
+Reason: Deforum can create the output folder and save `*_settings.txt` before any frame or video is generated. Treating that folder as completion made failed backend jobs look successful in the UI.

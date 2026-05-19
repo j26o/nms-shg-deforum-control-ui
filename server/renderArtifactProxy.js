@@ -3,6 +3,7 @@ import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.mov']);
+const FRAME_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp']);
 
 function createJsonResponse(response, statusCode, payload) {
   response.statusCode = statusCode;
@@ -113,6 +114,42 @@ export async function findLatestVideoArtifact(outputDirectory, projectRoot = get
   );
 
   return candidates.filter((candidate) => candidate.size > 0).sort((left, right) => right.modifiedMs - left.modifiedMs)[0] ?? null;
+}
+
+export async function inspectRenderOutputDirectory(outputDirectory, projectRoot = getProjectRoot()) {
+  if (!outputDirectory) {
+    return {
+      exists: false,
+      videoCount: 0,
+      frameCount: 0,
+      settingsCount: 0,
+      latestVideo: null,
+    };
+  }
+
+  const safeDirectory = assertSafeArtifactPath(outputDirectory, projectRoot);
+  const directoryStat = await stat(safeDirectory).catch(() => null);
+  if (!directoryStat?.isDirectory()) {
+    return {
+      exists: false,
+      videoCount: 0,
+      frameCount: 0,
+      settingsCount: 0,
+      latestVideo: null,
+    };
+  }
+
+  const entries = await readdir(safeDirectory, { withFileTypes: true });
+  const files = entries.filter((entry) => entry.isFile());
+  const latestVideo = await findLatestVideoArtifact(safeDirectory, projectRoot);
+
+  return {
+    exists: true,
+    videoCount: files.filter((entry) => VIDEO_EXTENSIONS.has(path.extname(entry.name).toLowerCase())).length,
+    frameCount: files.filter((entry) => FRAME_EXTENSIONS.has(path.extname(entry.name).toLowerCase())).length,
+    settingsCount: files.filter((entry) => entry.name.toLowerCase().endsWith('_settings.txt')).length,
+    latestVideo,
+  };
 }
 
 export async function handleRenderArtifactRequest(request, response, projectRoot = getProjectRoot()) {

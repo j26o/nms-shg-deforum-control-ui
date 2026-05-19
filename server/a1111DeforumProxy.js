@@ -1,4 +1,4 @@
-import { createRenderArtifactUrl, findLatestVideoArtifact } from './renderArtifactProxy.js';
+import { createRenderArtifactUrl, inspectRenderOutputDirectory } from './renderArtifactProxy.js';
 
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const DEFAULT_POLL_INTERVAL_MS = 2000;
@@ -61,15 +61,7 @@ function sleep(ms) {
 async function readUpstreamJson(response) {
   const text = await response.text();
   try {
-    const result = JSON.parse(text);
-    const outdir = result.outdir || result.output_path || '';
-    const videoArtifact = await findLatestVideoArtifact(outdir).catch(() => null);
-    return {
-      ...result,
-      artifactPath: videoArtifact?.filePath ?? '',
-      artifactUrl: videoArtifact ? createRenderArtifactUrl(videoArtifact.filePath) : '',
-      artifactFileName: videoArtifact?.fileName ?? '',
-    };
+    return JSON.parse(text);
   } catch {
     return { raw: text };
   }
@@ -81,6 +73,40 @@ function isCompleteStatus(value) {
 
 function isFailedStatus(value) {
   return FAILED_STATUSES.has(String(value ?? '').toLowerCase());
+}
+
+async function inspectA1111Output(outdir) {
+  const inspection = await inspectRenderOutputDirectory(outdir).catch(() => ({
+    exists: false,
+    videoCount: 0,
+    frameCount: 0,
+    settingsCount: 0,
+    latestVideo: null,
+  }));
+  const videoArtifact = inspection.latestVideo;
+
+  return {
+    ...inspection,
+    artifactPath: videoArtifact?.filePath ?? '',
+    artifactUrl: videoArtifact ? createRenderArtifactUrl(videoArtifact.filePath) : '',
+    artifactFileName: videoArtifact?.fileName ?? '',
+  };
+}
+
+function throwMissingArtifactError(outdir, inspection) {
+  const details = [
+    `No MP4 artifact was created in ${outdir || '<unknown output folder>'}.`,
+    `Found ${inspection.frameCount} frame image${inspection.frameCount === 1 ? '' : 's'} and ${inspection.settingsCount} settings file${inspection.settingsCount === 1 ? '' : 's'}.`,
+  ];
+
+  if (inspection.settingsCount > 0 && inspection.frameCount === 0) {
+    details.push('Deforum saved the settings txt but did not generate frames. Check the Automatic1111 terminal for the backend error.');
+  }
+
+  const error = new Error(details.join(' '));
+  error.status = 502;
+  error.stage = 'artifact-validation';
+  throw error;
 }
 
 async function submitFullDeforumApi(settings, env) {
@@ -119,8 +145,24 @@ async function pollFullDeforumJob(jobId, env) {
       throw new Error(`Deforum job status failed: ${response.status} ${message}`);
     }
 
-    if (job.outdir || job.output_path || isCompleteStatus(job.status) || isCompleteStatus(job.phase)) {
-      return job;
+    const outdir = job.outdir || job.output_path || '';
+    if (outdir) {
+      const inspection = await inspectA1111Output(outdir);
+      if (inspection.artifactUrl) {
+        return {
+          ...job,
+          outdir,
+          artifactPath: inspection.artifactPath,
+          artifactUrl: inspection.artifactUrl,
+          artifactFileName: inspection.artifactFileName,
+          artifactInspection: inspection,
+        };
+      }
+    }
+
+    if (isCompleteStatus(job.status) || isCompleteStatus(job.phase)) {
+      const inspection = await inspectA1111Output(outdir);
+      throwMissingArtifactError(outdir, inspection);
     }
 
     if (isFailedStatus(job.status) || isFailedStatus(job.phase)) {
@@ -155,11 +197,25 @@ async function submitSimpleDeforumApi(payload, env) {
     throw new Error(`Deforum render failed: ${response.status} ${text}`);
   }
 
+  let result;
   try {
-    return JSON.parse(text);
+    result = JSON.parse(text);
   } catch {
     return { raw: text };
   }
+
+  const outdir = result.outdir || result.output_path || '';
+  const inspection = await inspectA1111Output(outdir);
+  if (!inspection.artifactUrl) {
+    throwMissingArtifactError(outdir, inspection);
+  }
+  return {
+    ...result,
+    artifactPath: inspection.artifactPath,
+    artifactUrl: inspection.artifactUrl,
+    artifactFileName: inspection.artifactFileName,
+    artifactInspection: inspection,
+  };
 }
 
 export async function checkA1111DeforumStatus(env = process.env) {
@@ -226,17 +282,34 @@ export async function submitA1111DeforumRun(payload, env = process.env) {
     const batch = await submitFullDeforumApi(settings, env);
     const jobId = batch.job_ids?.[0] ?? batch.job_id;
     if (!jobId) {
-      return { ...batch, api: 'deforum-api' };
+      const outdir = batch.outdir || batch.output_path || '';
+      const inspection = await inspectA1111Output(outdir);
+      if (!inspection.artifactUrl) {
+        throwMissingArtifactError(outdir, inspection);
+      }
+      return {
+        ...batch,
+        outdir,
+        artifactPath: inspection.artifactPath,
+        artifactUrl: inspection.artifactUrl,
+        artifactFileName: inspection.artifactFileName,
+        artifactInspection: inspection,
+        api: 'deforum-api',
+      };
     }
     const job = await pollFullDeforumJob(jobId, env);
     const outdir = job.outdir || job.output_path || batch.outdir || '';
-    const videoArtifact = await findLatestVideoArtifact(outdir).catch(() => null);
+    const inspection = job.artifactInspection ?? (await inspectA1111Output(outdir));
+    if (!inspection.artifactUrl) {
+      throwMissingArtifactError(outdir, inspection);
+    }
     return {
       ...job,
       outdir,
-      artifactPath: videoArtifact?.filePath ?? '',
-      artifactUrl: videoArtifact ? createRenderArtifactUrl(videoArtifact.filePath) : '',
-      artifactFileName: videoArtifact?.fileName ?? '',
+      artifactPath: inspection.artifactPath,
+      artifactUrl: inspection.artifactUrl,
+      artifactFileName: inspection.artifactFileName,
+      artifactInspection: inspection,
       api: 'deforum-api',
       batchId: batch.batch_id,
       jobId,
@@ -287,7 +360,7 @@ export async function handleA1111DeforumProxyRequest(request, response, env = pr
       : error instanceof Error
         ? error.message
         : String(error);
-    createJsonResponse(response, isFetchConnectionError(error) ? 503 : 500, {
+    createJsonResponse(response, isFetchConnectionError(error) ? 503 : error?.status || 500, {
       error: message,
       backend: 'a1111-deforum',
       baseUrl,

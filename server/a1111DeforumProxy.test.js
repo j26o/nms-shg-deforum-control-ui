@@ -1,9 +1,14 @@
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { checkA1111DeforumStatus, submitA1111DeforumRun } from './a1111DeforumProxy.js';
+
+const testOutputRoot = path.join(process.cwd(), 'outputs', '.a1111-proxy-test');
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  return rm(testOutputRoot, { recursive: true, force: true });
 });
 
 describe('a1111 deforum body proxy', () => {
@@ -42,6 +47,10 @@ describe('a1111 deforum body proxy', () => {
   });
 
   it('submits body settings through the Deforum batch API and polls for output', async () => {
+    const outputDir = path.join(testOutputRoot, 'full-run');
+    await mkdir(outputDir, { recursive: true });
+    await writeFile(path.join(outputDir, 'render.mp4'), 'mp4-data');
+
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce({
@@ -52,7 +61,7 @@ describe('a1111 deforum body proxy', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        text: async () => JSON.stringify({ id: 'job-001', status: 'SUCCEEDED', outdir: 'D:/outputs/run-001' }),
+        text: async () => JSON.stringify({ id: 'job-001', status: 'SUCCEEDED', outdir: outputDir }),
       });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -71,7 +80,9 @@ describe('a1111 deforum body proxy', () => {
     const [, statusInit] = fetchMock.mock.calls[1];
     const submitBody = JSON.parse(submitInit.body);
 
-    expect(result.outdir).toBe('D:/outputs/run-001');
+    expect(result.outdir).toBe(outputDir);
+    expect(result.artifactUrl).toContain('/render-artifacts/file?path=');
+    expect(result.artifactFileName).toBe('render.mp4');
     expect(result.api).toBe('deforum-api');
     expect(result.jobId).toBe('job-001');
     expect(submitUrl).toBe('http://127.0.0.1:7860/deforum_api/batches');
@@ -81,7 +92,41 @@ describe('a1111 deforum body proxy', () => {
     expect(statusInit).toBeUndefined();
   });
 
+  it('fails completed jobs when Deforum only writes settings files', async () => {
+    const outputDir = path.join(testOutputRoot, 'settings-only-run');
+    await mkdir(outputDir, { recursive: true });
+    await writeFile(path.join(outputDir, '20260519143000_settings.txt'), 'settings');
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        text: async () => JSON.stringify({ batch_id: 'batch-002', job_ids: ['job-002'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ id: 'job-002', status: 'SUCCEEDED', outdir: outputDir }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      submitA1111DeforumRun(
+        {
+          settings: { prompts: { 0: 'future city' } },
+          allowedParams: ['prompts'],
+        },
+        { A1111_BASE_URL: 'http://127.0.0.1:7860', A1111_DEFORUM_POLL_INTERVAL_MS: '0', A1111_DEFORUM_MAX_POLLS: '1' },
+      ),
+    ).rejects.toThrow(/settings txt but did not generate frames/);
+  });
+
   it('falls back to the query-only simple API when the batch API is missing', async () => {
+    const outputDir = path.join(testOutputRoot, 'simple-run');
+    await mkdir(outputDir, { recursive: true });
+    await writeFile(path.join(outputDir, 'simple.mp4'), 'mp4-data');
+
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce({
@@ -93,7 +138,7 @@ describe('a1111 deforum body proxy', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
-        text: async () => JSON.stringify({ outdir: 'D:/outputs/simple-run-001' }),
+        text: async () => JSON.stringify({ outdir: outputDir }),
       });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -112,7 +157,8 @@ describe('a1111 deforum body proxy', () => {
     const upstreamUrl = new URL(simpleUrl);
     const settings = JSON.parse(upstreamUrl.searchParams.get('settings_json'));
 
-    expect(result.outdir).toBe('D:/outputs/simple-run-001');
+    expect(result.outdir).toBe(outputDir);
+    expect(result.artifactFileName).toBe('simple.mp4');
     expect(simpleInit).toEqual({ method: 'POST' });
     expect(upstreamUrl.href).toContain('http://127.0.0.1:7860/deforum/run?');
     expect(upstreamUrl.searchParams.get('allowed_params')).toBe('prompts;init_images');

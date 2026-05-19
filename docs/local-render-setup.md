@@ -141,6 +141,8 @@ When the backend writes an MP4 under the project output folders, the app exposes
 
 The centre preview panel uses that URL to play the rendered video. If no playable MP4 is found, the panel still shows the output folder or pattern returned by the backend so the render can be inspected manually.
 
+If the output folder contains only `*_settings.txt` files, Deforum accepted and saved the settings but did not generate frame images or an MP4. The UI treats this as a failed real render. Check the Automatic1111 terminal for the actual backend error; common causes are incompatible checkpoint/settings combinations, a failed Deforum extension step, missing backend dependencies, or a render job that stopped before frame generation.
+
 It also polls the backend status bridge:
 
 ```text

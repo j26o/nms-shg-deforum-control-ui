@@ -95,6 +95,6 @@ RUN_REAL_DEFORUM=1 pnpm exec playwright test
 
 ## Current Known Gap
 
-The current verified real backend path is a local Automatic1111 Deforum preset translator backed by the in-repo ignored `render-tools/` runtime. Runtime comparison is proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9, but the adapter still needs output artifact validation and SDXL Base/SDXL Refiner compatibility investigation. The Hugging Face path now has a local proxy and frontend adapter, but no remote endpoint/Space runtime has been verified yet. A full production-grade Deforum preset exporter is still future work.
+The current verified real backend path is a local Automatic1111 Deforum preset translator backed by the in-repo ignored `render-tools/` runtime. Runtime comparison is proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9. The adapter now requires a non-empty MP4 artifact before reporting a real A1111 job as complete; settings-only Deforum outputs are treated as failed/incomplete renders. SDXL Base/SDXL Refiner compatibility still needs investigation. The Hugging Face path now has a local proxy and frontend adapter, but no remote endpoint/Space runtime has been verified yet. A full production-grade Deforum preset exporter is still future work.
 
 Use `docs/todo.md` for the active next-step list.

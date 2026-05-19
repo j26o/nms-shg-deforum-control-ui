@@ -21,7 +21,7 @@ Last updated: 2026-05-18
 - [x] Add tests for adapter setting translation without requiring the live GPU backend.
 - [x] Move the local `render-tools/` runtime into the project root and update path/context docs.
 - [x] Keep generated logs and output evidence inside project-local `outputs/` or `render-tools/stable-diffusion-webui/outputs/` folders.
-- [ ] Add output artifact validation so real backend jobs fail when no video or frame output is created.
+- [x] Add output artifact validation so real backend jobs fail when no video output is created.
 - [ ] Investigate SDXL Base and SDXL Refiner Deforum compatibility with a smaller direct API repro and captured backend logs.
 - [ ] Update the real-backend Playwright path to control its Vite server environment and wait long enough for a completed render artifact.
 - [ ] Complete the approved optional Hugging Face Deforum backend plan in `docs/huggingface-deforum-backend-plan.md`.
