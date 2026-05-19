@@ -7,6 +7,29 @@ import { queueMockRender, createTakeFromJob } from '../services/mockRenderAdapte
 
 const defaultPreset = createDefaultPreset();
 
+function createAssetId() {
+  return `image-custom-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
+function createTimelineSegmentForAsset(asset, timeline, prompt) {
+  const last = timeline[timeline.length - 1];
+  const fromFrame = last ? last.toFrame + 1 : 0;
+  return {
+    id: `segment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    fromFrame,
+    toFrame: fromFrame + 119,
+    sourceImageId: asset.id,
+    prompt:
+      prompt ??
+      [
+        `Use ${asset.label} as the primary visual reference frame.`,
+        'Preserve the pre-rendered image composition, atmosphere, silhouettes, and panoramic edges.',
+      ].join(' '),
+    negativePrompt: 'low detail, text artifacts, flicker, broken geometry, hard crop',
+    transitionMode: 'image-reference-morph',
+  };
+}
+
 function updateNested(object, group, key, value) {
   return {
     ...object,
@@ -84,6 +107,42 @@ export const usePresetStore = create((set, get) => ({
         assets: state.preset.assets.map((asset) => (asset.id === assetId ? { ...asset, ...patch } : asset)),
       },
     })),
+  addAsset: (assetDraft) =>
+    set((state) => {
+      const asset = {
+        id: createAssetId(),
+        label: assetDraft.label || `Source ${String(state.preset.assets.length + 1).padStart(2, '0')} / custom`,
+        path: assetDraft.path,
+        previewUrl: assetDraft.previewUrl || assetDraft.path,
+        enabled: true,
+        focalPoint: assetDraft.focalPoint ?? [0.5, 0.45],
+        cropMode: assetDraft.cropMode || 'contain-7x3',
+        width: Number(assetDraft.width) || state.preset.target.sourceResolution[0],
+        height: Number(assetDraft.height) || state.preset.target.sourceResolution[1],
+      };
+      const segment = createTimelineSegmentForAsset(asset, state.preset.timeline, state.preset.prompt?.positive);
+      return {
+        preset: {
+          ...state.preset,
+          assets: [...state.preset.assets, asset],
+          timeline: [...state.preset.timeline, segment],
+        },
+        selectedAssetId: asset.id,
+        selectedSegmentId: segment.id,
+      };
+    }),
+  removeAsset: (assetId) =>
+    set((state) => {
+      const assets = state.preset.assets.filter((asset) => asset.id !== assetId);
+      const timeline = state.preset.timeline.filter((segment) => segment.sourceImageId !== assetId);
+      const selectedAssetId = state.selectedAssetId === assetId ? assets[0]?.id : state.selectedAssetId;
+      const selectedSegmentId = timeline.some((segment) => segment.id === state.selectedSegmentId) ? state.selectedSegmentId : timeline[0]?.id;
+      return {
+        preset: { ...state.preset, assets, timeline },
+        selectedAssetId,
+        selectedSegmentId,
+      };
+    }),
   moveAsset: (assetId, direction) =>
     set((state) => {
       const assets = [...state.preset.assets];

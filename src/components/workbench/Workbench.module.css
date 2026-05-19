@@ -1,5 +1,6 @@
 .shell {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: var(--color-bg);
   color: var(--color-text);
   display: grid;
@@ -21,8 +22,10 @@
 .toolbarActions,
 .panelHeader,
 .panelTitle,
+.panelTitleActions,
 .segmentActions,
-.assetActions {
+.assetActions,
+.assetAddActions {
   display: flex;
   align-items: center;
 }
@@ -37,7 +40,11 @@
 .controlField input,
 .controlField select,
 .controlField textarea,
+.assetAddPanel input,
+.assetAddPanel select,
 .assetMeta input,
+.assetEditor input,
+.assetEditor select,
 .segmentEditor input,
 .segmentEditor select,
 .segmentEditor textarea,
@@ -58,7 +65,11 @@
 .controlField input:focus,
 .controlField select:focus,
 .controlField textarea:focus,
+.assetAddPanel input:focus,
+.assetAddPanel select:focus,
 .assetMeta input:focus,
+.assetEditor input:focus,
+.assetEditor select:focus,
 .segmentEditor input:focus,
 .segmentEditor select:focus,
 .segmentEditor textarea:focus {
@@ -86,6 +97,7 @@
 .primaryButton,
 .secondaryButton,
 .smallCommand,
+.filePickerButton,
 .assetActions button,
 .segmentActions button,
 .takeCard button,
@@ -136,12 +148,22 @@
 .assetRail,
 .controlsPanel {
   min-height: 0;
-  overflow: auto;
   background: var(--color-rail);
   border-right: 1px solid var(--color-border);
 }
 
+.assetRail {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.assetRailCollapsed {
+  grid-template-rows: auto auto;
+}
+
 .controlsPanel {
+  overflow: auto;
   border-right: 0;
   border-left: 1px solid var(--color-border);
   padding: var(--space-3);
@@ -159,6 +181,18 @@
   justify-content: space-between;
   padding: var(--space-3);
   border-bottom: 1px solid var(--color-border);
+  gap: var(--space-2);
+}
+
+.panelTitle > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.panelTitleActions {
+  gap: var(--space-1);
+  flex: 0 0 auto;
 }
 
 .panelTitle h2,
@@ -185,8 +219,11 @@
 
 .assetList {
   display: grid;
+  align-content: start;
   gap: var(--space-2);
   padding: var(--space-3);
+  overflow: auto;
+  min-height: 0;
 }
 
 .assetCard,
@@ -225,6 +262,74 @@
   min-width: 0;
   display: grid;
   gap: var(--space-1);
+}
+
+.assetEditor,
+.assetAddPanel {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.assetEditor {
+  grid-column: 1 / -1;
+  margin-top: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.assetAddPanel {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  background: #11151a;
+}
+
+.assetEditor label,
+.assetAddPanel label {
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.assetSizeFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.assetAddActions {
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.filePickerButton {
+  position: relative;
+  min-height: 30px;
+  overflow: hidden;
+}
+
+.filePickerButton input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.collapsedSourceSummary {
+  width: calc(100% - var(--space-6));
+  min-width: 0;
+  margin: var(--space-3);
+  padding: var(--space-3);
+  color: var(--color-text-muted);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
 }
 
 .assetActions {
