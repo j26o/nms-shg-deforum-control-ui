@@ -86,6 +86,8 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await expect(page.getByLabel(/Render progress|Queue progress/).first()).toBeVisible();
   await expect(page.getByRole('status')).toContainText(/Preview render complete/);
   await expect(page.getByText('complete').first()).toBeVisible();
+  await expect(page.getByText(/simulated preview only/i).first()).toBeVisible();
+  await expect(page.getByText(/outputs\/previews\/.*\.webm/)).toHaveCount(0);
   await expect(page.getByText('1 saved')).toBeVisible();
   await expect(page.getByRole('button', { name: /Render Deforum/i })).toBeVisible();
 

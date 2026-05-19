@@ -131,7 +131,7 @@ export function Workbench() {
                 <li key={job.id}>
                   <strong>{job.renderConfig.model.modelId ?? job.renderConfig.model.id}</strong>
                   <span>{job.status}</span>
-                  <small>{job.outputPath}</small>
+                  <small>{job.outputPath || 'Simulated preview only'}</small>
                 </li>
               ))}
             </ol>
@@ -157,7 +157,11 @@ export function Workbench() {
                       {take.frameCount ? `${take.frameCount} frames` : 'frames pending'} / {take.fps ? `${take.fps} fps` : 'fps pending'} /{' '}
                       {take.renderDurationMs}ms
                     </span>
-                    <small>{take.outputPath}</small>
+                    {take.hasFileArtifact ? (
+                      <small>{take.outputPath || take.artifactUrl}</small>
+                    ) : (
+                      <small>{take.previewLabel ? `${take.previewLabel} / simulated preview only` : 'Simulated preview only - no file written'}</small>
+                    )}
                     {take.settingsFilePath ? <small>{take.settingsFilePath}</small> : null}
                     {take.outputSettingsPattern ? <small>{take.outputSettingsPattern}</small> : null}
                   </div>

@@ -9,12 +9,13 @@ export function queueMockRender(preset, modelOverride) {
     ...job,
     status: 'complete',
     completedAt: new Date().toISOString(),
-    outputPath: `${preset.output.outputFolder}/${preset.presetName}-${modelId}-${seed}.webm`,
+    outputPath: '',
+    previewLabel: `${preset.presetName}-${modelId}-${seed}`,
     logs: [
       ...job.logs,
       `Using model ${modelId}.`,
       `Preview ${preset.target.previewResolution.join('x')} at ${preset.target.fps} fps.`,
-      'Mock renderer produced deterministic placeholder metadata.',
+      'Mock renderer produced simulated preview metadata; no media file was written.',
     ],
   };
 }
@@ -40,6 +41,8 @@ export function createTakeFromJob(job) {
     renderDurationMs: job.estimateSeconds * 1000,
     outputPath: job.outputPath,
     artifactUrl: job.artifactUrl ?? '',
+    previewLabel: job.previewLabel ?? '',
+    hasFileArtifact: Boolean(job.outputPath || job.artifactUrl),
     remoteJobId: job.remoteJobId ?? '',
     renderSettings,
     logs: job.logs,

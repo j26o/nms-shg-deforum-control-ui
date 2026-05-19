@@ -87,3 +87,9 @@ Reason: The reviewer needs visible feedback while local services are booting, bu
 Decision: Route `Render Deforum` through the local Vite bridge at `/a1111-deforum/run`. The browser sends reviewed settings in a JSON body; the bridge prefers the Deforum batch API at `/deforum_api/batches` and polls the job status. It only falls back to the older query-only simple API when the batch API is missing.
 
 Reason: The 24-image default prompt-node payload is too large for browser URL/query transport and can trigger HTTP 431 before the render reaches Deforum. A body-based local bridge keeps the full image-keyframe payload intact while preserving the existing A1111 backend.
+
+## 2026-05-19: Label Mock Preview Takes As Simulated
+
+Decision: `Render preview` creates a saved simulated take for UI review, but does not write a media file or display a fake output path. Only real backend renders should display output file paths or artifact URLs.
+
+Reason: Showing a placeholder `outputs/previews/*.webm` path made the mock preview look like a real generated file. The prototype should keep fast preview metadata useful without implying a render artifact exists.
