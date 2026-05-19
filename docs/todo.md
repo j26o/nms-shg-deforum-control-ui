@@ -16,7 +16,7 @@ Last updated: 2026-05-18
 - [x] Add an eval report for the first review-sized render under `docs/evals/`.
 - [ ] Decide whether to keep the no-ControlNet Deforum API patches or install ControlNet for the backend path.
 - [x] Download and test the next comparison model after SD 1.5, starting with `sdxl-base`.
-- [x] Select one runtime comparison model at a time through the workbench model radio control.
+- [x] Select one runtime comparison model at a time through the single Generation model profile dropdown.
 - [x] Run comparative runtime renders for installed model profiles and record eval evidence.
 - [x] Add tests for adapter setting translation without requiring the live GPU backend.
 - [x] Move the local `render-tools/` runtime into the project root and update path/context docs.

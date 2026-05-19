@@ -57,7 +57,6 @@ export const usePresetStore = create((set, get) => ({
   renderProgress: 0,
   renderMessage: '',
   renderBackend: 'a1111-deforum',
-  compareModelIds: [defaultPreset.model.modelId],
 
   updatePresetName: (presetName) => set((state) => ({ preset: { ...state.preset, presetName } })),
   updateGroupValue: (group, key, value) => set((state) => ({ preset: updateNested(state.preset, group, key, value) })),
@@ -81,34 +80,8 @@ export const usePresetStore = create((set, get) => ({
             risk: model.risk,
           },
         },
-        compareModelIds: state.compareModelIds.includes(modelId) ? state.compareModelIds : [modelId],
       };
     }),
-  setRuntimeModelProfile: (modelId) =>
-    set((state) => {
-      const model = getModelById(modelId);
-      return {
-        preset: {
-          ...state.preset,
-          model: {
-            modelId: model.id,
-            label: model.label,
-            repository: model.repository,
-            file: model.file,
-            license: model.license,
-            status: model.status,
-            risk: model.risk,
-          },
-        },
-        compareModelIds: [modelId],
-      };
-    }),
-  toggleCompareModel: (modelId) =>
-    set((state) => ({
-      compareModelIds: state.compareModelIds.includes(modelId)
-        ? state.compareModelIds.filter((id) => id !== modelId)
-        : [...state.compareModelIds, modelId],
-    })),
   updateAsset: (assetId, patch) =>
     set((state) => ({
       preset: {
@@ -240,8 +213,7 @@ export const usePresetStore = create((set, get) => ({
       set({ renderProgress: 45, renderMessage: 'Building image-keyframe prompt payload.' });
       await wait(180);
       const state = get();
-      const selectedModels = state.compareModelIds.length ? state.compareModelIds : [state.preset.model.modelId];
-      const jobs = selectedModels.map((modelId) => queueMockRender(state.preset, getModelById(modelId)));
+      const jobs = [queueMockRender(state.preset, getModelById(state.preset.model.modelId))];
       const takes = jobs.map(createTakeFromJob);
       set((current) => ({
         jobs: [...jobs, ...current.jobs],

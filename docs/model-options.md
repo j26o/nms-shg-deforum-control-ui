@@ -12,7 +12,7 @@ The prototype workbench should expose model choice as a Generation control so Et
 
 ## UI Requirement
 
-Add a `Model profile` dropdown in the Generation control group and a single-choice runtime comparison control for render tests.
+Use a single `Model profile` dropdown in the Generation control group for both preview and real render tests.
 
 The UI should:
 

@@ -67,9 +67,7 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
 
   await page.getByLabel('Deforum controls').getByLabel('Model profile').selectOption('sdxl-base');
   await expect(page.locator('strong').filter({ hasText: 'SDXL Base 1.0' })).toBeVisible();
-  await expect(page.getByRole('radio', { name: 'SDXL Base 1.0' })).toBeChecked();
-  await page.getByRole('radio', { name: 'RealVisXL V5.0' }).check();
-  await expect(page.locator('strong').filter({ hasText: 'RealVisXL V5.0' })).toBeVisible();
+  await expect(page.getByRole('radio', { name: 'SDXL Base 1.0' })).toHaveCount(0);
 
   await promptNodes.getByLabel('Active node creative guide').selectOption('future-marina-bay-fluid-memory');
   await expect(promptNodes.getByLabel('Active node prompt')).toHaveValue(/visionary future Singapore cityscape/);

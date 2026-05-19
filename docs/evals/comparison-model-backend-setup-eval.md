@@ -66,7 +66,7 @@ Git policy check: `.gitignore` excludes `*.safetensors`, so downloaded model wei
 ## Weaknesses
 
 - Load-tested means Automatic1111 can see and load the checkpoint. It does not prove each checkpoint produces a usable Deforum animation.
-- SDXL Base, RealVisXL, Juggernaut XL, and SDXL Refiner still need runtime render comparison passes using the workbench model radio control.
+- SDXL Base, RealVisXL, Juggernaut XL, and SDXL Refiner still need runtime render comparison passes using the workbench model profile control.
 - Juggernaut XL remains prototype-only until licence review confirms whether production use is acceptable.
 - SDXL Refiner is available to the backend, but it is not a primary Deforum animation model and may only be useful in workflows that explicitly support refinement.
 

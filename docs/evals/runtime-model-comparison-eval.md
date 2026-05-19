@@ -1,13 +1,13 @@
 # Eval: Runtime Model Comparison Render
 
 Date: 2026-05-18
-Artifact scope: Workbench runtime model radio selection, local Automatic1111 Deforum backend renders, installed comparison checkpoints
+Artifact scope: Workbench runtime model selection, local Automatic1111 Deforum backend renders, installed comparison checkpoints
 Evaluator: Codex
 Status: Pass with caveats
 
 ## Eval Methodology
 
-- Used the workbench runtime model radio control to launch one real Deforum render per configured model profile.
+- Used the workbench runtime model control to launch one real Deforum render per configured model profile.
 - Backend: `http://127.0.0.1:7860`, Deforum API version `1.0`.
 - Source images: three `1680x720` PNGs from `assets/images/source/20260430/`.
 - Prompt schedule: frame `0` monochrome mist landscape, frame `120` dense futuristic city architecture, frame `240` dense futuristic city architecture.
@@ -56,7 +56,7 @@ Automation caveat: the comparison attempt was intended to shorten duration and s
 
 ## Revised Notes
 
-- Runtime model radio selection is wired through to checkpoint scheduling in Deforum settings.
+- Runtime model selection is wired through to checkpoint scheduling in Deforum settings. The current UI uses the single Generation model profile dropdown for this.
 - A successful UI completion is not equivalent to a successful backend render until artifact validation exists.
 - Comparative runtime rendering is now proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9 on the local backend.
 - SDXL Base and SDXL Refiner are installed and loadable in Automatic1111, but failed this Deforum runtime comparison because no frames or MP4 were created.

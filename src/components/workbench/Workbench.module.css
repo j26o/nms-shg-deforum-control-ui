@@ -745,8 +745,7 @@
   gap: var(--space-2);
 }
 
-.toggleField,
-.compareList label {
+.toggleField {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -763,15 +762,6 @@
 
 .modelNote p {
   margin: 0;
-}
-
-.compareList {
-  display: grid;
-  gap: var(--space-1);
-  padding: var(--space-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: #101318;
 }
 
 .bottomBar {
