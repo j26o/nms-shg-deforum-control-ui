@@ -123,3 +123,9 @@ Reason: Deforum can create the output folder and save `*_settings.txt` before an
 Decision: Add `remote/huggingface-deforum-handler/` and deploy it as the private Docker Space `robaldovino/nms-shg-deforum-endpoint`. The Space exposes the same `/jobs` contract used by the local proxy, decodes image-keyframe assets server-side, translates the payload into Deforum settings, and can wrap a reachable Automatic1111 Deforum batch API. Until a remote A1111 URL is available, the deployed Space is configured in smoke fallback mode to validate credential-safe upload, job polling, and MP4 artifact retrieval.
 
 Reason: The prototype needs a cloud backend integration path without changing the reviewed preset contract or reducing the workflow to generic text-to-video. Smoke fallback proves the transport and artifact contract, while final creative evaluation still requires real A1111 Deforum output.
+
+## 2026-05-19: Align A1111 Batch Payload With Deforum API Argument Shape
+
+Decision: Submit local A1111 renders to `/deforum_api/batches` as `deforum_settings` plus `options_overrides`, include legacy-compatible fields such as `scale`, `animation_prompts_positive`, and `animation_prompts_negative`, and send disabled ControlNet defaults for slots 1-5. The Windows setup now installs ControlNet even though the prototype keeps it disabled by default.
+
+Reason: Recent Deforum API builds can reject batch jobs with `Invalid arguments` when the payload shape does not match their expected argument set. Installing ControlNet and sending a conservative disabled ControlNet shape makes the local runtime closer to standard Automatic1111 Deforum installs while preserving the prototype's image-reference workflow.

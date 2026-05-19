@@ -76,6 +76,14 @@ The launcher should include these backend flags in `webui-user.bat`:
 set COMMANDLINE_ARGS=--api --deforum-api --deforum-simple-api
 ```
 
+The target backend should also have ControlNet installed at:
+
+```text
+render-tools\stable-diffusion-webui\extensions\sd-webui-controlnet\
+```
+
+The default prototype render keeps ControlNet disabled, but the extension should be present so recent Deforum API builds accept the disabled ControlNet argument set.
+
 You can still verify or start the backend manually when debugging:
 
 ```powershell

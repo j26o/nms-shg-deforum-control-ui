@@ -14,7 +14,7 @@ Last updated: 2026-05-19
 - [x] Save real backend take metadata in the UI: model checkpoint, seed, resolution, render duration, output path, and settings file path.
 - [x] Export the actual Deforum settings payload alongside the reviewed preset JSON.
 - [x] Add an eval report for the first review-sized render under `docs/evals/`.
-- [ ] Decide whether to keep the no-ControlNet Deforum API patches or install ControlNet for the backend path.
+- [x] Install ControlNet for the backend path and keep ControlNet disabled in the default prototype payload.
 - [x] Download and test the next comparison model after SD 1.5, starting with `sdxl-base`.
 - [x] Select one runtime comparison model at a time through the single Generation model profile dropdown.
 - [x] Run comparative runtime renders for installed model profiles and record eval evidence.
@@ -44,3 +44,4 @@ Last updated: 2026-05-19
 - Comparative runtime renders produced 10-second `896x384` MP4s for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9; SDXL Base and SDXL Refiner produced settings files but no frames or MP4.
 - A controlled end-to-end browser-to-Deforum RealVisXL run produced a 10-second `896x384` MP4, but the automated real-backend Playwright assertion timed out before the backend finished.
 - The optional real-backend Playwright path reaches the backend with `RUN_REAL_DEFORUM=1`, but its current assertion timeout is too short for the review-length RealVisXL render.
+- Local A1111 batch payloads now include Deforum `options_overrides`, legacy scale/prompt fields, and disabled ControlNet slot defaults to address `Invalid arguments` failures from stricter Deforum API builds.

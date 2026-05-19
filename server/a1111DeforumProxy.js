@@ -116,7 +116,10 @@ async function submitFullDeforumApi(settings, env) {
     headers: {
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ deforum_settings: settings }),
+    body: JSON.stringify({
+      deforum_settings: settings,
+      options_overrides: {},
+    }),
   });
   const json = await readUpstreamJson(response);
 
@@ -166,7 +169,7 @@ async function pollFullDeforumJob(jobId, env) {
     }
 
     if (isFailedStatus(job.status) || isFailedStatus(job.phase)) {
-      throw new Error(`Deforum job failed: ${job.message || job.status || job.phase}`);
+      throw new Error(`Deforum job failed: ${job.message || job.error || job.raw || job.status || job.phase}`);
     }
 
     if (pollIntervalMs > 0) {

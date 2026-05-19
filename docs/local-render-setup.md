@@ -17,6 +17,12 @@ Deforum extension is installed at:
 D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\extensions\deforum
 ```
 
+ControlNet extension should be installed at:
+
+```text
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\extensions\sd-webui-controlnet
+```
+
 Portable FFmpeg is installed at:
 
 ```text
@@ -88,7 +94,7 @@ set STABLE_DIFFUSION_REPO=https://github.com/story-squad/stable-diffusion-stabil
 set STABLE_DIFFUSION_COMMIT_HASH=acd43cce7206e8a8e3386badf65a94a6c18b94ef
 ```
 
-The local Deforum extension also has two no-ControlNet compatibility patches so Deforum API jobs can run without installing ControlNet.
+Earlier local smoke tests used no-ControlNet compatibility patches. The preferred target-PC setup now installs ControlNet and keeps ControlNet disabled in the prototype payload by default, which better matches recent Deforum API argument validation.
 
 ## Verified Commands
 
@@ -157,7 +163,9 @@ The bridge submits the settings JSON to the Deforum batch API when available:
 http://127.0.0.1:7860/deforum_api/batches
 ```
 
-This avoids sending the full 24-image settings payload through the browser URL. If the batch API is unavailable, the bridge can fall back to the older query-only simple API at `http://127.0.0.1:7860/deforum/run`.
+The bridge submits the body as `deforum_settings` plus an empty `options_overrides` object, and includes legacy-compatible Deforum keys such as `scale`, `animation_prompts_positive`, `animation_prompts_negative`, and disabled ControlNet defaults. This avoids sending the full 24-image settings payload through the browser URL and keeps the request closer to the Deforum batch API examples. If the batch API is unavailable, the bridge can fall back to the older query-only simple API at `http://127.0.0.1:7860/deforum/run`.
+
+If `Render Deforum` fails with `Deforum job failed: Invalid arguments`, the backend rejected the settings shape before producing frames. Pull the latest prototype, install ControlNet, restart Automatic1111, and retry. If it still fails, copy the exact Automatic1111 terminal traceback and compare it with the UI's generated Deforum settings payload.
 
 Use the UI-only dev launcher from the repo root:
 

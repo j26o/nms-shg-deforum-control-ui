@@ -17,6 +17,7 @@ describe('a1111 deforum adapter', () => {
     expect(settings.H).toBe(384);
     expect(settings.max_frames).toBe(240);
     expect(settings.sampler).toBe('DPM++ 2M Karras');
+    expect(settings.scale).toBe(7);
     expect(settings.cfg_scale_schedule).toBe('0: (7)');
     expect(settings.seed_behavior).toBe('fixed');
     expect(settings.animation_mode).toBe('3D');
@@ -25,6 +26,12 @@ describe('a1111 deforum adapter', () => {
     expect(Object.keys(settings.prompts)).toHaveLength(preset.assets.length);
     expect(settings.prompts['0']).toContain('primary visual reference frame');
     expect(settings.prompts['0']).toContain('--neg');
+    expect(settings.animation_prompts_positive).toContain('image-reference driven Future Wall morph');
+    expect(settings.animation_prompts_negative).toContain('low detail');
+    expect(settings.controlnet_enabled).toBe(false);
+    expect(settings.cn_1_overwrite_frames).toBe('');
+    expect(settings.cn_1_loopback_mode).toBe('');
+    expect(settings.cn_5_model).toBe('None');
 
     const initImages = JSON.parse(settings.init_images);
     expect(Object.keys(initImages)).toEqual(Object.keys(settings.prompts));

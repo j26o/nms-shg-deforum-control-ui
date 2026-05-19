@@ -229,6 +229,16 @@ git clone https://github.com/deforum-art/sd-webui-deforum extensions\deforum
 
 After restart, confirm the WebUI has a Deforum tab or extension entry.
 
+Install ControlNet:
+
+```powershell
+cd D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui
+git clone https://github.com/Mikubill/sd-webui-controlnet extensions\sd-webui-controlnet
+.\webui-user.bat
+```
+
+After restart, confirm the WebUI has a ControlNet extension entry. The prototype keeps ControlNet disabled in its default render payload, but installing the extension keeps the local Automatic1111 + Deforum runtime aligned with the argument set expected by recent Deforum API builds.
+
 For the verified local setup, also enable the APIs in `webui-user.bat`:
 
 ```bat
@@ -382,6 +392,20 @@ D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\extension
 
 Then restart `webui-user.bat`.
 
+### WebUI starts but no ControlNet extension appears
+
+Check that this folder exists:
+
+```text
+D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\extensions\sd-webui-controlnet\
+```
+
+Then restart `webui-user.bat`. The default prototype settings send ControlNet as disabled, so no ControlNet model download is required for the first SD 1.5 render pass.
+
+### Render Deforum fails with `Invalid arguments`
+
+Pull the latest prototype and restart both Vite and Automatic1111. The app sends the Deforum batch payload with `deforum_settings`, `options_overrides`, legacy `scale`, animation prompt fields, and disabled ControlNet defaults. If the error remains, check the Automatic1111 terminal for the exact rejected setting name, then compare the saved `*_settings.txt` against the generated payload in the UI Prompt JSON panel.
+
 ### Vite reports `bufferutil` from Gradio or `render-tools`
 
 That package is not required by the React workbench. The error means Vite is trying to parse Automatic1111/Gradio runtime files inside `render-tools\stable-diffusion-webui\venv\...`. Pull the latest prototype, restart the dev server, and clear Vite's cache if the stale optimiser state remains:
@@ -440,6 +464,7 @@ Keep only candidate renders and their exported JSON reports.
 - AUTOMATIC1111 WebUI: `https://github.com/AUTOMATIC1111/stable-diffusion-webui`
 - AUTOMATIC1111 NVIDIA install guide: `https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Install-and-Run-on-NVidia-GPUs`
 - Deforum extension: `https://github.com/deforum-art/sd-webui-deforum`
+- ControlNet extension: `https://github.com/Mikubill/sd-webui-controlnet`
 - Stable Diffusion 1.5: `https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5`
 - SDXL Base 1.0: `https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0`
 - SDXL Refiner 1.0: `https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0`

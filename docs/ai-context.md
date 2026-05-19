@@ -45,7 +45,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - `src/services/renderAdapter.js`: render adapter boundary.
 - `src/services/mockRenderAdapter.js`: deterministic mock render path.
 - `src/services/a1111DeforumAdapter.js`: local Automatic1111 Deforum preset translator.
-- `server/a1111DeforumProxy.js`: local body bridge for A1111 Deforum render submission; avoids browser query-string 431 failures.
+- `server/a1111DeforumProxy.js`: local body bridge for A1111 Deforum render submission; avoids browser query-string 431 failures and submits Deforum batch jobs with `options_overrides`.
 - `server/renderArtifactProxy.js`: safe local artifact bridge for project output videos and generated render files.
 - `src/services/huggingFaceDeforumAdapter.js`: Hugging Face Deforum payload builder and proxy-backed job adapter.
 - `server/hfDeforumProxy.js`: local Vite middleware proxy for Hugging Face credentials, image attachment, job submit/poll, and artifact download.
@@ -96,6 +96,6 @@ RUN_REAL_DEFORUM=1 pnpm exec playwright test
 
 ## Current Known Gap
 
-The current verified real backend path is a local Automatic1111 Deforum preset translator backed by the in-repo ignored `render-tools/` runtime. Runtime comparison is proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9. The adapter now requires a non-empty MP4 artifact before reporting a real A1111 job as complete; settings-only Deforum outputs are treated as failed/incomplete renders. SDXL Base/SDXL Refiner compatibility still needs investigation. The Hugging Face path now has a local proxy, frontend adapter, and deployed private Space smoke endpoint, but no remote real Deforum MP4 render has been verified yet. A full production-grade Deforum preset exporter is still future work.
+The current verified real backend path is a local Automatic1111 Deforum preset translator backed by the in-repo ignored `render-tools/` runtime. Runtime comparison is proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9. The adapter now requires a non-empty MP4 artifact before reporting a real A1111 job as complete; settings-only Deforum outputs are treated as failed/incomplete renders. The local A1111 payload includes Deforum batch `options_overrides`, legacy prompt/scale fields, and disabled ControlNet defaults; the target Windows setup should install ControlNet even when the default prototype render keeps it disabled. SDXL Base/SDXL Refiner compatibility still needs investigation. The Hugging Face path now has a local proxy, frontend adapter, and deployed private Space smoke endpoint, but no remote real Deforum MP4 render has been verified yet. A full production-grade Deforum preset exporter is still future work.
 
 Use `docs/todo.md` for the active next-step list.

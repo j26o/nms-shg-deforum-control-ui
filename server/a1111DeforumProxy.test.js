@@ -88,6 +88,7 @@ describe('a1111 deforum body proxy', () => {
     expect(submitUrl).toBe('http://127.0.0.1:7860/deforum_api/batches');
     expect(submitInit.method).toBe('POST');
     expect(submitInit.headers).toEqual({ 'content-type': 'application/json' });
+    expect(submitBody.options_overrides).toEqual({});
     expect(submitBody.deforum_settings.prompts['0']).toContain('future city');
     expect(statusInit).toBeUndefined();
   });
