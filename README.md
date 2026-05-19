@@ -93,7 +93,15 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` checks `http://127.0.0.1:7860`, starts `render-tools\stable-diffusion-webui\webui-user.bat` if needed, waits for the Deforum and Stable Diffusion APIs, sets `VITE_SOURCE_ASSET_ROOT` to the project source-image folder, then starts Vite.
+`pnpm dev` starts the React/Vite workbench only. It does not launch Stable Diffusion or Automatic1111.
+
+Use the backend-aware launcher only when you intentionally want the local Automatic1111 Deforum runtime as well:
+
+```powershell
+pnpm dev:backend
+```
+
+`pnpm dev:backend` checks `http://127.0.0.1:7860`, starts `render-tools\stable-diffusion-webui\webui-user.bat` if needed, waits for the Deforum and Stable Diffusion APIs, sets `VITE_SOURCE_ASSET_ROOT` to the project source-image folder, then starts Vite.
 
 The dev server defaults to:
 
@@ -101,7 +109,7 @@ The dev server defaults to:
 http://127.0.0.1:5173
 ```
 
-Use `Render preview` for the fast mock path. Use `Render Deforum` after `pnpm dev` reports the backend is ready.
+Use `Render preview` for the fast mock path. Use `Render Deforum` after `pnpm dev:backend` reports the backend is ready, or after you manually start Automatic1111.
 
 Frontend-only development and smoke tests can use:
 

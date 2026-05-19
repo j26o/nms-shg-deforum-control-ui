@@ -139,13 +139,21 @@ Vite proxies `/a1111` to:
 http://127.0.0.1:7860
 ```
 
-Use the full dev launcher from the repo root:
+Use the UI-only dev launcher from the repo root:
 
 ```powershell
 pnpm dev
 ```
 
-This command checks the A1111 Deforum API, starts `render-tools\stable-diffusion-webui\webui-user.bat` if the backend is not already running, waits for `/deforum/api_version` and `/sdapi/v1/sd-models`, sets `VITE_SOURCE_ASSET_ROOT` to the project `assets/images/source/` folder when it is not already set, and then starts Vite.
+This command starts Vite only. It does not launch Stable Diffusion or Automatic1111.
+
+Use the explicit backend-aware launcher only when you want the project to start or verify the local A1111 backend:
+
+```powershell
+pnpm dev:backend
+```
+
+`pnpm dev:backend` checks the A1111 Deforum API, starts `render-tools\stable-diffusion-webui\webui-user.bat` if the backend is not already running, waits for `/deforum/api_version` and `/sdapi/v1/sd-models`, sets `VITE_SOURCE_ASSET_ROOT` to the project `assets/images/source/` folder when it is not already set, and then starts Vite.
 
 Useful overrides:
 
@@ -153,10 +161,10 @@ Useful overrides:
 $env:A1111_BASE_URL='http://127.0.0.1:7860'
 $env:A1111_START_TIMEOUT_MS='600000'
 $env:SKIP_A1111_START='1'
-pnpm dev
+pnpm dev:backend
 ```
 
-Use `pnpm dev:ui` only when you intentionally want the frontend without backend startup.
+`pnpm dev:ui` remains as a compatibility alias for the UI-only Vite startup.
 
 Run the real backend E2E test with:
 

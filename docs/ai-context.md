@@ -68,7 +68,15 @@ Start the normal local dev path from this repo:
 pnpm dev
 ```
 
-`pnpm dev` starts or verifies the local Automatic1111 Deforum backend before starting Vite. Use `pnpm dev:ui` only for frontend-only checks.
+`pnpm dev` starts the React/Vite workbench only. It must not launch Stable Diffusion or Automatic1111.
+
+Use the explicit backend-aware launcher only when a real local A1111 render path is needed:
+
+```bash
+pnpm dev:backend
+```
+
+`pnpm dev:backend` starts or verifies the local Automatic1111 Deforum backend before starting Vite.
 
 Then run:
 
