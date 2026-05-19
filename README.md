@@ -54,7 +54,7 @@ Read the PRD/spec plan here:
 
 ## How To Run It
 
-The first executable React + Vite workbench now exists as part of the full local effect prototype. It implements the PRD/spec workbench shape with a local mock render adapter, model-profile dropdown, 7:3 preview frame, timeline segments, take metadata, export actions, and a real Automatic1111 Deforum backend path.
+The first executable React + Vite workbench now exists as part of the full local effect prototype. It implements the PRD/spec workbench shape with a local mock render adapter, model-profile dropdown, 7:3 preview frame, frame-keyed prompt JSON nodes, take metadata, export actions, and a real Automatic1111 Deforum backend path.
 
 Set up the Windows target PC first using:
 
@@ -148,7 +148,7 @@ git diff --check
 - 1680x720 / 7:3 preview frame with safe-frame guides.
 - Model profile control populated from `config/model-options.json`.
 - Generation, Image Morph, Motion, Prompt, Look, and Output controls.
-- Frame-based prompt/image timeline with add, duplicate, reorder, and delete actions.
+- Frame-keyed prompt JSON nodes with source-image selection, frame numbers, prompt text, and `--neg` params.
 - Mock render adapter that creates queue jobs and comparable take metadata.
 - Automatic1111 Deforum preset translator via the `Render Deforum` toolbar action.
 - Exportable reviewed JSON plus readable Markdown report.

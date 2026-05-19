@@ -71,8 +71,13 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await page.getByRole('radio', { name: 'RealVisXL V5.0' }).check();
   await expect(page.locator('strong').filter({ hasText: 'RealVisXL V5.0' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'Segment', exact: true }).click();
-  await expect(page.getByText(/240-359/)).toHaveCount(1);
+  const promptNodes = page.getByLabel('Prompt JSON nodes');
+  await expect(promptNodes.getByRole('heading', { name: 'Prompt JSON Nodes' })).toBeVisible();
+  await promptNodes.getByRole('button', { name: 'Node', exact: true }).click();
+  await promptNodes.getByLabel('Active node frame').fill('30');
+  await promptNodes.getByLabel('Active node prompt').fill('a beautiful coconut');
+  await promptNodes.getByLabel('Active node negative params').fill('photo, realistic');
+  await expect(promptNodes.getByLabel('Prompt payload JSON')).toHaveValue(/"30": "a beautiful coconut --neg photo, realistic"/);
 
   await page.getByRole('button', { name: /Render preview/i }).click();
   await expect(page.getByText('complete').first()).toBeVisible();

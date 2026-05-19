@@ -13,11 +13,11 @@ function createAssetId() {
 
 function createTimelineSegmentForAsset(asset, timeline, prompt) {
   const last = timeline[timeline.length - 1];
-  const fromFrame = last ? last.toFrame + 1 : 0;
+  const fromFrame = last ? last.fromFrame + 30 : 0;
   return {
     id: `segment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     fromFrame,
-    toFrame: fromFrame + 119,
+    toFrame: fromFrame,
     sourceImageId: asset.id,
     prompt:
       prompt ??
@@ -155,11 +155,11 @@ export const usePresetStore = create((set, get) => ({
   addSegment: () =>
     set((state) => {
       const last = state.preset.timeline[state.preset.timeline.length - 1];
-      const fromFrame = last ? last.toFrame + 1 : 0;
+      const fromFrame = last ? last.fromFrame + 30 : 0;
       const segment = {
         id: `segment-${Date.now()}`,
         fromFrame,
-        toFrame: fromFrame + 119,
+        toFrame: fromFrame,
         sourceImageId: state.selectedAssetId ?? state.preset.assets[0]?.id,
         prompt: state.preset.prompt.positive,
         negativePrompt: state.preset.prompt.negative,
@@ -174,11 +174,12 @@ export const usePresetStore = create((set, get) => ({
     set((state) => {
       const source = state.preset.timeline.find((segment) => segment.id === segmentId);
       if (!source) return state;
+      const fromFrame = source.fromFrame + 30;
       const duplicate = {
         ...source,
         id: `segment-${Date.now()}`,
-        fromFrame: source.toFrame + 1,
-        toFrame: source.toFrame + (source.toFrame - source.fromFrame) + 1,
+        fromFrame,
+        toFrame: fromFrame,
       };
       return {
         preset: { ...state.preset, timeline: [...state.preset.timeline, duplicate] },
@@ -189,7 +190,14 @@ export const usePresetStore = create((set, get) => ({
     set((state) => ({
       preset: {
         ...state.preset,
-        timeline: state.preset.timeline.map((segment) => (segment.id === segmentId ? { ...segment, ...patch } : segment)),
+        timeline: state.preset.timeline.map((segment) => {
+          if (segment.id !== segmentId) return segment;
+          const next = { ...segment, ...patch };
+          if (Object.prototype.hasOwnProperty.call(patch, 'fromFrame') && !Object.prototype.hasOwnProperty.call(patch, 'toFrame')) {
+            next.toFrame = next.fromFrame;
+          }
+          return next;
+        }),
       },
     })),
   deleteSegment: (segmentId) =>

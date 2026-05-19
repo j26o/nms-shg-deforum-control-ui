@@ -69,11 +69,11 @@ export function exportPresetReport(preset, candidateTake) {
     `- Licence: ${exportable.model.license}`,
     `- Status: ${exportable.model.status}`,
     '',
-    '## Timeline',
+    '## Prompt Nodes',
     '',
     ...exportable.timeline.map(
       (segment) =>
-        `- ${segment.fromFrame}-${segment.toFrame}: ${segment.sourceImageId} | ${segment.transitionMode} | ${segment.prompt}`,
+        `- ${segment.fromFrame}: ${segment.sourceImageId} | ${segment.prompt}${segment.negativePrompt ? ` --neg ${segment.negativePrompt}` : ''}`,
     ),
     '',
     '## Assets',

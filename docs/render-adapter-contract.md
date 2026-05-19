@@ -11,7 +11,7 @@ The UI talks to render engines through a normalised config rather than engine-sp
 - selected model metadata;
 - target resolutions and aspect ratio;
 - enabled assets;
-- enabled frame-based timeline segments;
+- enabled frame-based prompt nodes;
 - generation, image morph, motion, prompt, look, and output groups.
 
 `queueMockRender(preset, modelOverride)` currently creates deterministic placeholder job metadata:
@@ -36,7 +36,7 @@ The selected runtime model profile is passed into Deforum as a frame-0 checkpoin
 
 This mock path is intentional. It lets Etienne review the control surface, queue behaviour, take metadata, and export contract without requiring the GPU backend.
 
-The current real-backend path is a local Automatic1111 Deforum preset translator in `src/services/a1111DeforumAdapter.js`. It turns the reviewed preset into Deforum `prompts`, `init_images`, and render schedules, then posts the translated settings JSON to the local API and receives an output path. Take metadata stores the translated settings payload and inferred settings/output file locations for export and review.
+The current real-backend path is a local Automatic1111 Deforum preset translator in `src/services/a1111DeforumAdapter.js`. It turns the reviewed prompt nodes into Deforum `prompts`, `init_images`, and render schedules, then posts the translated settings JSON to the local API and receives an output path. Take metadata stores the translated settings payload and inferred settings/output file locations for export and review.
 
 ## Hugging Face Deforum Backend
 
@@ -53,7 +53,7 @@ Expected behaviour:
 - submit frame-keyed source images and prompts through the local `/hf-deforum/*` proxy to a dedicated Hugging Face Inference Endpoint or private Space/API;
 - run a Deforum-style image-to-image animation backend remotely;
 - return MP4 output by default;
-- preserve seed, FPS, preview resolution, max frames, motion schedules, model profile, and source-image timeline metadata;
+- preserve seed, FPS, preview resolution, max frames, motion schedules, model profile, and source-image prompt-node metadata;
 - store remote job id, endpoint id/name, output artifact URL/path, settings payload, render duration, and logs in the same take metadata flow as local A1111 renders;
 - call Hugging Face through a local/server proxy so `HF_TOKEN` is never exposed in browser JavaScript.
 

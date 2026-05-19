@@ -1,14 +1,18 @@
 export function normaliseRenderConfig(preset, modelOverride) {
   const model = modelOverride ?? preset.model;
+  const timeline = [...preset.timeline]
+    .filter((segment) => {
+      const asset = preset.assets.find((item) => item.id === segment.sourceImageId);
+      return asset?.enabled !== false;
+    })
+    .sort((left, right) => left.fromFrame - right.fromFrame);
+
   return {
     presetName: preset.presetName,
     model,
     target: preset.target,
     assets: preset.assets.filter((asset) => asset.enabled !== false),
-    timeline: preset.timeline.filter((segment) => {
-      const asset = preset.assets.find((item) => item.id === segment.sourceImageId);
-      return asset?.enabled !== false;
-    }),
+    timeline,
     generation: preset.generation,
     imageMorph: preset.imageMorph,
     motion: preset.motion,

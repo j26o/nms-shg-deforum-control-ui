@@ -7,7 +7,7 @@ This repository contains the whole local Deforum effect prototype for NMS-SHG Co
 
 ## Current Goal
 
-Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne tune Deforum-style image morph presets, render comparison passes locally, and review/export results without editing raw JSON by hand. The current UI default is image-reference led: all bundled 1680x720 source PNGs are loaded into the asset rail and mapped into the default timeline as image keyframes.
+Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne tune Deforum-style image morph presets, render comparison passes locally, and review/export results without editing raw JSON by hand. The current UI default is image-reference led: all bundled 1680x720 source PNGs are loaded into the asset rail and mapped into frame-keyed prompt JSON nodes.
 
 ## Product Constraints
 
@@ -24,7 +24,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 
 - React + Vite.
 - Named exports.
-- Zustand for shared preset, timeline, queue, and take state.
+- Zustand for shared preset, prompt-node, queue, and take state.
 - CSS Modules plus `src/styles/tokens.css`.
 - Vitest for unit/contract tests.
 - Playwright CLI for E2E smoke tests.
@@ -33,7 +33,8 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 
 - `docs/deforum-control-ui-prd-spec.md`: source PRD/spec.
 - `config/model-options.json`: canonical model profile matrix.
-- `src/config/defaultPreset.js`: default exportable preset, all bundled source assets, and image-keyframe default timeline.
+- `src/config/defaultPreset.js`: default exportable preset, all bundled source assets, and image-keyframe prompt node defaults.
+- `src/components/workbench/PromptNodesPanel.jsx`: frame-keyed prompt JSON node editor.
 - `src/services/presetSchema.js`: export validation rules.
 - `src/services/renderAdapter.js`: render adapter boundary.
 - `src/services/mockRenderAdapter.js`: deterministic mock render path.

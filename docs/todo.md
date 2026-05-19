@@ -6,7 +6,7 @@ Last updated: 2026-05-18
 ## Next Implementation Steps
 
 - [x] Expand `src/services/a1111DeforumAdapter.js` from a smoke adapter into a fuller preset-to-Deforum translator.
-- [x] Map timeline prompt segments into Deforum `prompts` with frame indexes.
+- [x] Map prompt JSON nodes into Deforum `prompts` with frame indexes.
 - [x] Map UI generation controls into Deforum settings: sampler, steps, CFG schedule, seed, FPS, preview resolution, and max frames.
 - [x] Map motion controls into Deforum schedules: zoom, pan X/Y, rotation, cadence, and depth-warp toggle.
 - [x] Map source images into a guided-image or init-image workflow using local paths from `assets/images/source`.

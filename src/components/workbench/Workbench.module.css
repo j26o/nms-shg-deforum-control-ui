@@ -24,6 +24,7 @@
 .panelTitle,
 .panelTitleActions,
 .segmentActions,
+.groupHeader,
 .assetActions,
 .assetAddActions {
   display: flex;
@@ -45,6 +46,10 @@
 .assetMeta input,
 .assetEditor input,
 .assetEditor select,
+.promptNodeEditor input,
+.promptNodeEditor select,
+.promptNodeEditor textarea,
+.promptPayloadPreview textarea,
 .segmentEditor input,
 .segmentEditor select,
 .segmentEditor textarea,
@@ -70,6 +75,10 @@
 .assetMeta input:focus,
 .assetEditor input:focus,
 .assetEditor select:focus,
+.promptNodeEditor input:focus,
+.promptNodeEditor select:focus,
+.promptNodeEditor textarea:focus,
+.promptPayloadPreview textarea:focus,
 .segmentEditor input:focus,
 .segmentEditor select:focus,
 .segmentEditor textarea:focus {
@@ -99,6 +108,7 @@
 .smallCommand,
 .filePickerButton,
 .assetActions button,
+.promptNodeSummary,
 .segmentActions button,
 .takeCard button,
 .takeCandidate button {
@@ -174,7 +184,7 @@
   min-height: 0;
   overflow: hidden;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .panelTitle {
@@ -416,76 +426,12 @@
   border-top: 1px solid rgba(67, 199, 183, 0.5);
 }
 
-.timelinePanel {
-  min-width: 0;
-  overflow: hidden;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
 .smallCommand {
   min-height: 30px;
 }
 
-.timelineStrip {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(220px, 1fr);
-  gap: var(--space-2);
-  overflow-x: auto;
-  padding: var(--space-3);
-}
-
-.segmentCard,
-.segmentSelected {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: #11151a;
-}
-
-.segmentSelected {
-  border-color: var(--color-accent);
-}
-
-.segmentMain {
-  width: 100%;
-  border: 0;
-  text-align: left;
-  background: transparent;
-  padding: var(--space-3);
-  display: grid;
-  gap: var(--space-1);
-  cursor: pointer;
-}
-
-.segmentMain span {
-  color: var(--color-accent);
-  font-size: 12px;
-}
-
-.segmentEditor {
-  padding: 0 var(--space-3) var(--space-3);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-2);
-}
-
-.segmentEditor label {
-  color: var(--color-text-muted);
-  font-size: 12px;
-  display: grid;
-  gap: var(--space-1);
-}
-
-.segmentEditor label:nth-child(3),
-.segmentEditor label:nth-child(4),
 .segmentActions {
   grid-column: 1 / -1;
-}
-
-.segmentEditor textarea {
-  min-height: 62px;
-  resize: vertical;
 }
 
 .segmentActions {
@@ -501,6 +447,11 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+}
+
+.groupHeader {
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .controlField {
@@ -524,6 +475,78 @@
 .controlField textarea {
   min-height: 72px;
   resize: vertical;
+}
+
+.promptNodeList {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.promptNodeCard,
+.promptNodeSelected {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #11151a;
+}
+
+.promptNodeSelected {
+  border-color: var(--color-accent);
+}
+
+.promptNodeSummary {
+  width: 100%;
+  min-height: 34px;
+  justify-content: flex-start;
+  text-align: left;
+  background: transparent;
+}
+
+.promptNodeSummary strong {
+  min-width: 38px;
+  color: var(--color-accent);
+}
+
+.promptNodeSummary span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.promptNodeEditor {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.promptNodeEditor label,
+.promptPayloadPreview {
+  min-width: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.promptNodeEditor label:nth-child(3),
+.promptNodeEditor label:nth-child(4),
+.promptNodeEditor .segmentActions {
+  grid-column: 1 / -1;
+}
+
+.promptNodeEditor textarea {
+  min-height: 64px;
+  resize: vertical;
+}
+
+.promptPayloadPreview textarea {
+  min-height: 150px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
 }
 
 .toggleField,

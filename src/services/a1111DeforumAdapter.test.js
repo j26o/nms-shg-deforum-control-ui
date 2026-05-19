@@ -65,4 +65,26 @@ describe('a1111 deforum adapter', () => {
     expect(job.outputVideoPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*.mp4');
     expect(Object.keys(job.renderSettings.prompts)).toHaveLength(preset.assets.length);
   });
+
+  it('preserves inline --neg prompt nodes without duplicating negative params', () => {
+    const preset = {
+      ...createDefaultPreset(),
+      timeline: [
+        {
+          id: 'node-001',
+          fromFrame: 60,
+          toFrame: 60,
+          sourceImageId: 'image-001',
+          prompt: 'a beautiful coconut --neg photo, realistic',
+          negativePrompt: 'ignored duplicate',
+          transitionMode: 'image-reference-node',
+        },
+      ],
+    };
+    const settings = createDeforumRenderSettings(preset);
+
+    expect(settings.prompts).toEqual({
+      60: 'a beautiful coconut --neg photo, realistic',
+    });
+  });
 });

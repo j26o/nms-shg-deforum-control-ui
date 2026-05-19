@@ -6,7 +6,6 @@ import { usePresetStore } from '../../stores/usePresetStore.js';
 import { AssetRail } from './AssetRail.jsx';
 import { ControlsPanel } from './ControlsPanel.jsx';
 import { PreviewPanel } from './PreviewPanel.jsx';
-import { TimelineStrip } from './TimelineStrip.jsx';
 import styles from './Workbench.module.css';
 
 export function Workbench() {
@@ -86,9 +85,8 @@ export function Workbench() {
 
       <main className={styles.grid}>
         <AssetRail />
-        <section className={styles.centerStack} aria-label="Preview and timeline">
+        <section className={styles.centerStack} aria-label="Preview">
           <PreviewPanel />
-          <TimelineStrip />
         </section>
         <ControlsPanel />
       </main>

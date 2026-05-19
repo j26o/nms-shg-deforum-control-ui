@@ -22,6 +22,7 @@ describe('hugging face deforum adapter', () => {
     expect(payload.timeline).toHaveLength(preset.timeline.length);
     expect(payload.timeline[0].sourceImageId).toBe(payload.assets[0].id);
     expect(payload.timeline[0].prompt).toContain('primary visual reference frame');
+    expect(payload.timeline[0].promptText).toContain('--neg');
     expect(JSON.stringify(payload)).not.toContain('hf_');
   });
 

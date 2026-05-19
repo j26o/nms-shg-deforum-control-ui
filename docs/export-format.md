@@ -14,7 +14,7 @@ The JSON is generated from the current preset after schema validation. The Markd
 - preset name and export timestamp;
 - source, preview, review, and final resolution notes;
 - model id, repository, checkpoint file, licence, and status;
-- timeline frame ranges and prompts;
+- frame-keyed prompt JSON nodes;
 - enabled source assets;
 - candidate take metadata when one is marked, including backend, checkpoint file, seed, frame count, FPS, render duration, output path, and settings file path;
 - production handoff notes.

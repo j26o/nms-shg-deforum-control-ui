@@ -13,7 +13,7 @@ Required invariants:
 - every enabled source image uses a local relative path;
 - enabled source images are `1680x720` unless explicitly marked as a crop or pad test;
 - `model.modelId`, `model.repository`, `model.file`, and `model.license` are saved in every export;
-- timeline segments use frame indexes and reference an existing source image id.
+- prompt JSON nodes use frame indexes and reference an existing source image id.
 
 The current implementation validates these rules in `src/services/presetSchema.js`.
 

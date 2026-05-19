@@ -1,4 +1,5 @@
 import { normaliseRenderConfig } from './renderAdapter.js';
+import { createDeforumPromptText } from './deforumPromptSchedule.js';
 
 const COMPLETED_STATUSES = new Set(['complete', 'completed', 'succeeded', 'success', 'done']);
 const FAILED_STATUSES = new Set(['failed', 'error', 'cancelled', 'canceled']);
@@ -39,6 +40,7 @@ function createEndpointTimeline(renderConfig) {
     sourceImageId: segment.sourceImageId,
     prompt: segment.prompt ?? fallbackPositive,
     negativePrompt: segment.negativePrompt ?? fallbackNegative,
+    promptText: createDeforumPromptText(segment, fallbackPositive, fallbackNegative),
     transitionMode: segment.transitionMode,
   }));
 }

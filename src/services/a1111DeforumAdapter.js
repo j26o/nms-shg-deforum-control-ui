@@ -1,4 +1,5 @@
 import { normaliseRenderConfig } from './renderAdapter.js';
+import { createDeforumPromptSchedule } from './deforumPromptSchedule.js';
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -37,17 +38,7 @@ function resolveSourceAssetPath(path) {
 }
 
 function createPromptSchedule(renderConfig) {
-  const fallbackPositive = renderConfig.prompt?.positive ?? '';
-  const fallbackNegative = renderConfig.prompt?.negative ?? '';
-  const segments = renderConfig.timeline.length > 0 ? renderConfig.timeline : [{ fromFrame: 0, prompt: fallbackPositive, negativePrompt: fallbackNegative }];
-
-  return Object.fromEntries(
-    segments.map((segment) => {
-      const positive = (segment.prompt ?? fallbackPositive).trim();
-      const negative = (segment.negativePrompt ?? fallbackNegative).trim();
-      return [String(segment.fromFrame), `${positive} --neg ${negative}`.trim()];
-    }),
-  );
+  return createDeforumPromptSchedule(renderConfig);
 }
 
 function createInitImageSchedule(renderConfig) {

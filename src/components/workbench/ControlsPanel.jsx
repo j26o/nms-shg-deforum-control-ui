@@ -1,5 +1,6 @@
 import { modelOptions } from '../../config/modelOptions.js';
 import { usePresetStore } from '../../stores/usePresetStore.js';
+import { PromptNodesPanel } from './PromptNodesPanel.jsx';
 import styles from './Workbench.module.css';
 
 const samplers = ['DPM++ 2M Karras', 'Euler a', 'DDIM', 'UniPC'];
@@ -71,6 +72,8 @@ export function ControlsPanel() {
 
   return (
     <aside className={styles.controlsPanel} aria-label="Deforum controls">
+      <PromptNodesPanel />
+
       <ControlGroup title="Generation">
         <SelectField
           label="Model profile"
