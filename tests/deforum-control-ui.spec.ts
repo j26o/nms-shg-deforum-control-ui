@@ -57,7 +57,7 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
 
   const promptNodes = page.getByLabel('Prompt JSON nodes');
   await expect(promptNodes.getByRole('heading', { name: 'Prompt JSON Nodes' })).toBeVisible();
-  await expect(promptNodes.getByText(/folder images loaded/)).toBeVisible();
+  await expect(promptNodes.getByText('8 folder images loaded')).toBeVisible();
   await expect(promptNodes.getByAltText(/preview/i).first()).toBeVisible();
 
   const backendSelect = page.getByLabel('Backend', { exact: true });
@@ -71,9 +71,9 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await expect(page.locator('strong').filter({ hasText: 'SDXL Base 1.0' })).toBeVisible();
   await expect(page.getByRole('radio', { name: 'SDXL Base 1.0' })).toHaveCount(0);
 
-  await promptNodes.getByLabel('Active node creative guide').selectOption('future-marina-bay-fluid-memory');
   await expect(promptNodes.getByLabel('Active node prompt')).toHaveValue(/visionary future Singapore cityscape/);
-  await expect(promptNodes.getByLabel('Active node negative params')).toHaveValue(/hard frame/);
+  await expect(promptNodes.getByLabel('Active node prompt')).toHaveValue(/Extreme long-distance maritime view/);
+  await expect(promptNodes.getByLabel('Active node negative params')).toHaveValue(/strong vanishing point/);
 
   await promptNodes.getByRole('button', { name: 'Node', exact: true }).click();
   await promptNodes.getByLabel('Active node frame').fill('30');

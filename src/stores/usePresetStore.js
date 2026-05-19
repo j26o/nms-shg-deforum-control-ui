@@ -28,7 +28,7 @@ function createTimelineSegmentForAsset(asset, timeline, prompt) {
     prompt:
       prompt ??
       [
-        `Use ${asset.label} as the primary visual reference frame.`,
+        `Use ${asset.label} as the image-reference source for this keyframe.`,
         'Preserve the pre-rendered image composition, atmosphere, silhouettes, and panoramic edges.',
       ].join(' '),
     negativePrompt: 'low detail, text artifacts, flicker, broken geometry, hard crop',

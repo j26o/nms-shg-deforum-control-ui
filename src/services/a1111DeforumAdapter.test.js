@@ -15,7 +15,8 @@ describe('a1111 deforum adapter', () => {
 
     expect(settings.W).toBe(896);
     expect(settings.H).toBe(384);
-    expect(settings.max_frames).toBe(240);
+    expect(settings.max_frames).toBe(480);
+    expect(settings.fps).toBe(60);
     expect(settings.sampler).toBe('DPM++ 2M Karras');
     expect(settings.scale).toBe(7);
     expect(settings.cfg_scale_schedule).toBe('0: (7)');
@@ -23,11 +24,12 @@ describe('a1111 deforum adapter', () => {
     expect(settings.animation_mode).toBe('3D');
     expect(settings.use_depth_warping).toBe(true);
     expect(settings.diffusion_cadence).toBe(2);
-    expect(Object.keys(settings.prompts)).toHaveLength(preset.assets.length);
-    expect(settings.prompts['0']).toContain('primary visual reference frame');
+    expect(Object.keys(settings.prompts)).toHaveLength(8);
+    expect(settings.prompts['0']).toContain('visionary future Singapore cityscape');
+    expect(settings.prompts['0']).toContain('image-reference source for this keyframe');
     expect(settings.prompts['0']).toContain('--neg');
-    expect(settings.animation_prompts_positive).toContain('image-reference driven Future Wall morph');
-    expect(settings.animation_prompts_negative).toContain('low detail');
+    expect(settings.animation_prompts_positive).toContain('Extreme long-distance maritime view');
+    expect(settings.animation_prompts_negative).toContain('strong vanishing point');
     expect(settings.controlnet_enabled).toBe(false);
     expect(settings.cn_1_overwrite_frames).toBe('');
     expect(settings.cn_1_loopback_mode).toBe('');
@@ -36,7 +38,7 @@ describe('a1111 deforum adapter', () => {
     const initImages = JSON.parse(settings.init_images);
     expect(Object.keys(initImages)).toEqual(Object.keys(settings.prompts));
     expect(initImages['0']).toMatch(/assets[\\/]images[\\/]source[\\/]/);
-    expect(Object.values(initImages)).toHaveLength(preset.assets.length);
+    expect(Object.values(initImages)).toHaveLength(8);
     expect(settings.sampler_schedule).toBe('0: ("DPM++ 2M Karras")');
     expect(settings.enable_checkpoint_scheduling).toBe(true);
     expect(settings.checkpoint_schedule).toBe('0: ("sd_xl_base_1.0.safetensors")');
@@ -67,7 +69,8 @@ describe('a1111 deforum adapter', () => {
     expect(init.headers).toEqual({ 'content-type': 'application/json' });
     expect(body.allowedParams).toContain('init_images');
     expect(settings.prompts['0']).toContain('--neg');
-    expect(settings.prompts['0']).toContain('primary visual reference frame');
+    expect(settings.prompts['0']).toContain('visionary future Singapore cityscape');
+    expect(settings.prompts['0']).toContain('image-reference source for this keyframe');
     expect(settings.init_images).toMatch(/assets[\\/]images[\\/]source[\\/]/);
     expect(job.status).toBe('complete');
     expect(job.outputPath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid');
@@ -77,7 +80,7 @@ describe('a1111 deforum adapter', () => {
     expect(job.backendSettingsFilePath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/runid.txt');
     expect(job.outputSettingsPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*_settings.txt');
     expect(job.outputVideoPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*.mp4');
-    expect(Object.keys(job.renderSettings.prompts)).toHaveLength(preset.assets.length);
+    expect(Object.keys(job.renderSettings.prompts)).toHaveLength(8);
   });
 
   it('preserves inline --neg prompt nodes without duplicating negative params', () => {

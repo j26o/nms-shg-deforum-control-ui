@@ -1,4 +1,7 @@
 import { createRenderArtifactUrl, inspectRenderOutputDirectory } from './renderArtifactProxy.js';
+import { spawn } from 'node:child_process';
+import { access, readFile, stat } from 'node:fs/promises';
+import path from 'node:path';
 
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const DEFAULT_POLL_INTERVAL_MS = 2000;
@@ -40,6 +43,50 @@ function createA1111Url(baseUrl, routePath) {
   return `${baseUrl.replace(/\/+$/, '')}/${routePath.replace(/^\/+/, '')}`;
 }
 
+function resolveSourceAssetPath(assetPath, projectRoot = process.cwd()) {
+  if (!assetPath || assetPath.includes('://') || path.isAbsolute(assetPath)) {
+    return assetPath;
+  }
+
+  const normalizedAssetPath = assetPath.replace(/[\\/]/g, path.sep);
+  const sourcePrefix = ['assets', 'images', 'source'].join(path.sep);
+  if (!normalizedAssetPath.startsWith(sourcePrefix)) {
+    return assetPath;
+  }
+
+  const absolutePath = path.resolve(projectRoot, normalizedAssetPath);
+  const sourceRoot = path.resolve(projectRoot, 'assets', 'images', 'source');
+  const relative = path.relative(sourceRoot, absolutePath);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`Source asset path is outside assets/images/source: ${assetPath}`);
+  }
+
+  return absolutePath;
+}
+
+function normalizeDeforumAssetPaths(settings, projectRoot = process.cwd()) {
+  const normalized = { ...settings };
+
+  if (normalized.init_image) {
+    normalized.init_image = resolveSourceAssetPath(normalized.init_image, projectRoot);
+  }
+
+  if (typeof normalized.init_images === 'string' && normalized.init_images.trim()) {
+    try {
+      const initImages = JSON.parse(normalized.init_images);
+      normalized.init_images = JSON.stringify(
+        Object.fromEntries(Object.entries(initImages).map(([frame, assetPath]) => [frame, resolveSourceAssetPath(String(assetPath), projectRoot)])),
+        null,
+        4,
+      );
+    } catch {
+      normalized.init_images = normalized.init_images;
+    }
+  }
+
+  return normalized;
+}
+
 function isFetchConnectionError(error) {
   const message = error instanceof Error ? error.message : String(error);
   return message === 'fetch failed' || message.includes('ECONNREFUSED') || message.includes('UND_ERR_CONNECT_TIMEOUT');
@@ -56,6 +103,160 @@ function sleep(ms) {
   return new Promise((resolve) => {
     globalThis.setTimeout(resolve, ms);
   });
+}
+
+async function pathExists(filePath) {
+  await access(filePath);
+  return filePath;
+}
+
+async function findFfmpegExecutable(env = process.env) {
+  const candidates = [
+    env.FFMPEG_PATH,
+    env.FFMPEG_BINARY,
+    path.resolve(process.cwd(), 'render-tools', 'ffmpeg', 'ffmpeg-8.1.1-full_build', 'bin', 'ffmpeg.exe'),
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    try {
+      return await pathExists(candidate);
+    } catch {
+      // Try the next configured candidate before falling back to PATH.
+    }
+  }
+
+  return process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg';
+}
+
+async function createA1111OptionsOverrides(env = process.env) {
+  const overrides = {};
+
+  try {
+    overrides.deforum_ffmpeg_location = await findFfmpegExecutable(env);
+  } catch {
+    // Deforum will fall back to its configured option or PATH.
+  }
+
+  return overrides;
+}
+
+async function readFrameSequenceFps(sequence) {
+  const settingsPath = path.join(sequence.directory, `${sequence.stem}_settings.txt`);
+
+  try {
+    const settings = JSON.parse(await readFile(settingsPath, 'utf8'));
+    const fps = Number(settings.fps);
+    return Number.isFinite(fps) && fps > 0 ? fps : 24;
+  } catch {
+    return 24;
+  }
+}
+
+function runFfmpegStitch(ffmpegPath, sequence, fps, env = process.env) {
+  const timeoutMs = Number(env.A1111_DEFORUM_FFMPEG_TIMEOUT_MS || 120000);
+  const args = [
+    '-y',
+    '-hide_banner',
+    '-loglevel',
+    'error',
+    '-framerate',
+    String(fps),
+    '-start_number',
+    String(sequence.firstFrame),
+    '-i',
+    sequence.framePattern,
+    '-c:v',
+    'libx264',
+    '-pix_fmt',
+    'yuv420p',
+    '-movflags',
+    '+faststart',
+    sequence.outputPath,
+  ];
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(ffmpegPath, args, {
+      cwd: sequence.directory,
+      windowsHide: true,
+    });
+    const chunks = [];
+    let settled = false;
+    const timer = timeoutMs > 0
+      ? globalThis.setTimeout(() => {
+          settled = true;
+          child.kill('SIGTERM');
+          reject(new Error(`FFmpeg fallback stitch timed out after ${timeoutMs}ms.`));
+        }, timeoutMs)
+      : null;
+
+    const collect = (chunk) => {
+      chunks.push(Buffer.from(chunk));
+      while (Buffer.concat(chunks).length > 4000) {
+        chunks.shift();
+      }
+    };
+
+    child.stdout.on('data', collect);
+    child.stderr.on('data', collect);
+    child.on('error', (error) => {
+      if (settled) return;
+      settled = true;
+      if (timer) globalThis.clearTimeout(timer);
+      reject(error);
+    });
+    child.on('close', (code) => {
+      if (settled) return;
+      settled = true;
+      if (timer) globalThis.clearTimeout(timer);
+      if (code === 0) {
+        resolve();
+        return;
+      }
+      const output = Buffer.concat(chunks).toString('utf8').trim();
+      reject(new Error(`FFmpeg fallback stitch failed with exit code ${code}.${output ? ` ${output}` : ''}`));
+    });
+  });
+}
+
+async function stitchMissingVideoArtifact(outdir, inspection, env = process.env) {
+  if (env.A1111_DEFORUM_DISABLE_FFMPEG_FALLBACK === '1') {
+    return null;
+  }
+
+  const sequence = inspection.latestFrameSequence;
+  if (!sequence || sequence.frameCount === 0) {
+    return null;
+  }
+
+  const existingOutput = await stat(sequence.outputPath).catch(() => null);
+  if (existingOutput?.isFile() && existingOutput.size > 0) {
+    return {
+      filePath: sequence.outputPath,
+      fileName: path.basename(sequence.outputPath),
+      size: existingOutput.size,
+      modifiedMs: existingOutput.mtimeMs,
+    };
+  }
+
+  const ffmpegPath = await findFfmpegExecutable(env);
+  const fps = await readFrameSequenceFps(sequence);
+  await runFfmpegStitch(ffmpegPath, sequence, fps, env);
+
+  const outputStat = await stat(sequence.outputPath);
+  if (!outputStat.isFile() || outputStat.size <= 0) {
+    throw new Error(`FFmpeg fallback stitch did not create a non-empty MP4 at ${sequence.outputPath}.`);
+  }
+
+  return {
+    filePath: sequence.outputPath,
+    fileName: path.basename(sequence.outputPath),
+    size: outputStat.size,
+    modifiedMs: outputStat.mtimeMs,
+    stitchedFromFrames: true,
+    frameCount: sequence.frameCount,
+    fps,
+    outdir,
+  };
 }
 
 async function readUpstreamJson(response) {
@@ -75,15 +276,21 @@ function isFailedStatus(value) {
   return FAILED_STATUSES.has(String(value ?? '').toLowerCase());
 }
 
-async function inspectA1111Output(outdir) {
+async function inspectA1111Output(outdir, env = process.env, options = {}) {
   const inspection = await inspectRenderOutputDirectory(outdir).catch(() => ({
     exists: false,
     videoCount: 0,
     frameCount: 0,
     settingsCount: 0,
     latestVideo: null,
+    latestFrameSequence: null,
   }));
-  const videoArtifact = inspection.latestVideo;
+  const videoArtifact = inspection.latestVideo ?? (options.stitchFrames
+    ? await stitchMissingVideoArtifact(outdir, inspection, env).catch((error) => {
+        inspection.stitchError = error instanceof Error ? error.message : String(error);
+        return null;
+      })
+    : null);
 
   return {
     ...inspection,
@@ -103,6 +310,10 @@ function throwMissingArtifactError(outdir, inspection) {
     details.push('Deforum saved the settings txt but did not generate frames. Check the Automatic1111 terminal for the backend error.');
   }
 
+  if (inspection.stitchError) {
+    details.push(`Frame-to-MP4 fallback also failed: ${inspection.stitchError}`);
+  }
+
   const error = new Error(details.join(' '));
   error.status = 502;
   error.stage = 'artifact-validation';
@@ -111,14 +322,16 @@ function throwMissingArtifactError(outdir, inspection) {
 
 async function submitFullDeforumApi(settings, env) {
   const baseUrl = getA1111BaseUrl(env);
+  const normalizedSettings = normalizeDeforumAssetPaths(settings);
+  const optionsOverrides = await createA1111OptionsOverrides(env);
   const response = await fetch(createA1111Url(baseUrl, '/deforum_api/batches'), {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      deforum_settings: settings,
-      options_overrides: {},
+      deforum_settings: normalizedSettings,
+      options_overrides: optionsOverrides,
     }),
   });
   const json = await readUpstreamJson(response);
@@ -150,7 +363,7 @@ async function pollFullDeforumJob(jobId, env) {
 
     const outdir = job.outdir || job.output_path || '';
     if (outdir) {
-      const inspection = await inspectA1111Output(outdir);
+      const inspection = await inspectA1111Output(outdir, env);
       if (inspection.artifactUrl) {
         return {
           ...job,
@@ -164,7 +377,17 @@ async function pollFullDeforumJob(jobId, env) {
     }
 
     if (isCompleteStatus(job.status) || isCompleteStatus(job.phase)) {
-      const inspection = await inspectA1111Output(outdir);
+      const inspection = await inspectA1111Output(outdir, env, { stitchFrames: true });
+      if (inspection.artifactUrl) {
+        return {
+          ...job,
+          outdir,
+          artifactPath: inspection.artifactPath,
+          artifactUrl: inspection.artifactUrl,
+          artifactFileName: inspection.artifactFileName,
+          artifactInspection: inspection,
+        };
+      }
       throwMissingArtifactError(outdir, inspection);
     }
 
@@ -182,7 +405,8 @@ async function pollFullDeforumJob(jobId, env) {
 
 async function submitSimpleDeforumApi(payload, env) {
   const settings = payload.settings ?? payload.settings_json;
-  const settingsJson = typeof settings === 'string' ? settings : JSON.stringify(settings);
+  const normalizedSettings = typeof settings === 'string' ? normalizeDeforumAssetPaths(JSON.parse(settings)) : normalizeDeforumAssetPaths(settings);
+  const settingsJson = JSON.stringify(normalizedSettings);
   const allowedParams = Array.isArray(payload.allowedParams)
     ? payload.allowedParams.join(';')
     : payload.allowed_params || payload.allowedParams || '';
@@ -208,7 +432,7 @@ async function submitSimpleDeforumApi(payload, env) {
   }
 
   const outdir = result.outdir || result.output_path || '';
-  const inspection = await inspectA1111Output(outdir);
+  const inspection = await inspectA1111Output(outdir, env, { stitchFrames: true });
   if (!inspection.artifactUrl) {
     throwMissingArtifactError(outdir, inspection);
   }
@@ -286,7 +510,7 @@ export async function submitA1111DeforumRun(payload, env = process.env) {
     const jobId = batch.job_ids?.[0] ?? batch.job_id;
     if (!jobId) {
       const outdir = batch.outdir || batch.output_path || '';
-      const inspection = await inspectA1111Output(outdir);
+      const inspection = await inspectA1111Output(outdir, env, { stitchFrames: true });
       if (!inspection.artifactUrl) {
         throwMissingArtifactError(outdir, inspection);
       }
@@ -302,7 +526,7 @@ export async function submitA1111DeforumRun(payload, env = process.env) {
     }
     const job = await pollFullDeforumJob(jobId, env);
     const outdir = job.outdir || job.output_path || batch.outdir || '';
-    const inspection = job.artifactInspection ?? (await inspectA1111Output(outdir));
+    const inspection = job.artifactInspection ?? (await inspectA1111Output(outdir, env, { stitchFrames: true }));
     if (!inspection.artifactUrl) {
       throwMissingArtifactError(outdir, inspection);
     }

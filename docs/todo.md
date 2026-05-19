@@ -22,6 +22,7 @@ Last updated: 2026-05-19
 - [x] Move the local `render-tools/` runtime into the project root and update path/context docs.
 - [x] Keep generated logs and output evidence inside project-local `outputs/` or `render-tools/stable-diffusion-webui/outputs/` folders.
 - [x] Add output artifact validation so real backend jobs fail when no video output is created.
+- [x] Set the initial creative-review preset to 8 source images, 8 seconds, 60 fps, and default creative-direction prompts plus source-asset-specific `--neg` guardrails on every node.
 - [ ] Investigate SDXL Base and SDXL Refiner Deforum compatibility with a smaller direct API repro and captured backend logs.
 - [ ] Update the real-backend Playwright path to control its Vite server environment and wait long enough for a completed render artifact.
 - [ ] Complete the approved optional Hugging Face Deforum backend plan in `docs/huggingface-deforum-backend-plan.md`.
@@ -45,3 +46,4 @@ Last updated: 2026-05-19
 - A controlled end-to-end browser-to-Deforum RealVisXL run produced a 10-second `896x384` MP4, but the automated real-backend Playwright assertion timed out before the backend finished.
 - The optional real-backend Playwright path reaches the backend with `RUN_REAL_DEFORUM=1`, but its current assertion timeout is too short for the review-length RealVisXL render.
 - Local A1111 batch payloads now include Deforum `options_overrides`, legacy scale/prompt fields, and disabled ControlNet slot defaults to address `Invalid arguments` failures from stricter Deforum API builds.
+- The initial workbench preset now starts with 8 source images over 8 seconds at 60 fps, producing 480 Deforum frames before any user edits, with source-asset-specific negative prompts applied to each node.

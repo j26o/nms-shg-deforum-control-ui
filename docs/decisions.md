@@ -66,9 +66,15 @@ Status: Approved direction. Future implementation should build the Hugging Face 
 
 ## 2026-05-19: Make Prompt JSON Nodes The Left Workflow Rail
 
-Decision: Remove the manual source-image rail from the primary workbench and use the left column for frame-keyed Prompt JSON Nodes. The app discovers bundled images from `assets/images/source/**/*.png`, and each expanded node lets the reviewer select one of those images, set the frame number, apply a creative prompt guide, edit the positive prompt, edit `--neg` parameters, and preview the chosen image thumbnail.
+Decision: Remove the manual source-image rail from the primary workbench and use the left column for frame-keyed Prompt JSON Nodes. The app discovers bundled images from `assets/images/source/**/*.png`, and each expanded node lets the reviewer select one of those images, set the frame number, edit the positive prompt, edit `--neg` parameters, and preview the chosen image thumbnail.
 
 Reason: The current exercise uses a fixed set of pre-rendered 1680x720 images committed to the repo. Etienne's main task is to choose which image drives each Deforum keyframe and tune the prompt payload, not manage source files during review. This also keeps the exported schedule close to the Automatic1111 Deforum JSON shape.
+
+## 2026-05-19: Default To Eight Creative Direction Nodes At 60 FPS
+
+Decision: The initial workbench preset now uses the first 8 source images, an 8-second duration, 60 fps, and 480 Deforum frames. The approved creative direction is applied as the default prompt on every image-reference node instead of being selected through a per-node guide dropdown. The default `--neg` block is derived from the source images and suppresses common failure modes visible in the assets: hard borders, cropped panoramas, broken/melted skylines, ink/contour outlines, starfield/speckle artifacts, road/highway perspective, close foreground objects, daylight drift, crushed blacks, blown highlights, flicker, and noisy water reflections.
+
+Reason: The next creative pass should test a smaller controlled source sequence while preserving smoother 60 fps motion. Keeping the creative direction and source-specific negative guardrails in every default node makes real backend renders align with the review brief without requiring manual guide selection per image.
 
 ## 2026-05-19: Surface Preview Render Feedback In UI
 

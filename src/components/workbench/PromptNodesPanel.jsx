@@ -1,5 +1,4 @@
 import { Copy, Plus, Trash2 } from 'lucide-react';
-import { creativePromptGuides } from '../../config/creativePromptGuides.js';
 import { createDeforumPromptSchedule } from '../../services/deforumPromptSchedule.js';
 import { usePresetStore } from '../../stores/usePresetStore.js';
 import styles from './Workbench.module.css';
@@ -23,19 +22,6 @@ export function PromptNodesPanel() {
   const handleImageChange = (nodeId, sourceImageId) => {
     updateSegment(nodeId, { sourceImageId });
     selectAsset(sourceImageId);
-  };
-
-  const handleGuideChange = (nodeId, guideId) => {
-    const guide = creativePromptGuides.find((item) => item.id === guideId);
-    if (!guide) {
-      updateSegment(nodeId, { creativeGuideId: '' });
-      return;
-    }
-    updateSegment(nodeId, {
-      creativeGuideId: guide.id,
-      prompt: guide.prompt,
-      negativePrompt: guide.negativePrompt,
-    });
   };
 
   return (
@@ -89,21 +75,6 @@ export function PromptNodesPanel() {
                         {preset.assets.map((assetOption) => (
                           <option key={assetOption.id} value={assetOption.id}>
                             {assetOption.label}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      Guide
-                      <select
-                        aria-label="Active node creative guide"
-                        value={node.creativeGuideId ?? ''}
-                        onChange={(event) => handleGuideChange(node.id, event.target.value)}
-                      >
-                        <option value="">Custom image-reference prompt</option>
-                        {creativePromptGuides.map((guide) => (
-                          <option key={guide.id} value={guide.id}>
-                            {guide.label}
                           </option>
                         ))}
                       </select>

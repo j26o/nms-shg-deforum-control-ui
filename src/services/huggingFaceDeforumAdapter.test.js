@@ -15,13 +15,15 @@ describe('hugging face deforum adapter', () => {
 
     expect(payload.backend).toBe('huggingface-deforum');
     expect(payload.target.previewResolution).toEqual([896, 384]);
-    expect(payload.target.maxFrames).toBe(240);
+    expect(payload.target.maxFrames).toBe(480);
+    expect(payload.target.fps).toBe(60);
     expect(payload.output.format).toBe('mp4');
     expect(payload.model.file).toBe('RealVisXL_V5.0_fp16.safetensors');
     expect(payload.assets).toHaveLength(preset.assets.length);
     expect(payload.timeline).toHaveLength(preset.timeline.length);
     expect(payload.timeline[0].sourceImageId).toBe(payload.assets[0].id);
-    expect(payload.timeline[0].prompt).toContain('primary visual reference frame');
+    expect(payload.timeline[0].prompt).toContain('visionary future Singapore cityscape');
+    expect(payload.timeline[0].prompt).toContain('image-reference source for this keyframe');
     expect(payload.timeline[0].promptText).toContain('--neg');
     expect(JSON.stringify(payload)).not.toContain('hf_');
   });

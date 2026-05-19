@@ -27,7 +27,7 @@ function normaliseCandidatePath(candidatePath, projectRoot = getProjectRoot()) {
   return path.isAbsolute(normalized) ? path.normalize(normalized) : path.resolve(projectRoot, normalized);
 }
 
-function assertSafeArtifactPath(candidatePath, projectRoot = getProjectRoot()) {
+export function assertSafeArtifactPath(candidatePath, projectRoot = getProjectRoot()) {
   if (!candidatePath || candidatePath.includes('\0')) {
     throw new Error('Missing artifact path.');
   }
@@ -116,6 +116,64 @@ export async function findLatestVideoArtifact(outputDirectory, projectRoot = get
   return candidates.filter((candidate) => candidate.size > 0).sort((left, right) => right.modifiedMs - left.modifiedMs)[0] ?? null;
 }
 
+export async function findLatestFrameSequence(outputDirectory, projectRoot = getProjectRoot()) {
+  if (!outputDirectory) return null;
+
+  const safeDirectory = assertSafeArtifactPath(outputDirectory, projectRoot);
+  const directoryStat = await stat(safeDirectory).catch(() => null);
+  if (!directoryStat?.isDirectory()) {
+    return null;
+  }
+
+  const entries = await readdir(safeDirectory, { withFileTypes: true });
+  const groups = new Map();
+
+  await Promise.all(
+    entries
+      .filter((entry) => entry.isFile() && FRAME_EXTENSIONS.has(path.extname(entry.name).toLowerCase()))
+      .map(async (entry) => {
+        const match = /^(.*)_(\d{9})(\.[^.]+)$/i.exec(entry.name);
+        if (!match) return;
+
+        const [, stem, frameNumberText, extension] = match;
+        const normalizedExtension = extension.toLowerCase();
+        if (!FRAME_EXTENSIONS.has(normalizedExtension)) return;
+
+        const key = `${stem}\0${normalizedExtension}`;
+        const frameNumber = Number(frameNumberText);
+        const filePath = path.join(safeDirectory, entry.name);
+        const fileStat = await stat(filePath);
+        const group = groups.get(key) ?? {
+          directory: safeDirectory,
+          stem,
+          extension: normalizedExtension,
+          firstFrame: frameNumber,
+          latestFrame: frameNumber,
+          frameCount: 0,
+          modifiedMs: 0,
+        };
+
+        group.firstFrame = Math.min(group.firstFrame, frameNumber);
+        group.latestFrame = Math.max(group.latestFrame, frameNumber);
+        group.frameCount += 1;
+        group.modifiedMs = Math.max(group.modifiedMs, fileStat.mtimeMs);
+        groups.set(key, group);
+      }),
+  );
+
+  const latest = Array.from(groups.values())
+    .filter((group) => group.frameCount > 0)
+    .sort((left, right) => right.modifiedMs - left.modifiedMs || right.frameCount - left.frameCount)[0];
+
+  if (!latest) return null;
+
+  return {
+    ...latest,
+    framePattern: path.join(latest.directory, `${latest.stem}_%09d${latest.extension}`),
+    outputPath: path.join(latest.directory, `${latest.stem}.mp4`),
+  };
+}
+
 export async function inspectRenderOutputDirectory(outputDirectory, projectRoot = getProjectRoot()) {
   if (!outputDirectory) {
     return {
@@ -124,6 +182,7 @@ export async function inspectRenderOutputDirectory(outputDirectory, projectRoot 
       frameCount: 0,
       settingsCount: 0,
       latestVideo: null,
+      latestFrameSequence: null,
     };
   }
 
@@ -136,12 +195,14 @@ export async function inspectRenderOutputDirectory(outputDirectory, projectRoot 
       frameCount: 0,
       settingsCount: 0,
       latestVideo: null,
+      latestFrameSequence: null,
     };
   }
 
   const entries = await readdir(safeDirectory, { withFileTypes: true });
   const files = entries.filter((entry) => entry.isFile());
   const latestVideo = await findLatestVideoArtifact(safeDirectory, projectRoot);
+  const latestFrameSequence = await findLatestFrameSequence(safeDirectory, projectRoot);
 
   return {
     exists: true,
@@ -149,6 +210,7 @@ export async function inspectRenderOutputDirectory(outputDirectory, projectRoot 
     frameCount: files.filter((entry) => FRAME_EXTENSIONS.has(path.extname(entry.name).toLowerCase())).length,
     settingsCount: files.filter((entry) => entry.name.toLowerCase().endsWith('_settings.txt')).length,
     latestVideo,
+    latestFrameSequence,
   };
 }
 

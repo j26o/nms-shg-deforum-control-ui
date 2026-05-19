@@ -73,7 +73,12 @@ describe('a1111 deforum body proxy', () => {
         },
         allowedParams: ['prompts', 'init_images'],
       },
-      { A1111_BASE_URL: 'http://127.0.0.1:7860', A1111_DEFORUM_POLL_INTERVAL_MS: '0', A1111_DEFORUM_MAX_POLLS: '1' },
+      {
+        A1111_BASE_URL: 'http://127.0.0.1:7860',
+        A1111_DEFORUM_POLL_INTERVAL_MS: '0',
+        A1111_DEFORUM_MAX_POLLS: '1',
+        FFMPEG_PATH: process.execPath,
+      },
     );
 
     const [submitUrl, submitInit] = fetchMock.mock.calls[0];
@@ -88,8 +93,9 @@ describe('a1111 deforum body proxy', () => {
     expect(submitUrl).toBe('http://127.0.0.1:7860/deforum_api/batches');
     expect(submitInit.method).toBe('POST');
     expect(submitInit.headers).toEqual({ 'content-type': 'application/json' });
-    expect(submitBody.options_overrides).toEqual({});
+    expect(submitBody.options_overrides).toEqual({ deforum_ffmpeg_location: process.execPath });
     expect(submitBody.deforum_settings.prompts['0']).toContain('future city');
+    expect(JSON.parse(submitBody.deforum_settings.init_images)['0']).toBe(path.resolve(process.cwd(), 'assets/images/source/test.png'));
     expect(statusInit).toBeUndefined();
   });
 
@@ -121,6 +127,41 @@ describe('a1111 deforum body proxy', () => {
         { A1111_BASE_URL: 'http://127.0.0.1:7860', A1111_DEFORUM_POLL_INTERVAL_MS: '0', A1111_DEFORUM_MAX_POLLS: '1' },
       ),
     ).rejects.toThrow(/settings txt but did not generate frames/);
+  });
+
+  it('does not stitch partial frames before the Deforum job is complete', async () => {
+    const outputDir = path.join(testOutputRoot, 'running-frame-run');
+    await mkdir(outputDir, { recursive: true });
+    await writeFile(path.join(outputDir, '20260519143000_000000000.png'), 'frame');
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        text: async () => JSON.stringify({ batch_id: 'batch-003', job_ids: ['job-003'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ id: 'job-003', status: 'RUNNING', outdir: outputDir }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      submitA1111DeforumRun(
+        {
+          settings: { prompts: { 0: 'future city' } },
+          allowedParams: ['prompts'],
+        },
+        {
+          A1111_BASE_URL: 'http://127.0.0.1:7860',
+          A1111_DEFORUM_POLL_INTERVAL_MS: '0',
+          A1111_DEFORUM_MAX_POLLS: '1',
+          FFMPEG_PATH: path.join(testOutputRoot, 'missing-ffmpeg.exe'),
+        },
+      ),
+    ).rejects.toThrow(/timed out/);
   });
 
   it('falls back to the query-only simple API when the batch API is missing', async () => {
@@ -164,5 +205,6 @@ describe('a1111 deforum body proxy', () => {
     expect(upstreamUrl.href).toContain('http://127.0.0.1:7860/deforum/run?');
     expect(upstreamUrl.searchParams.get('allowed_params')).toBe('prompts;init_images');
     expect(settings.prompts['0']).toContain('future city');
+    expect(JSON.parse(settings.init_images)['0']).toBe(path.resolve(process.cwd(), 'assets/images/source/test.png'));
   });
 });

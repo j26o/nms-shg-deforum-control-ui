@@ -1,5 +1,53 @@
 import { getDefaultModel } from './modelOptions.js';
 
+const DEFAULT_SOURCE_IMAGE_COUNT = 8;
+const DEFAULT_FPS = 60;
+const DEFAULT_DURATION_SECONDS = 8;
+
+export const defaultCreativeDirectionPrompt = [
+  'A visionary future Singapore cityscape across Marina Bay, featuring NS Square floating civic platform, curved waterfront grandstand, Wetlands by the Bay with lush layered greenery and waterways, and the Singapore Founders Memorial with sculptural contemporary architecture.',
+  'Blend iconic elements like Marina Bay Sands, Gardens by the Bay Supertrees, and advanced sustainable eco-architecture with vertical greenery and organic forms.',
+  'Atmospheric mist and particle-based fluid simulations flow across the scene, forming wave-like motion layers inspired by ocean currents and wind, with soft volumetric fog, drifting haze, and dynamic particle trails.',
+  'Extreme long-distance maritime view, island as a flat horizontal band across the entire frame, deep night scene, seen sideways from far offshore over calm dark open ocean.',
+  'Black night sky, dark open sea, city the only source of light, ultra-long telephoto compression, orthographic flat horizon band, no vanishing perspective, zero depth recession, purely horizontal layered composition.',
+  'Dense atmospheric mist flows in thick horizontal bands across the island at night, dissolving building edges into soft watercolor bleeds, with deep navy and midnight blue washes, warm amber and soft pink light glowing from within the mist.',
+  'Wide cinematic 1680x720 panoramic frame, ethereal, nostalgic, sci-fi realism, long exposure softness.',
+].join(' ');
+
+export const defaultCreativeDirectionNegativePrompt = [
+  'text',
+  'watermark',
+  'logo',
+  'hard black border',
+  'cropped panorama',
+  'duplicated skyline',
+  'broken skyline',
+  'melted buildings',
+  'jagged silhouettes',
+  'harsh ink outlines',
+  'white contour lines',
+  'neon edge tracing',
+  'posterized edges',
+  'starfield',
+  'white speckle particles',
+  'bokeh dots',
+  'road lanes',
+  'highway perspective',
+  'strong vanishing point',
+  'close foreground objects',
+  'street-level view',
+  'bright daylight',
+  'harsh sunlight',
+  'oversaturated cyan',
+  'crushed blacks',
+  'blown highlights',
+  'flicker',
+  'low detail',
+  'noisy water reflections',
+  'text artifacts',
+  'broken geometry',
+].join(', ');
+
 const sourceImageModules = import.meta.glob('../../assets/images/source/**/*.png', {
   eager: true,
   query: '?url',
@@ -19,14 +67,15 @@ function getSourceDate(path) {
 
 function createImageReferencePrompt(asset) {
   return [
-    `Use ${asset.label} as the primary visual reference frame.`,
+    defaultCreativeDirectionPrompt,
+    `Use ${asset.label} as the image-reference source for this keyframe.`,
     'Preserve the pre-rendered image composition, skyline, atmosphere, silhouettes, and 1680x720 panoramic edges.',
     'Blend smoothly into the next referenced source image with restrained Deforum motion.',
   ].join(' ');
 }
 
 export function createDefaultAssets() {
-  return sourceImages.map((source, index) => ({
+  return sourceImages.slice(0, DEFAULT_SOURCE_IMAGE_COUNT).map((source, index) => ({
     id: `image-${String(index + 1).padStart(3, '0')}`,
     path: source.path,
     previewUrl: source.previewUrl,
@@ -39,7 +88,7 @@ export function createDefaultAssets() {
   }));
 }
 
-export function createDefaultTimeline(assets = createDefaultAssets(), { fps = 24, previewDuration = 10 } = {}) {
+export function createDefaultTimeline(assets = createDefaultAssets(), { fps = DEFAULT_FPS, previewDuration = DEFAULT_DURATION_SECONDS } = {}) {
   const enabledAssets = assets.filter((asset) => asset.enabled !== false);
   const totalFrames = Math.max(1, Math.round(fps * previewDuration));
   const frameSpan = Math.max(1, Math.floor(totalFrames / Math.max(1, enabledAssets.length)));
@@ -53,7 +102,7 @@ export function createDefaultTimeline(assets = createDefaultAssets(), { fps = 24
       toFrame,
       sourceImageId: asset.id,
       prompt: createImageReferencePrompt(asset),
-      negativePrompt: 'low detail, text artifacts, flicker, broken geometry, hard crop',
+      negativePrompt: defaultCreativeDirectionNegativePrompt,
       transitionMode: index === 0 ? 'image-reference-start' : 'image-reference-morph',
     };
   });
@@ -72,8 +121,8 @@ export function createDefaultPreset() {
       reviewPreviewResolution: [1344, 576],
       finalResolution: [1680, 720],
       aspectRatio: '7:3',
-      fps: 24,
-      durationSeconds: 15,
+      fps: DEFAULT_FPS,
+      durationSeconds: DEFAULT_DURATION_SECONDS,
     },
     model: {
       modelId: model.id,
@@ -85,7 +134,7 @@ export function createDefaultPreset() {
       risk: model.risk,
     },
     assets,
-    timeline: createDefaultTimeline(assets, { fps: 24, previewDuration: 10 }),
+    timeline: createDefaultTimeline(assets, { fps: DEFAULT_FPS, previewDuration: DEFAULT_DURATION_SECONDS }),
     generation: {
       sampler: 'DPM++ 2M Karras',
       scheduler: 'Karras',
@@ -113,12 +162,11 @@ export function createDefaultPreset() {
       cameraPathPreset: 'slow-push',
       loopMode: 'loopable-return',
       cadence: 2,
-      fps: 24,
+      fps: DEFAULT_FPS,
     },
     prompt: {
-      positive:
-        'image-reference driven Future Wall morph using the selected pre-rendered source frame at each keyframe; preserve 1680x720 composition and panoramic edges',
-      negative: 'text, watermark, flicker, edge collapse, low detail, duplicated objects',
+      positive: defaultCreativeDirectionPrompt,
+      negative: defaultCreativeDirectionNegativePrompt,
       stylePreset: 'image-reference-morph',
       interpolationMode: 'weighted-keyframes',
     },
@@ -131,8 +179,8 @@ export function createDefaultPreset() {
       monochromeToColourBias: 0.45,
     },
     output: {
-      previewDuration: 10,
-      renderRange: [0, 359],
+      previewDuration: DEFAULT_DURATION_SECONDS,
+      renderRange: [0, DEFAULT_FPS * DEFAULT_DURATION_SECONDS - 1],
       outputFormat: 'webm',
       outputFolder: 'outputs/previews',
       takeNotes: '',

@@ -7,7 +7,7 @@ This repository contains the whole local Deforum effect prototype for NMS-SHG Co
 
 ## Current Goal
 
-Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne tune Deforum-style image morph presets, render comparison passes locally, and review/export results without editing raw JSON by hand. The current UI default is image-reference led: all bundled 1680x720 source PNGs are read from `assets/images/source/**/*.png`, shown through frame-keyed Prompt JSON Nodes, and exported as Deforum-compatible prompt schedules.
+Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne tune Deforum-style image morph presets, render comparison passes locally, and review/export results without editing raw JSON by hand. The current UI default is image-reference led: the first 8 bundled 1680x720 source PNGs from `assets/images/source/**/*.png` are shown through frame-keyed Prompt JSON Nodes, with the approved creative direction and source-asset-specific negative prompt applied by default on every node, and exported as Deforum-compatible prompt schedules.
 
 ## Product Constraints
 
@@ -34,8 +34,8 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 
 - `docs/deforum-control-ui-prd-spec.md`: source PRD/spec.
 - `config/model-options.json`: canonical model profile matrix.
-- `src/config/defaultPreset.js`: default exportable preset, all bundled source assets, and image-keyframe prompt node defaults.
-- `src/config/creativePromptGuides.js`: creative director prompt guide presets and negative guardrails for per-node application.
+- `src/config/defaultPreset.js`: default exportable 8-image, 8-second, 60 fps preset with creative-direction prompt, source-asset-specific negative prompt, and image-keyframe node defaults.
+- `src/config/creativePromptGuides.js`: legacy creative director prompt guide definitions retained for older saved presets and adapter compatibility.
 - `src/services/startupHealth.js`: startup readiness checks for Vite, Local A1111 Deforum, and the Hugging Face proxy.
 - `src/services/backendStatus.js`: persistent toolbar backend status checks for Local A1111 and Hugging Face.
 - `src/components/workbench/StartupScreen.jsx`: boot/loading screen shown while startup checks run.
