@@ -163,6 +163,8 @@ pnpm install
 pnpm dev
 ```
 
+`pnpm dev` starts the local UI and ensures the project-local Automatic1111 Deforum backend is running first. It uses `render-tools\stable-diffusion-webui\webui-user.bat`, waits for the backend APIs, and sets the source-image root for real renders.
+
 Open the local URL printed by Vite, usually:
 
 ```text
@@ -177,9 +179,11 @@ pnpm test
 pnpm exec playwright test
 ```
 
+Use `pnpm dev:ui` only for frontend-only development without backend startup.
+
 ## 8. Prepare A Local Deforum Backend
 
-This is required for the `Render Deforum` action. Mock-only frontend review can run without starting the backend, but the project itself owns both the workbench and the local runtime.
+This is required for the `Render Deforum` action and for the full `pnpm dev` startup path. Mock-only frontend review can use `pnpm dev:ui`, but the project itself owns both the workbench and the local runtime.
 
 Verified first backend: AUTOMATIC1111 Stable Diffusion WebUI with the Deforum extension, because the reference tutorial uses a Deforum-style control surface.
 

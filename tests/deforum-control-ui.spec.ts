@@ -25,7 +25,7 @@ async function waitForApp() {
 test.beforeAll(async () => {
   if (await canReachApp()) return;
   const command = process.platform === 'win32' ? process.env.ComSpec ?? 'cmd.exe' : 'pnpm';
-  const args = process.platform === 'win32' ? ['/c', 'pnpm.cmd', 'dev', '--', '--port', '5173'] : ['dev', '--', '--port', '5173'];
+  const args = process.platform === 'win32' ? ['/c', 'pnpm.cmd', 'dev:ui', '--', '--port', '5173'] : ['dev:ui', '--', '--port', '5173'];
   devServer = spawn(command, args, {
     cwd: process.cwd(),
     stdio: 'ignore',

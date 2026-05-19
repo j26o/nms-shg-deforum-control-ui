@@ -4,6 +4,7 @@ import { createHuggingFaceDeforumProxyPlugin } from './server/hfDeforumProxy.js'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const a1111BaseUrl = env.A1111_BASE_URL || 'http://127.0.0.1:7860';
 
   return {
     plugins: [react(), createHuggingFaceDeforumProxyPlugin(env)],
@@ -12,7 +13,7 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       proxy: {
         '/a1111': {
-          target: 'http://127.0.0.1:7860',
+          target: a1111BaseUrl,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/a1111/, ''),
         },

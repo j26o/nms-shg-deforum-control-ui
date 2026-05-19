@@ -139,7 +139,24 @@ Vite proxies `/a1111` to:
 http://127.0.0.1:7860
 ```
 
-If the Deforum backend cannot resolve repository-relative source asset paths directly, set `VITE_SOURCE_ASSET_ROOT` to a backend-visible absolute path for `assets/images/source/` before starting Vite.
+Use the full dev launcher from the repo root:
+
+```powershell
+pnpm dev
+```
+
+This command checks the A1111 Deforum API, starts `render-tools\stable-diffusion-webui\webui-user.bat` if the backend is not already running, waits for `/deforum/api_version` and `/sdapi/v1/sd-models`, sets `VITE_SOURCE_ASSET_ROOT` to the project `assets/images/source/` folder when it is not already set, and then starts Vite.
+
+Useful overrides:
+
+```powershell
+$env:A1111_BASE_URL='http://127.0.0.1:7860'
+$env:A1111_START_TIMEOUT_MS='600000'
+$env:SKIP_A1111_START='1'
+pnpm dev
+```
+
+Use `pnpm dev:ui` only when you intentionally want the frontend without backend startup.
 
 Run the real backend E2E test with:
 

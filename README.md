@@ -61,13 +61,13 @@ Set up the Windows target PC first using:
 - `docs/windows-setup.md`
 - `docs/local-render-setup.md`
 
-### 1. Start The Backend
+### 1. Confirm The Backend Launcher
 
-Open a PowerShell window and start Automatic1111 from its install folder:
+Automatic1111 is started by the normal dev command. Confirm the launcher exists at:
 
 ```powershell
 cd D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui
-.\webui-user.bat
+Test-Path .\webui-user.bat
 ```
 
 The launcher should include these backend flags in `webui-user.bat`:
@@ -76,23 +76,24 @@ The launcher should include these backend flags in `webui-user.bat`:
 set COMMANDLINE_ARGS=--api --deforum-api --deforum-simple-api
 ```
 
-Leave this window running. Verify the backend from a second PowerShell window:
+You can still verify or start the backend manually when debugging:
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:7860/deforum/api_version
 Invoke-RestMethod http://127.0.0.1:7860/sdapi/v1/sd-models
 ```
 
-### 2. Start The Frontend
+### 2. Start The UI And Backend
 
-Open another PowerShell window from this repo:
+Open PowerShell from this repo:
 
 ```powershell
 cd D:\nms-shg-deforum-control-ui-main
 pnpm install
-$env:VITE_SOURCE_ASSET_ROOT='D:\nms-shg-deforum-control-ui-main\assets\images\source'
 pnpm dev
 ```
+
+`pnpm dev` checks `http://127.0.0.1:7860`, starts `render-tools\stable-diffusion-webui\webui-user.bat` if needed, waits for the Deforum and Stable Diffusion APIs, sets `VITE_SOURCE_ASSET_ROOT` to the project source-image folder, then starts Vite.
 
 The dev server defaults to:
 
@@ -100,7 +101,13 @@ The dev server defaults to:
 http://127.0.0.1:5173
 ```
 
-Use `Render preview` for the fast mock path. Use `Render Deforum` only when the Automatic1111 backend is running.
+Use `Render preview` for the fast mock path. Use `Render Deforum` after `pnpm dev` reports the backend is ready.
+
+Frontend-only development and smoke tests can use:
+
+```powershell
+pnpm dev:ui
+```
 
 ### 3. Run Checks
 
@@ -115,7 +122,6 @@ Real backend Playwright path:
 
 ```powershell
 $env:RUN_REAL_DEFORUM='1'
-$env:VITE_SOURCE_ASSET_ROOT='D:\nms-shg-deforum-control-ui-main\assets\images\source'
 pnpm exec playwright test --reporter=list
 ```
 

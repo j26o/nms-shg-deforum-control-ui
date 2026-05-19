@@ -62,12 +62,13 @@ git diff --check
 
 The Playwright smoke test starts the Vite dev server if `http://127.0.0.1:5173/` is not already reachable.
 
-Start the backend from this repo before running the real Automatic1111/Deforum path:
+Start the normal local dev path from this repo:
 
 ```bash
-cd render-tools/stable-diffusion-webui
-./webui-user.bat
+pnpm dev
 ```
+
+`pnpm dev` starts or verifies the local Automatic1111 Deforum backend before starting Vite. Use `pnpm dev:ui` only for frontend-only checks.
 
 Then run:
 
