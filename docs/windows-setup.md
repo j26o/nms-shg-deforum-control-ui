@@ -382,6 +382,15 @@ D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui\extension
 
 Then restart `webui-user.bat`.
 
+### Vite reports `bufferutil` from Gradio or `render-tools`
+
+That package is not required by the React workbench. The error means Vite is trying to parse Automatic1111/Gradio runtime files inside `render-tools\stable-diffusion-webui\venv\...`. Pull the latest prototype, restart the dev server, and clear Vite's cache if the stale optimiser state remains:
+
+```powershell
+Remove-Item -Recurse -Force node_modules\.vite -ErrorAction SilentlyContinue
+pnpm dev
+```
+
 ### Preview renders are too slow
 
 Lower resolution first, then lower steps, duration, and FPS. Keep final-quality settings for overnight or queued renders.

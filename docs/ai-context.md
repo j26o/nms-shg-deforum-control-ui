@@ -16,6 +16,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - Do not assume `16:9` or crop away panoramic edges.
 - Keep images, prompts, presets, models, and generated outputs local.
 - Keep generated logs and output evidence inside this project folder: app/run logs under `outputs/logs/`, exports under `outputs/exports/`, previews under `outputs/previews/`, and Automatic1111 artifacts under `render-tools/stable-diffusion-webui/outputs/`.
+- Keep `render-tools/` outside the React/Vite frontend graph. It is ignored by Git and denied/ignored in Vite config so Gradio runtime assets are not parsed as app source.
 - Do not hardcode production show-control addresses, credentials, final model paths, or IPs.
 - Treat the app as a prototype workbench, not the final production renderer.
 - The approved Hugging Face direction is optional `huggingface-deforum`: a credential-safe Deforum-compatible backend that consumes the same simplified image-keyframe preset contract. Do not replace it with generic prompt-only text-to-video. The local proxy and frontend adapter exist; the remote endpoint/Space runtime still needs to be provided through `HF_DEFORUM_ENDPOINT_URL`.

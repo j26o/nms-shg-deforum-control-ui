@@ -162,7 +162,7 @@ git diff --check
 
 The default preview action still uses deterministic mock metadata plus an inline simulated visual preview for fast UI review and does not create a file. The `Render Deforum` action calls the selected real backend. `Local A1111` uses the Automatic1111 Deforum backend when it is running at `http://127.0.0.1:7860`; `Hugging Face` uses the local `/hf-deforum/*` proxy and requires `HF_DEFORUM_ENDPOINT_URL` plus a valid `HF_TOKEN` or named Hugging Face CLI token.
 
-Backend runtime files live under `render-tools/` inside this project folder and are ignored by Git because they include a nested WebUI checkout, Python environment, model checkpoints, and generated render outputs. Backend setup details are in `docs/local-render-setup.md`.
+Backend runtime files live under `render-tools/` inside this project folder and are ignored by Git because they include a nested WebUI checkout, Python environment, model checkpoints, and generated render outputs. Vite is configured to ignore and deny that folder so the frontend dev server does not try to parse Automatic1111/Gradio assets. Backend setup details are in `docs/local-render-setup.md`.
 
 Project-level logs and handoff artifacts should stay under `outputs/` in this repo. Use `outputs/logs/` for run logs, `outputs/previews/` for lightweight preview artifacts, and `outputs/exports/` for reviewed JSON/report exports. Automatic1111 render evidence stays under `render-tools/stable-diffusion-webui/outputs/`.
 

@@ -157,6 +157,13 @@ pnpm dev
 
 This command starts Vite only. It does not launch Stable Diffusion or Automatic1111.
 
+The Vite config intentionally blocks `render-tools/` from static serving, dependency optimisation, and file watching. That local folder contains Automatic1111 and Gradio runtime files, not React app source. If Vite tries to resolve imports such as `bufferutil` from a path under `render-tools\stable-diffusion-webui\venv\Lib\site-packages\gradio\...`, restart after pulling the latest config and clear Vite's cache if needed:
+
+```powershell
+Remove-Item -Recurse -Force node_modules\.vite -ErrorAction SilentlyContinue
+pnpm dev
+```
+
 Use the explicit backend-aware launcher only when you want the project to start or verify the local A1111 backend:
 
 ```powershell

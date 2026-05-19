@@ -99,3 +99,9 @@ Reason: Showing a placeholder `outputs/previews/*.webm` path made the mock previ
 Decision: Add a persistent backend status chip in the workbench toolbar. Local A1111 status is checked through `/a1111-deforum/status`, Hugging Face status through `/hf-deforum/status`, and the real render button is disabled when the selected backend is offline or not configured.
 
 Reason: A failed real Deforum render can otherwise look like a generic UI error. The reviewer needs to know whether the selected backend server is reachable before sending a long image-keyframe render payload.
+
+## 2026-05-19: Keep Render Tools Outside Vite Frontend Scanning
+
+Decision: Configure Vite to use `index.html` as the dependency optimisation entry, deny static serving from `render-tools/`, ignore `render-tools/` in file watching, and block browser requests for paths under `/render-tools/`.
+
+Reason: The project-local Automatic1111 runtime contains Gradio frontend assets and Python environment files. Those files are backend/runtime assets, not React app source, and Vite can otherwise try to resolve Gradio optional imports such as `bufferutil`.
