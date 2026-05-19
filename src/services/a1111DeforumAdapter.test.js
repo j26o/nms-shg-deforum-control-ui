@@ -87,4 +87,24 @@ describe('a1111 deforum adapter', () => {
       60: 'a beautiful coconut --neg photo, realistic',
     });
   });
+
+  it('resolves creative prompt guides into Deforum prompt schedules', () => {
+    const preset = {
+      ...createDefaultPreset(),
+      timeline: [
+        {
+          id: 'node-creative-guide',
+          fromFrame: 0,
+          toFrame: 0,
+          sourceImageId: 'image-001',
+          creativeGuideId: 'future-marina-bay-fluid-memory',
+          transitionMode: 'image-reference-node',
+        },
+      ],
+    };
+    const settings = createDeforumRenderSettings(preset);
+
+    expect(settings.prompts['0']).toContain('visionary future Singapore cityscape');
+    expect(settings.prompts['0']).toContain('--neg hard frame');
+  });
 });

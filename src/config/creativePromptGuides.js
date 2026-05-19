@@ -16,3 +16,7 @@ export const creativePromptGuides = [
       'vanishing perspective, tall skyline above horizon strip, bright daylight, close foreground perspective, hard edges, high saturation, deep perspective recession, text, watermark, broken geometry',
   },
 ];
+
+export function getCreativePromptGuide(guideId) {
+  return creativePromptGuides.find((guide) => guide.id === guideId) ?? null;
+}

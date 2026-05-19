@@ -1,5 +1,5 @@
 import { normaliseRenderConfig } from './renderAdapter.js';
-import { createDeforumPromptText } from './deforumPromptSchedule.js';
+import { createDeforumPromptText, resolveSegmentPromptFields } from './deforumPromptSchedule.js';
 
 const COMPLETED_STATUSES = new Set(['complete', 'completed', 'succeeded', 'success', 'done']);
 const FAILED_STATUSES = new Set(['failed', 'error', 'cancelled', 'canceled']);
@@ -33,16 +33,21 @@ function createEndpointAssets(renderConfig) {
 function createEndpointTimeline(renderConfig) {
   const fallbackPositive = renderConfig.prompt?.positive ?? '';
   const fallbackNegative = renderConfig.prompt?.negative ?? '';
-  return renderConfig.timeline.map((segment) => ({
-    id: segment.id,
-    fromFrame: segment.fromFrame,
-    toFrame: segment.toFrame,
-    sourceImageId: segment.sourceImageId,
-    prompt: segment.prompt ?? fallbackPositive,
-    negativePrompt: segment.negativePrompt ?? fallbackNegative,
-    promptText: createDeforumPromptText(segment, fallbackPositive, fallbackNegative),
-    transitionMode: segment.transitionMode,
-  }));
+  return renderConfig.timeline.map((segment) => {
+    const resolvedPrompt = resolveSegmentPromptFields(segment, fallbackPositive, fallbackNegative);
+    return {
+      id: segment.id,
+      fromFrame: segment.fromFrame,
+      toFrame: segment.toFrame,
+      sourceImageId: segment.sourceImageId,
+      prompt: resolvedPrompt.prompt,
+      negativePrompt: resolvedPrompt.negativePrompt,
+      promptText: createDeforumPromptText(segment, fallbackPositive, fallbackNegative),
+      creativeGuideId: resolvedPrompt.creativeGuideId,
+      creativeGuideLabel: resolvedPrompt.creativeGuideLabel,
+      transitionMode: segment.transitionMode,
+    };
+  });
 }
 
 export function createHuggingFaceDeforumPayload(preset, modelOverride) {

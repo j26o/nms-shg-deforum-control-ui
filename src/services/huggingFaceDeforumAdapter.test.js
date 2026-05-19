@@ -26,6 +26,28 @@ describe('hugging face deforum adapter', () => {
     expect(JSON.stringify(payload)).not.toContain('hf_');
   });
 
+  it('resolves creative prompt guides into the remote generation payload', () => {
+    const preset = {
+      ...createDefaultPreset(),
+      timeline: [
+        {
+          id: 'node-maritime-guide',
+          fromFrame: 0,
+          toFrame: 0,
+          sourceImageId: 'image-001',
+          creativeGuideId: 'deep-night-maritime-horizon-band',
+          transitionMode: 'image-reference-node',
+        },
+      ],
+    };
+    const payload = createHuggingFaceDeforumPayload(preset);
+
+    expect(payload.timeline[0].creativeGuideId).toBe('deep-night-maritime-horizon-band');
+    expect(payload.timeline[0].creativeGuideLabel).toBe('Deep Night Maritime Horizon Band');
+    expect(payload.timeline[0].prompt).toContain('Extreme long-distance maritime view');
+    expect(payload.timeline[0].promptText).toContain('--neg vanishing perspective');
+  });
+
   it('submits through the local proxy and returns normalized take job metadata', async () => {
     const preset = createDefaultPreset();
     const fetchMock = vi.fn().mockResolvedValue({
