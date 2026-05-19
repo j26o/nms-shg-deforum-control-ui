@@ -90,6 +90,6 @@ Reason: The 24-image default prompt-node payload is too large for browser URL/qu
 
 ## 2026-05-19: Label Mock Preview Takes As Simulated
 
-Decision: `Render preview` creates a saved simulated take for UI review, but does not write a media file or display a fake output path. Only real backend renders should display output file paths or artifact URLs.
+Decision: `Render preview` creates a saved simulated take for UI review, including an inline simulated visual preview, but does not write a media file or display a fake output path. Only real backend renders should display output file paths or artifact URLs.
 
 Reason: Showing a placeholder `outputs/previews/*.webm` path made the mock preview look like a real generated file. The prototype should keep fast preview metadata useful without implying a render artifact exists.

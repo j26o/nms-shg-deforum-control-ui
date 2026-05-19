@@ -828,6 +828,47 @@
   border-color: var(--color-accent-strong);
 }
 
+.simulatedPreview {
+  position: relative;
+  aspect-ratio: 7 / 3;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #030405;
+}
+
+.simulatedPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: simulatedPreviewDrift 6s ease-in-out infinite alternate;
+}
+
+.simulatedPreview figcaption {
+  position: absolute;
+  left: var(--space-2);
+  right: var(--space-2);
+  bottom: var(--space-2);
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2);
+  border: 1px solid rgba(239, 243, 247, 0.16);
+  border-radius: var(--radius-sm);
+  background: rgba(3, 4, 5, 0.72);
+}
+
+.simulatedPreview figcaption span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+@keyframes simulatedPreviewDrift {
+  to {
+    transform: scale(1.035) translate3d(-1.4%, -1%, 0);
+  }
+}
+
 .takeCard div,
 .takeCandidate div {
   display: grid;

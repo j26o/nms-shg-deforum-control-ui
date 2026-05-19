@@ -149,6 +149,15 @@ export function Workbench() {
             <div className={styles.takeGrid}>
               {takes.map((take) => (
                 <article key={take.id} className={take.candidate ? styles.takeCandidate : styles.takeCard}>
+                  {take.simulatedPreview ? (
+                    <figure className={styles.simulatedPreview}>
+                      <img src={take.simulatedPreview.thumbnailUrl} alt={`${take.simulatedPreview.label} simulated preview`} />
+                      <figcaption>
+                        <strong>Simulated preview</strong>
+                        <span>{take.simulatedPreview.label}</span>
+                      </figcaption>
+                    </figure>
+                  ) : null}
                   <div>
                     <strong>{take.model.modelId ?? take.model.id}</strong>
                     <span>{take.previewResolution.join('x')} / seed {take.seed}</span>

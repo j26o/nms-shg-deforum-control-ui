@@ -1,9 +1,29 @@
 import { createQueuedJob } from './renderAdapter.js';
 
+function getSimulatedPreview(renderConfig) {
+  const firstSegment = renderConfig.timeline[0];
+  const firstAsset =
+    renderConfig.assets.find((asset) => asset.id === firstSegment?.sourceImageId) ?? renderConfig.assets.find((asset) => asset.enabled !== false);
+
+  if (!firstAsset) {
+    return null;
+  }
+
+  return {
+    type: 'simulated-image-reference-preview',
+    sourceImageId: firstAsset.id,
+    label: firstAsset.label,
+    thumbnailUrl: firstAsset.previewUrl,
+    frame: firstSegment?.fromFrame ?? 0,
+    note: 'Animated UI preview only. No media file was written.',
+  };
+}
+
 export function queueMockRender(preset, modelOverride) {
   const job = createQueuedJob(preset, modelOverride);
   const modelId = job.renderConfig.model.modelId ?? job.renderConfig.model.id;
   const seed = job.renderConfig.generation.seed;
+  const simulatedPreview = getSimulatedPreview(job.renderConfig);
 
   return {
     ...job,
@@ -11,6 +31,7 @@ export function queueMockRender(preset, modelOverride) {
     completedAt: new Date().toISOString(),
     outputPath: '',
     previewLabel: `${preset.presetName}-${modelId}-${seed}`,
+    simulatedPreview,
     logs: [
       ...job.logs,
       `Using model ${modelId}.`,
@@ -42,6 +63,7 @@ export function createTakeFromJob(job) {
     outputPath: job.outputPath,
     artifactUrl: job.artifactUrl ?? '',
     previewLabel: job.previewLabel ?? '',
+    simulatedPreview: job.simulatedPreview ?? null,
     hasFileArtifact: Boolean(job.outputPath || job.artifactUrl),
     remoteJobId: job.remoteJobId ?? '',
     renderSettings,

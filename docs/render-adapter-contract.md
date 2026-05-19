@@ -20,6 +20,7 @@ The UI talks to render engines through a normalised config rather than engine-sp
 - status;
 - estimated duration;
 - preview label;
+- simulated preview thumbnail metadata;
 - model id;
 - preview resolution;
 - log lines.
@@ -34,7 +35,7 @@ Real backend jobs may additionally include:
 
 The selected runtime model profile is passed into Deforum as a frame-0 checkpoint schedule. A real render will only succeed when that checkpoint file is installed in the local Automatic1111 model folder.
 
-This mock path is intentional. It lets Etienne review the control surface, queue behaviour, take metadata, and export contract without requiring the GPU backend. Mock preview takes do not write video files and should be labelled as simulated in the UI.
+This mock path is intentional. It lets Etienne review the control surface, queue behaviour, take metadata, and export contract without requiring the GPU backend. Mock preview takes show an inline simulated visual preview, do not write video files, and should be labelled as simulated in the UI.
 
 The current real-backend path is a local Automatic1111 Deforum preset translator in `src/services/a1111DeforumAdapter.js`. It turns the reviewed prompt nodes into Deforum `prompts`, `init_images`, and render schedules, then posts the translated settings JSON to the local API and receives an output path. Take metadata stores the translated settings payload and inferred settings/output file locations for export and review.
 
