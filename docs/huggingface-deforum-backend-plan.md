@@ -1,7 +1,7 @@
 # Hugging Face Deforum Backend Plan
 
-Status: local proxy and UI adapter implemented; remote endpoint runtime pending
-Last updated: 2026-05-18
+Status: local proxy, UI adapter, and private Docker Space smoke endpoint implemented; real remote A1111 Deforum runtime pending
+Last updated: 2026-05-19
 
 Approval: Proceed with this direction. Hugging Face is an optional Deforum-compatible backend for the shared image-keyframe preset contract, not a generic video-generation path.
 
@@ -93,11 +93,13 @@ Implemented locally:
 - `src/stores/usePresetStore.js`: backend selection between `a1111-deforum` and `huggingface-deforum`.
 - `src/components/workbench/Workbench.jsx`: toolbar backend selector and Hugging Face render action label.
 - `.env.example`: local configuration keys for the proxy and endpoint paths.
+- `remote/huggingface-deforum-handler/`: deployable private Docker Space/API runtime exposing `/jobs`, `/jobs/:id`, and `/jobs/:id/artifact`.
+- Private Hugging Face Space `robaldovino/nms-shg-deforum-endpoint`: deployed in smoke mode at `https://robaldovino-nms-shg-deforum-endpoint.hf.space`.
 
 Pending:
 
-- an actual Hugging Face Inference Endpoint or private Space/API that accepts this payload and performs the Deforum-compatible render;
-- a real remote MP4 artifact eval against the same preset as the local A1111 baseline.
+- a reachable remote Automatic1111 Deforum service for the private Space to call through `HF_DEFORUM_A1111_BASE_URL`;
+- a real Deforum MP4 artifact eval against the same preset as the local A1111 baseline.
 
 Token handling:
 
@@ -211,11 +213,11 @@ Verify: `pnpm test` validates payload generation, image-keyframe preservation, c
 
 ### T5: Remote Deforum Runtime
 
-Status: pending.
+Status: partial. A private Docker Space/API endpoint is deployed and verified in smoke fallback mode. Real Deforum rendering is pending until the Space can reach an A1111 Deforum backend.
 
 Do: Create the remote endpoint/Space runtime that actually runs Deforum-style image-to-image animation from the submitted keyframes. The first acceptable version can be a private Space wrapper around Automatic1111 Deforum or a custom endpoint handler that reproduces the same settings.
 
-Files: future `remote/huggingface-deforum-handler/README.md`, `remote/huggingface-deforum-handler/handler.py`
+Files: `remote/huggingface-deforum-handler/README.md`, `remote/huggingface-deforum-handler/app.py`, `remote/huggingface-deforum-handler/Dockerfile`, `remote/huggingface-deforum-handler/requirements.txt`
 
 Verify: A 3-5 second `896x384` render from at least three bundled source images returns an MP4 and settings metadata.
 
@@ -233,7 +235,8 @@ Verify: Eval records source faithfulness, Deforum-like behavior, MP4 artifact ev
 
 - [x] UI exposes Hugging Face only as a Deforum-compatible backend option.
 - [x] Hugging Face requests use a proxy and never expose `HF_TOKEN` in browser code.
-- [ ] Remote backend produces MP4 by default from image-keyed source frames.
+- [ ] Remote backend produces real Deforum MP4 by default from image-keyed source frames.
+- [x] Private Hugging Face Space accepts the image-keyframe payload and returns a smoke-test MP4 artifact through the local proxy.
 - [x] Take metadata includes backend id `huggingface-deforum`, output artifact URL/path, settings payload, model, seed, resolution, frame count, FPS, and render duration when the remote endpoint returns those fields.
 - [x] Local A1111 Deforum remains supported and uses the same reviewed preset.
 - [x] `pnpm test`, `pnpm build`, and `pnpm exec playwright test` pass after local proxy/adapter implementation.

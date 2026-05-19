@@ -117,3 +117,9 @@ Reason: Showing only source images in the main preview while burying real output
 Decision: Local A1111 Deforum jobs are only reported as complete after the bridge finds a non-empty MP4 in the returned output folder. Output folders containing only Deforum settings txt files now fail artifact validation.
 
 Reason: Deforum can create the output folder and save `*_settings.txt` before any frame or video is generated. Treating that folder as completion made failed backend jobs look successful in the UI.
+
+## 2026-05-19: Deploy Hugging Face As A Private Deforum Space/API
+
+Decision: Add `remote/huggingface-deforum-handler/` and deploy it as the private Docker Space `robaldovino/nms-shg-deforum-endpoint`. The Space exposes the same `/jobs` contract used by the local proxy, decodes image-keyframe assets server-side, translates the payload into Deforum settings, and can wrap a reachable Automatic1111 Deforum batch API. Until a remote A1111 URL is available, the deployed Space is configured in smoke fallback mode to validate credential-safe upload, job polling, and MP4 artifact retrieval.
+
+Reason: The prototype needs a cloud backend integration path without changing the reviewed preset contract or reducing the workflow to generic text-to-video. Smoke fallback proves the transport and artifact contract, while final creative evaluation still requires real A1111 Deforum output.

@@ -19,7 +19,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - Keep `render-tools/` outside the React/Vite frontend graph. It is ignored by Git and denied/ignored in Vite config so Gradio runtime assets are not parsed as app source.
 - Do not hardcode production show-control addresses, credentials, final model paths, or IPs.
 - Treat the app as a prototype workbench, not the final production renderer.
-- The approved Hugging Face direction is optional `huggingface-deforum`: a credential-safe Deforum-compatible backend that consumes the same simplified image-keyframe preset contract. Do not replace it with generic prompt-only text-to-video. The local proxy and frontend adapter exist; the remote endpoint/Space runtime still needs to be provided through `HF_DEFORUM_ENDPOINT_URL`.
+- The approved Hugging Face direction is optional `huggingface-deforum`: a credential-safe Deforum-compatible backend that consumes the same simplified image-keyframe preset contract. Do not replace it with generic prompt-only text-to-video. The local proxy, frontend adapter, and private Docker Space endpoint exist; the deployed Space currently runs smoke fallback mode until it can reach a remote A1111 Deforum backend through `HF_DEFORUM_A1111_BASE_URL`.
 
 ## Tech Stack
 
@@ -49,6 +49,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - `server/renderArtifactProxy.js`: safe local artifact bridge for project output videos and generated render files.
 - `src/services/huggingFaceDeforumAdapter.js`: Hugging Face Deforum payload builder and proxy-backed job adapter.
 - `server/hfDeforumProxy.js`: local Vite middleware proxy for Hugging Face credentials, image attachment, job submit/poll, and artifact download.
+- `remote/huggingface-deforum-handler/`: private Docker Space/API runtime for the optional Hugging Face Deforum backend.
 - `docs/huggingface-deforum-backend-plan.md`: approved plan for an optional Hugging Face Deforum-compatible endpoint/proxy path.
 - `render-tools/`: ignored local backend runtime folder containing Automatic1111, Deforum, FFmpeg, checkpoints, venv, and generated render outputs.
 - `src/components/workbench/`: reviewer workbench UI.
@@ -95,6 +96,6 @@ RUN_REAL_DEFORUM=1 pnpm exec playwright test
 
 ## Current Known Gap
 
-The current verified real backend path is a local Automatic1111 Deforum preset translator backed by the in-repo ignored `render-tools/` runtime. Runtime comparison is proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9. The adapter now requires a non-empty MP4 artifact before reporting a real A1111 job as complete; settings-only Deforum outputs are treated as failed/incomplete renders. SDXL Base/SDXL Refiner compatibility still needs investigation. The Hugging Face path now has a local proxy and frontend adapter, but no remote endpoint/Space runtime has been verified yet. A full production-grade Deforum preset exporter is still future work.
+The current verified real backend path is a local Automatic1111 Deforum preset translator backed by the in-repo ignored `render-tools/` runtime. Runtime comparison is proven for SD 1.5, RealVisXL V5.0, and Juggernaut XL v9. The adapter now requires a non-empty MP4 artifact before reporting a real A1111 job as complete; settings-only Deforum outputs are treated as failed/incomplete renders. SDXL Base/SDXL Refiner compatibility still needs investigation. The Hugging Face path now has a local proxy, frontend adapter, and deployed private Space smoke endpoint, but no remote real Deforum MP4 render has been verified yet. A full production-grade Deforum preset exporter is still future work.
 
 Use `docs/todo.md` for the active next-step list.

@@ -1,7 +1,7 @@
 # Todo
 
 Status: active next steps  
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 ## Next Implementation Steps
 
@@ -27,7 +27,9 @@ Last updated: 2026-05-18
 - [ ] Complete the approved optional Hugging Face Deforum backend plan in `docs/huggingface-deforum-backend-plan.md`.
 - [x] Add a Hugging Face backend selector state with a credential-safe local proxy and Deforum-compatible endpoint contract.
 - [x] Add the local `huggingface-deforum` frontend adapter and Vite proxy.
-- [ ] Provide the remote Hugging Face endpoint or private Space/API runtime for `HF_DEFORUM_ENDPOINT_URL`.
+- [x] Provide the remote Hugging Face endpoint or private Space/API runtime for `HF_DEFORUM_ENDPOINT_URL`.
+- [x] Deploy private Hugging Face Docker Space `robaldovino/nms-shg-deforum-endpoint` and verify local proxy smoke MP4 artifact retrieval.
+- [ ] Connect the deployed Hugging Face Space to a reachable A1111 Deforum backend through `HF_DEFORUM_A1111_BASE_URL`.
 - [ ] Run a Hugging Face vs local Automatic1111 eval using the same image-keyframe preset and MP4 artifact checks.
 
 ## Current Verified Baseline
