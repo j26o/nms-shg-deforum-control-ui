@@ -8,7 +8,7 @@ Created: 2026-05-16
 
 This repository contains the whole local Deforum effect prototype for NMS-SHG Conclusion Space creative tuning: the React/Vite workbench, source assets, preset/export logic, local Automatic1111 Deforum runtime, model matrix, and generated review evidence.
 
-The tuning bench lets Etienne load multiple pre-generated images, adjust motion and diffusion parameters through a modern UI, compare rendered passes, and export a final configuration for the NMS-SHG Conclusion Space visual system.
+The tuning bench reads the committed pre-generated 1680x720 images, lets Etienne assign them to frame-keyed Prompt JSON Nodes, adjust motion and diffusion parameters through a modern UI, compare rendered passes, and export a final configuration for the NMS-SHG Conclusion Space visual system.
 
 The prototype is a development workbench, not a final show-control build. Its job is to make the creative parameters reviewable before the production Conclusion Space renderer is locked.
 
@@ -54,7 +54,7 @@ Read the PRD/spec plan here:
 
 ## How To Run It
 
-The first executable React + Vite workbench now exists as part of the full local effect prototype. It implements the PRD/spec workbench shape with a local mock render adapter, model-profile dropdown, 7:3 preview frame, frame-keyed prompt JSON nodes, take metadata, export actions, and a real Automatic1111 Deforum backend path.
+The first executable React + Vite workbench now exists as part of the full local effect prototype. It implements the PRD/spec workbench shape with a local mock render adapter, model-profile dropdown, 7:3 preview frame, frame-keyed Prompt JSON Nodes with image thumbnails and creative prompt guides, render progress feedback, take metadata, export actions, and a real Automatic1111 Deforum backend path.
 
 Set up the Windows target PC first using:
 
@@ -63,7 +63,7 @@ Set up the Windows target PC first using:
 
 ### 1. Confirm The Backend Launcher
 
-Automatic1111 is started by the normal dev command. Confirm the launcher exists at:
+The normal UI dev command does not start Automatic1111. Confirm the backend launcher exists before using `pnpm dev:backend`:
 
 ```powershell
 cd D:\nms-shg-deforum-control-ui-main\render-tools\stable-diffusion-webui

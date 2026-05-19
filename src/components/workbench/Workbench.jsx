@@ -3,9 +3,9 @@ import { modelOptions } from '../../config/modelOptions.js';
 import { exportDeforumSettingsJson, exportPresetJson, exportPresetReport, downloadTextFile } from '../../services/exportPreset.js';
 import { validatePreset } from '../../services/presetSchema.js';
 import { usePresetStore } from '../../stores/usePresetStore.js';
-import { AssetRail } from './AssetRail.jsx';
 import { ControlsPanel } from './ControlsPanel.jsx';
 import { PreviewPanel } from './PreviewPanel.jsx';
+import { PromptNodesPanel } from './PromptNodesPanel.jsx';
 import styles from './Workbench.module.css';
 
 export function Workbench() {
@@ -15,6 +15,9 @@ export function Workbench() {
   const queueRender = usePresetStore((state) => state.queueRender);
   const queueDeforumRender = usePresetStore((state) => state.queueDeforumRender);
   const renderBackend = usePresetStore((state) => state.renderBackend);
+  const renderStatus = usePresetStore((state) => state.renderStatus);
+  const renderProgress = usePresetStore((state) => state.renderProgress);
+  const renderMessage = usePresetStore((state) => state.renderMessage);
   const setRenderBackend = usePresetStore((state) => state.setRenderBackend);
   const updatePresetName = usePresetStore((state) => state.updatePresetName);
   const markCandidate = usePresetStore((state) => state.markCandidate);
@@ -22,6 +25,8 @@ export function Workbench() {
   const validation = validatePreset(preset);
   const backendError = usePresetStore((state) => state.backendError);
   const candidateTake = takes.find((take) => take.candidate);
+  const renderBusy = renderStatus === 'running';
+  const showRenderNotice = renderStatus !== 'idle' || Boolean(backendError);
 
   const handleExportJson = () => {
     downloadTextFile(`${preset.presetName}.json`, exportPresetJson(preset));
@@ -57,11 +62,11 @@ export function Workbench() {
           <button type="button" className={styles.iconButton} title="Save preset draft">
             <Save size={17} aria-hidden="true" />
           </button>
-          <button type="button" className={styles.primaryButton} onClick={queueRender}>
+          <button type="button" className={styles.primaryButton} onClick={() => void queueRender()} disabled={renderBusy}>
             <Play size={17} aria-hidden="true" />
             Render preview
           </button>
-          <button type="button" className={styles.secondaryButton} onClick={() => void queueDeforumRender()}>
+          <button type="button" className={styles.secondaryButton} onClick={() => void queueDeforumRender()} disabled={renderBusy}>
             <Play size={17} aria-hidden="true" />
             {renderBackend === 'huggingface-deforum' ? 'Render HF Deforum' : 'Render Deforum'}
           </button>
@@ -84,12 +89,26 @@ export function Workbench() {
       </header>
 
       <main className={styles.grid}>
-        <AssetRail />
+        <PromptNodesPanel />
         <section className={styles.centerStack} aria-label="Preview">
           <PreviewPanel />
         </section>
         <ControlsPanel />
       </main>
+
+      {showRenderNotice ? (
+        <aside className={styles.renderNotice} role={renderStatus === 'error' || backendError ? 'alert' : 'status'} aria-live="polite">
+          <div>
+            <strong>{renderStatus === 'error' || backendError ? 'Render failed' : renderBusy ? 'Render in progress' : 'Render complete'}</strong>
+            <span>{renderMessage || backendError}</span>
+          </div>
+          {renderBusy || renderStatus === 'complete' ? (
+            <div className={styles.progressTrack} aria-label="Render progress">
+              <span style={{ width: `${renderProgress}%` }} />
+            </div>
+          ) : null}
+        </aside>
+      ) : null}
 
       <aside className={styles.bottomBar} aria-label="Render queue and take comparison">
         <section className={styles.statusPanel}>
@@ -98,7 +117,14 @@ export function Workbench() {
             <h2>Queue</h2>
           </div>
           {jobs.length === 0 ? (
-            <p className={styles.emptyText}>No preview jobs queued.</p>
+            <div className={styles.queueStatus}>
+              <p className={styles.emptyText}>{renderMessage || 'No preview jobs queued.'}</p>
+              {renderBusy ? (
+                <div className={styles.progressTrack} aria-label="Queue progress">
+                  <span style={{ width: `${renderProgress}%` }} />
+                </div>
+              ) : null}
+            </div>
           ) : (
             <ol className={styles.jobList}>
               {jobs.slice(0, 4).map((job) => (

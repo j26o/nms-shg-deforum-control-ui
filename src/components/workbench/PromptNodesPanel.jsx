@@ -1,4 +1,5 @@
 import { Copy, Plus, Trash2 } from 'lucide-react';
+import { creativePromptGuides } from '../../config/creativePromptGuides.js';
 import { createDeforumPromptSchedule } from '../../services/deforumPromptSchedule.js';
 import { usePresetStore } from '../../stores/usePresetStore.js';
 import styles from './Workbench.module.css';
@@ -6,6 +7,7 @@ import styles from './Workbench.module.css';
 export function PromptNodesPanel() {
   const preset = usePresetStore((state) => state.preset);
   const selectedSegmentId = usePresetStore((state) => state.selectedSegmentId);
+  const selectAsset = usePresetStore((state) => state.selectAsset);
   const selectSegment = usePresetStore((state) => state.selectSegment);
   const addSegment = usePresetStore((state) => state.addSegment);
   const duplicateSegment = usePresetStore((state) => state.duplicateSegment);
@@ -13,10 +15,36 @@ export function PromptNodesPanel() {
   const updateSegment = usePresetStore((state) => state.updateSegment);
   const promptPayload = JSON.stringify(createDeforumPromptSchedule(preset), null, 2);
 
+  const handleSelectNode = (node) => {
+    selectSegment(node.id);
+    selectAsset(node.sourceImageId);
+  };
+
+  const handleImageChange = (nodeId, sourceImageId) => {
+    updateSegment(nodeId, { sourceImageId });
+    selectAsset(sourceImageId);
+  };
+
+  const handleGuideChange = (nodeId, guideId) => {
+    const guide = creativePromptGuides.find((item) => item.id === guideId);
+    if (!guide) {
+      updateSegment(nodeId, { creativeGuideId: '' });
+      return;
+    }
+    updateSegment(nodeId, {
+      creativeGuideId: guide.id,
+      prompt: guide.prompt,
+      negativePrompt: guide.negativePrompt,
+    });
+  };
+
   return (
-    <section className={styles.controlGroup} aria-label="Prompt JSON nodes">
+    <section className={styles.promptNodeRail} aria-label="Prompt JSON nodes">
       <div className={styles.groupHeader}>
-        <h2>Prompt JSON Nodes</h2>
+        <div>
+          <h2>Prompt JSON Nodes</h2>
+          <span>{preset.assets.length} folder images loaded</span>
+        </div>
         <button type="button" className={styles.smallCommand} onClick={addSegment}>
           <Plus size={15} aria-hidden="true" />
           Node
@@ -31,12 +59,17 @@ export function PromptNodesPanel() {
             const selected = node.id === selectedSegmentId;
             return (
               <article key={node.id} className={selected ? styles.promptNodeSelected : styles.promptNodeCard}>
-                <button type="button" className={styles.promptNodeSummary} onClick={() => selectSegment(node.id)}>
+                <button type="button" className={styles.promptNodeSummary} onClick={() => handleSelectNode(node)}>
                   <strong>{node.fromFrame}</strong>
                   <span>{asset?.label ?? node.sourceImageId}</span>
                 </button>
                 {selected ? (
                   <div className={styles.promptNodeEditor}>
+                    {asset ? (
+                      <div className={styles.promptNodeThumbnail}>
+                        <img src={asset.previewUrl} alt={`${asset.label} preview`} />
+                      </div>
+                    ) : null}
                     <label>
                       Frame
                       <input
@@ -51,11 +84,26 @@ export function PromptNodesPanel() {
                       <select
                         aria-label="Active node image"
                         value={node.sourceImageId}
-                        onChange={(event) => updateSegment(node.id, { sourceImageId: event.target.value })}
+                        onChange={(event) => handleImageChange(node.id, event.target.value)}
                       >
                         {preset.assets.map((assetOption) => (
                           <option key={assetOption.id} value={assetOption.id}>
                             {assetOption.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      Guide
+                      <select
+                        aria-label="Active node creative guide"
+                        value={node.creativeGuideId ?? ''}
+                        onChange={(event) => handleGuideChange(node.id, event.target.value)}
+                      >
+                        <option value="">Custom image-reference prompt</option>
+                        {creativePromptGuides.map((guide) => (
+                          <option key={guide.id} value={guide.id}>
+                            {guide.label}
                           </option>
                         ))}
                       </select>

@@ -212,9 +212,9 @@ The first screen should be the actual tuning bench, not a landing page.
 
 | Zone | Purpose |
 |---|---|
-| Left asset rail | Source image tray, sequence order, image metadata, crop/aspect controls. |
+| Left prompt rail | Frame-keyed Prompt JSON Nodes, image selector, selected-image thumbnail, prompt guide selector, positive prompt, and `--neg` parameters. |
 | Centre preview | 7:3 current frame, before/after scrub, latest rendered clip, 1680x720 safe-frame guides. |
-| Bottom timeline | Image segments, prompt keyframes, camera/motion curves, render range. |
+| Bottom queue/takes | Render feedback, progress state, saved takes, candidate selection, and output metadata. |
 | Right controls | Sliders/dropdowns grouped by Generation, Motion, Prompt, Image Morph, Look, Output. |
 | Top toolbar | Preset name, save, render preview, queue, compare, export. |
 
@@ -424,7 +424,7 @@ Key boundaries:
 
 ### T3: Workbench Layout
 
-**Do:** Build the asset rail, preview panel, timeline strip, controls panel, and top toolbar using a dense workstation layout.
+**Do:** Build the Prompt JSON Node rail, preview panel, controls panel, queue/takes area, and top toolbar using a dense workstation layout. Source images are discovered from the committed source-image folder and selected per node; they are not manually managed from the workbench.
 
 **Files:** `src/components/workbench/*`, `src/App.jsx`, `src/styles/*`
 
@@ -438,9 +438,9 @@ Key boundaries:
 
 **Verify:** `pnpm test -- controls`, manual: changing model profile updates the preset preview JSON and shows the model risk/status note.
 
-### T5: Timeline And Keyframes
+### T5: Prompt JSON Nodes And Keyframes
 
-**Do:** Implement frame-based prompt/image segments with add, duplicate, reorder, and delete actions. Show frame ranges and segment duration.
+**Do:** Implement frame-based prompt/image nodes with add, duplicate, delete, frame-number editing, image selection, thumbnail preview, positive prompt editing, `--neg` editing, and creative-director prompt guide application. Export these nodes as the Deforum-style frame prompt payload.
 
 **Files:** `src/components/timeline/*`, `src/stores/useTimelineStore.js`
 

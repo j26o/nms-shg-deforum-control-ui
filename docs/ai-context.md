@@ -1,13 +1,13 @@
 # AI Contributor Context
 
 Status: canonical context  
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 This repository contains the whole local Deforum effect prototype for NMS-SHG Conclusion Space creative tuning, including the React/Vite workbench, source assets, preset/export logic, local Automatic1111 Deforum runtime under `render-tools/`, model matrix, and rendered review evidence.
 
 ## Current Goal
 
-Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne tune Deforum-style image morph presets, render comparison passes locally, and review/export results without editing raw JSON by hand. The current UI default is image-reference led: all bundled 1680x720 source PNGs are loaded into the asset rail and mapped into frame-keyed prompt JSON nodes.
+Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne tune Deforum-style image morph presets, render comparison passes locally, and review/export results without editing raw JSON by hand. The current UI default is image-reference led: all bundled 1680x720 source PNGs are read from `assets/images/source/**/*.png`, shown through frame-keyed Prompt JSON Nodes, and exported as Deforum-compatible prompt schedules.
 
 ## Product Constraints
 
@@ -34,6 +34,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - `docs/deforum-control-ui-prd-spec.md`: source PRD/spec.
 - `config/model-options.json`: canonical model profile matrix.
 - `src/config/defaultPreset.js`: default exportable preset, all bundled source assets, and image-keyframe prompt node defaults.
+- `src/config/creativePromptGuides.js`: creative director prompt guide presets and negative guardrails for per-node application.
 - `src/components/workbench/PromptNodesPanel.jsx`: frame-keyed prompt JSON node editor.
 - `src/services/presetSchema.js`: export validation rules.
 - `src/services/renderAdapter.js`: render adapter boundary.

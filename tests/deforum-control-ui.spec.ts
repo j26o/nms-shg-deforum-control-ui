@@ -44,22 +44,13 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
 
   await expect(page.getByText('Deforum Control UI')).toBeVisible();
   await expect(page.getByLabel('Seven by three preview frame')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Sources' })).toBeVisible();
-  await page.getByTitle('Add source image').click();
-  const addPanel = page.getByLabel('Add source image');
-  await addPanel.getByLabel('Source path').fill('assets/images/source/manual/test-source.png');
-  await addPanel.getByLabel('Label').fill('Manual Test Source');
-  await addPanel.getByRole('button', { name: /Add path/i }).click();
-  const manualSourceCard = page.locator('[data-source-label="Manual Test Source"]');
-  await expect(manualSourceCard).toHaveCount(1);
-  await manualSourceCard.getByTitle('Edit source').click();
-  await manualSourceCard.getByLabel('Source path').fill('assets/images/source/manual/revised-source.png');
-  await expect(manualSourceCard.getByLabel('Source path')).toHaveValue('assets/images/source/manual/revised-source.png');
-  await page.getByTitle('Collapse source images').click();
-  await expect(page.getByTitle('Expand source images')).toBeVisible();
-  await page.getByTitle('Expand source images').click();
-  await manualSourceCard.getByTitle('Remove source').click();
-  await expect(page.locator('[data-source-label="Manual Test Source"]')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Sources' })).toHaveCount(0);
+
+  const promptNodes = page.getByLabel('Prompt JSON nodes');
+  await expect(promptNodes.getByRole('heading', { name: 'Prompt JSON Nodes' })).toBeVisible();
+  await expect(promptNodes.getByText(/folder images loaded/)).toBeVisible();
+  await expect(promptNodes.getByAltText(/preview/i).first()).toBeVisible();
+
   await expect(page.getByLabel('Backend')).toHaveValue('a1111-deforum');
   await page.getByLabel('Backend').selectOption('huggingface-deforum');
   await expect(page.getByRole('button', { name: /Render HF Deforum/i })).toBeVisible();
@@ -71,17 +62,24 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await page.getByRole('radio', { name: 'RealVisXL V5.0' }).check();
   await expect(page.locator('strong').filter({ hasText: 'RealVisXL V5.0' })).toBeVisible();
 
-  const promptNodes = page.getByLabel('Prompt JSON nodes');
-  await expect(promptNodes.getByRole('heading', { name: 'Prompt JSON Nodes' })).toBeVisible();
+  await promptNodes.getByLabel('Active node creative guide').selectOption('future-marina-bay-fluid-memory');
+  await expect(promptNodes.getByLabel('Active node prompt')).toHaveValue(/visionary future Singapore cityscape/);
+  await expect(promptNodes.getByLabel('Active node negative params')).toHaveValue(/hard frame/);
+
   await promptNodes.getByRole('button', { name: 'Node', exact: true }).click();
   await promptNodes.getByLabel('Active node frame').fill('30');
+  await promptNodes.getByLabel('Active node image').selectOption({ index: 1 });
+  await expect(promptNodes.getByAltText(/preview/i).first()).toBeVisible();
   await promptNodes.getByLabel('Active node prompt').fill('a beautiful coconut');
   await promptNodes.getByLabel('Active node negative params').fill('photo, realistic');
   await expect(promptNodes.getByLabel('Prompt payload JSON')).toHaveValue(/"30": "a beautiful coconut --neg photo, realistic"/);
 
   await page.getByRole('button', { name: /Render preview/i }).click();
+  await expect(page.getByRole('status')).toContainText(/Render in progress|Render complete/);
+  await expect(page.getByLabel(/Render progress|Queue progress/).first()).toBeVisible();
+  await expect(page.getByRole('status')).toContainText(/Preview render complete/);
   await expect(page.getByText('complete').first()).toBeVisible();
-  await expect(page.getByText(/saved/)).toBeVisible();
+  await expect(page.getByText('1 saved')).toBeVisible();
   await expect(page.getByRole('button', { name: /Render Deforum/i })).toBeVisible();
 
   if (process.env.RUN_REAL_DEF0RUM === '1' || process.env.RUN_REAL_DEFORUM === '1') {

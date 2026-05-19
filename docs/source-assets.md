@@ -20,6 +20,9 @@ All files were checked locally and are:
 
 The prototype workbench and render backend should treat 1680x720 as the source canvas:
 
+- discover source images from `assets/images/source/**/*.png` at build/dev time;
+- expose image selection inside Prompt JSON Nodes rather than through a separate manual source-management rail;
+- show the selected node image as a 7:3 thumbnail when the node is expanded;
 - preserve the full 7:3 frame in the centre preview;
 - show safe-frame guides against the full 1680x720 image;
 - avoid 16:9 layout assumptions;

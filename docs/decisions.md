@@ -63,3 +63,15 @@ Decision: Treat Hugging Face as an optional future backend only when it can run 
 Reason: The prototype's purpose is Deforum-like animation tuning from supplied pre-rendered images. A generic prompt-only text-to-video API would not validate the same controls, source-image retention, frame schedules, model comparison, or MP4 handoff contract.
 
 Status: Approved direction. Future implementation should build the Hugging Face path around the simplified UI preset contract and backend-specific translation, keeping local Automatic1111 as the comparison baseline and fallback.
+
+## 2026-05-19: Make Prompt JSON Nodes The Left Workflow Rail
+
+Decision: Remove the manual source-image rail from the primary workbench and use the left column for frame-keyed Prompt JSON Nodes. The app discovers bundled images from `assets/images/source/**/*.png`, and each expanded node lets the reviewer select one of those images, set the frame number, apply a creative prompt guide, edit the positive prompt, edit `--neg` parameters, and preview the chosen image thumbnail.
+
+Reason: The current exercise uses a fixed set of pre-rendered 1680x720 images committed to the repo. Etienne's main task is to choose which image drives each Deforum keyframe and tune the prompt payload, not manage source files during review. This also keeps the exported schedule close to the Automatic1111 Deforum JSON shape.
+
+## 2026-05-19: Surface Preview Render Feedback In UI
+
+Decision: `Render preview` now drives visible render state: busy buttons, a progress bar, a status popup, queue messaging, and failure text through the same render notice pattern used for backend errors.
+
+Reason: Silent render actions make the prototype hard to evaluate. Even the mock preview path should confirm that the app accepted the render request, built the prompt payload, and saved a take.

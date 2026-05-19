@@ -7,6 +7,12 @@ import { queueMockRender, createTakeFromJob } from '../services/mockRenderAdapte
 
 const defaultPreset = createDefaultPreset();
 
+function wait(ms) {
+  return new Promise((resolve) => {
+    globalThis.setTimeout(resolve, ms);
+  });
+}
+
 function createAssetId() {
   return `image-custom-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
@@ -47,6 +53,9 @@ export const usePresetStore = create((set, get) => ({
   jobs: [],
   takes: [],
   backendError: '',
+  renderStatus: 'idle',
+  renderProgress: 0,
+  renderMessage: '',
   renderBackend: 'a1111-deforum',
   compareModelIds: [defaultPreset.model.modelId],
 
@@ -167,6 +176,7 @@ export const usePresetStore = create((set, get) => ({
       };
       return {
         preset: { ...state.preset, timeline: [...state.preset.timeline, segment] },
+        selectedAssetId: segment.sourceImageId,
         selectedSegmentId: segment.id,
       };
     }),
@@ -183,6 +193,7 @@ export const usePresetStore = create((set, get) => ({
       };
       return {
         preset: { ...state.preset, timeline: [...state.preset.timeline, duplicate] },
+        selectedAssetId: duplicate.sourceImageId,
         selectedSegmentId: duplicate.id,
       };
     }),
@@ -217,28 +228,75 @@ export const usePresetStore = create((set, get) => ({
       [timeline[index], timeline[target]] = [timeline[target], timeline[index]];
       return { preset: { ...state.preset, timeline } };
     }),
-  queueRender: () => {
-    const state = get();
-    const selectedModels = state.compareModelIds.length ? state.compareModelIds : [state.preset.model.modelId];
-    const jobs = selectedModels.map((modelId) => queueMockRender(state.preset, getModelById(modelId)));
-    const takes = jobs.map(createTakeFromJob);
-    set((current) => ({ jobs: [...jobs, ...current.jobs], takes: [...takes, ...current.takes] }));
+  queueRender: async () => {
+    set({
+      backendError: '',
+      renderStatus: 'running',
+      renderProgress: 15,
+      renderMessage: 'Preview render queued.',
+    });
+    try {
+      await wait(180);
+      set({ renderProgress: 45, renderMessage: 'Building image-keyframe prompt payload.' });
+      await wait(180);
+      const state = get();
+      const selectedModels = state.compareModelIds.length ? state.compareModelIds : [state.preset.model.modelId];
+      const jobs = selectedModels.map((modelId) => queueMockRender(state.preset, getModelById(modelId)));
+      const takes = jobs.map(createTakeFromJob);
+      set((current) => ({
+        jobs: [...jobs, ...current.jobs],
+        takes: [...takes, ...current.takes],
+        renderStatus: 'complete',
+        renderProgress: 100,
+        renderMessage: `Preview render complete: ${takes.length} take${takes.length === 1 ? '' : 's'} saved.`,
+      }));
+      await wait(900);
+      if (get().renderStatus === 'complete') {
+        set({ renderStatus: 'idle', renderProgress: 0, renderMessage: '' });
+      }
+      return jobs;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      set({
+        backendError: message,
+        renderStatus: 'error',
+        renderProgress: 0,
+        renderMessage: `Preview render failed: ${message}`,
+      });
+      return [];
+    }
   },
   queueDeforumRender: async () => {
     const { preset, renderBackend } = get();
-    set({ backendError: '' });
+    set({
+      backendError: '',
+      renderStatus: 'running',
+      renderProgress: 20,
+      renderMessage: renderBackend === 'huggingface-deforum' ? 'Sending Deforum payload to Hugging Face.' : 'Sending Deforum payload to Local A1111.',
+    });
     try {
       const job =
         renderBackend === 'huggingface-deforum'
           ? await queueHuggingFaceDeforumRender(preset)
           : await queueA1111DeforumRender(preset);
       const take = createTakeFromJob(job);
-      set((current) => ({ jobs: [job, ...current.jobs], takes: [take, ...current.takes] }));
+      set((current) => ({
+        jobs: [job, ...current.jobs],
+        takes: [take, ...current.takes],
+        renderStatus: 'complete',
+        renderProgress: 100,
+        renderMessage: `${renderBackend === 'huggingface-deforum' ? 'Hugging Face' : 'Local A1111'} render complete.`,
+      }));
       return job;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      set({ backendError: message });
-      throw error;
+      set({
+        backendError: message,
+        renderStatus: 'error',
+        renderProgress: 0,
+        renderMessage: `Deforum render failed: ${message}`,
+      });
+      return null;
     }
   },
   markCandidate: (takeId) =>
