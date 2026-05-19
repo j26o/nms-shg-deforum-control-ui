@@ -23,7 +23,8 @@ describe('hugging face deforum adapter', () => {
     expect(payload.timeline).toHaveLength(preset.timeline.length);
     expect(payload.timeline[0].sourceImageId).toBe(payload.assets[0].id);
     expect(payload.timeline[0].prompt).toContain('visionary future Singapore cityscape');
-    expect(payload.timeline[0].prompt).toContain('image-reference source for this keyframe');
+    expect(payload.timeline[0].prompt).toContain('required target image for this keyframe');
+    expect(payload.timeline[0].prompt).toContain('Do not invent a new city');
     expect(payload.timeline[0].promptText).toContain('--neg');
     expect(JSON.stringify(payload)).not.toContain('hf_');
   });

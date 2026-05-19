@@ -73,7 +73,20 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
 
   await expect(promptNodes.getByLabel('Active node prompt')).toHaveValue(/visionary future Singapore cityscape/);
   await expect(promptNodes.getByLabel('Active node prompt')).toHaveValue(/Extreme long-distance maritime view/);
+  await expect(promptNodes.getByLabel('Active node prompt')).toHaveValue(/required target image for this keyframe/);
   await expect(promptNodes.getByLabel('Active node negative params')).toHaveValue(/strong vanishing point/);
+
+  const deforumControls = page.getByLabel('Deforum controls');
+  await expect(deforumControls.getByLabel('Source strength')).toHaveValue('0.96');
+  await expect(deforumControls.getByLabel('Denoise')).toHaveValue('0.18');
+  await expect(deforumControls.getByLabel('Image decay')).toHaveValue('0.04');
+  await expect(deforumControls.getByLabel('Transition frames')).toHaveValue('42');
+  await expect(deforumControls.getByLabel('Structural lock')).toHaveValue('0.92');
+  await expect(deforumControls.getByLabel('Zoom')).toHaveValue('1');
+  await expect(deforumControls.getByLabel('Pan Y')).toHaveValue('0');
+  await expect(deforumControls.getByLabel('Depth warp')).toHaveValue('0');
+  await expect(deforumControls.getByLabel('Camera path')).toHaveValue('locked-source-morph');
+  await expect(deforumControls.getByLabel('Cadence')).toHaveValue('1');
 
   await promptNodes.getByRole('button', { name: 'Node', exact: true }).click();
   await promptNodes.getByLabel('Active node frame').fill('30');

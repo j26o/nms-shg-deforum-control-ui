@@ -14,7 +14,8 @@ describe('render adapter contract', () => {
     expect(config.assets.length).toBe(8);
     expect(config.timeline.length).toBe(config.assets.length);
     expect(config.timeline[0].prompt).toContain('visionary future Singapore cityscape');
-    expect(config.timeline[0].prompt).toContain('image-reference source for this keyframe');
+    expect(config.timeline[0].prompt).toContain('required target image for this keyframe');
+    expect(config.timeline[0].prompt).toContain('Do not invent a new city');
     expect(config.timeline.at(-1).toFrame).toBe(479);
   });
 

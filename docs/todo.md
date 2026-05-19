@@ -26,6 +26,8 @@ Last updated: 2026-05-19
 - [x] Make RealVisXL V5.0 the default model profile for new presets.
 - [x] Move Local A1111 negative prompt guardrails into Deforum's native negative prompt field while keeping UI/Hugging Face prompt payloads visible with `--neg`.
 - [x] Run E2E/default RealVisXL eval and capture the current Local A1111 Deforum failure evidence.
+- [x] Tighten default source-faithfulness settings after the stale SD 1.5 output drifted into abstract outlined mosaic imagery instead of the supplied source frames.
+- [ ] Restart the UI/backend from the latest commit and rerun a clean RealVisXL render to verify the source-faithful defaults are actually used.
 - [ ] Fix or work around the current Deforum looper/batch limit where 3+ guided images fail in `PREPARING` with `Invalid arguments`.
 - [ ] Investigate SDXL Base and SDXL Refiner Deforum compatibility with a smaller direct API repro and captured backend logs.
 - [ ] Update the real-backend Playwright path to control its Vite server environment and wait long enough for a completed render artifact.
@@ -51,4 +53,6 @@ Last updated: 2026-05-19
 - The optional real-backend Playwright path reaches the backend with `RUN_REAL_DEFORUM=1`, but its current assertion timeout is too short for the review-length RealVisXL render.
 - Local A1111 batch payloads now include Deforum `options_overrides`, legacy scale/prompt fields, disabled ControlNet slot defaults, compact per-keyframe prompts, shared `animation_prompts_positive`, and native `animation_prompts_negative` values.
 - The initial workbench preset now starts with 8 source images over 8 seconds at 60 fps, producing 480 Deforum frames before any user edits, with source-asset-specific negative prompts applied to each node.
+- The default morph settings are source-faithful by default and visible on page load in the right-side Deforum controls: source image strength `0.96`, denoise `0.18`, image influence decay/noise `0.04`, structural lock `0.92`, no default depth warp, no default zoom/pan drift, `locked-source-morph` camera path, cadence `1`, and 42 guided tween frames.
 - Latest E2E eval: the UI confirms RealVisXL as the default and normal tests pass, but the live Local A1111 Deforum render still fails before artifact creation. Direct repros show 2 guided images reach `GENERATING`, while 3+ guided images fail in `PREPARING` with `Invalid arguments`.
+- Latest source-faithfulness review: the MP4 at `render-tools/stable-diffusion-webui/outputs/img2img-images/future-wall-morph-study-01-deforum/20260519195919.mp4` is not representative of the current defaults. Its saved settings used stale SD 1.5, old inline prompts, 3D depth warp, higher denoise/noise, and camera drift.

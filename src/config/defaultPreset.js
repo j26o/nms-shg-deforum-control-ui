@@ -68,9 +68,10 @@ function getSourceDate(path) {
 function createImageReferencePrompt(asset) {
   return [
     defaultCreativeDirectionPrompt,
-    `Use ${asset.label} as the image-reference source for this keyframe.`,
-    'Preserve the pre-rendered image composition, skyline, atmosphere, silhouettes, and 1680x720 panoramic edges.',
-    'Blend smoothly into the next referenced source image with restrained Deforum motion.',
+    `${asset.label} is the required target image for this keyframe.`,
+    'Match the selected source frame composition, skyline, architecture, atmosphere, silhouettes, lighting, waterline, and 1680x720 panoramic edges.',
+    'Do not invent a new city, new geometry, abstract line art, mosaic patterns, or a different camera angle.',
+    'Morph smoothly into the next referenced source image with restrained 2D motion while keeping the source-frame identity dominant.',
   ].join(' ');
 }
 
@@ -144,24 +145,24 @@ export function createDefaultPreset() {
       seed: 123456,
     },
     imageMorph: {
-      sourceImageStrength: 0.84,
-      denoiseStrength: 0.38,
-      imageInfluenceDecay: 0.18,
-      transitionDuration: 10,
+      sourceImageStrength: 0.96,
+      denoiseStrength: 0.18,
+      imageInfluenceDecay: 0.04,
+      transitionDuration: 42,
       transitionEasing: 'ease-in-out',
-      holdFramesBeforeMorph: 2,
-      structuralLockStrength: 0.78,
+      holdFramesBeforeMorph: 8,
+      structuralLockStrength: 0.92,
       fogMaskAssistance: true,
     },
     motion: {
-      zoom: 1.02,
+      zoom: 1,
       panX: 0,
-      panY: -0.01,
+      panY: 0,
       rotation: 0,
-      depthWarpStrength: 0.3,
-      cameraPathPreset: 'slow-push',
+      depthWarpStrength: 0,
+      cameraPathPreset: 'locked-source-morph',
       loopMode: 'loopable-return',
-      cadence: 2,
+      cadence: 1,
       fps: DEFAULT_FPS,
     },
     prompt: {

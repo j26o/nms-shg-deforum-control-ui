@@ -5,7 +5,7 @@ import styles from './Workbench.module.css';
 const samplers = ['DPM++ 2M Karras', 'Euler a', 'DDIM', 'UniPC'];
 const schedulers = ['Karras', 'Exponential', 'Simple', 'Normal'];
 const previewSizes = ['896x384', '1344x576', '1680x720'];
-const cameraPaths = ['slow-push', 'float-through', 'locked-off', 'orbit-drift'];
+const cameraPaths = ['locked-source-morph', 'slow-push', 'float-through', 'locked-off', 'orbit-drift'];
 const renderQualities = ['fast-preview', 'review-preview', 'final-exercise'];
 
 function SliderField({ label, value, min, max, step, onChange }) {
@@ -138,6 +138,14 @@ export function ControlsPanel() {
           step={0.01}
           value={preset.imageMorph.denoiseStrength}
           onChange={(value) => updateGroupValue('imageMorph', 'denoiseStrength', value)}
+        />
+        <SliderField
+          label="Image decay"
+          min={0}
+          max={1}
+          step={0.01}
+          value={preset.imageMorph.imageInfluenceDecay}
+          onChange={(value) => updateGroupValue('imageMorph', 'imageInfluenceDecay', value)}
         />
         <SliderField
           label="Transition frames"

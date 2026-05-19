@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createDefaultPreset } from '../config/defaultPreset.js';
+import { createDefaultPreset, defaultCreativeDirectionNegativePrompt } from '../config/defaultPreset.js';
 import { getModelById } from '../config/modelOptions.js';
 import { queueA1111DeforumRender } from '../services/a1111DeforumAdapter.js';
 import { queueHuggingFaceDeforumRender } from '../services/huggingFaceDeforumAdapter.js';
@@ -28,10 +28,12 @@ function createTimelineSegmentForAsset(asset, timeline, prompt) {
     prompt:
       prompt ??
       [
-        `Use ${asset.label} as the image-reference source for this keyframe.`,
-        'Preserve the pre-rendered image composition, atmosphere, silhouettes, and panoramic edges.',
+        `${asset.label} is the required target image for this keyframe.`,
+        'Match the selected source frame composition, skyline, architecture, atmosphere, silhouettes, lighting, waterline, and 1680x720 panoramic edges.',
+        'Do not invent a new city, new geometry, abstract line art, mosaic patterns, or a different camera angle.',
+        'Morph smoothly into the next referenced source image with restrained 2D motion while keeping the source-frame identity dominant.',
       ].join(' '),
-    negativePrompt: 'low detail, text artifacts, flicker, broken geometry, hard crop',
+    negativePrompt: defaultCreativeDirectionNegativePrompt,
     transitionMode: 'image-reference-morph',
   };
 }

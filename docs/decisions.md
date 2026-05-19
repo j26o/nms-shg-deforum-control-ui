@@ -147,3 +147,9 @@ Reason: Runtime comparison and end-to-end evidence showed RealVisXL V5.0 as a st
 Decision: Keep the UI prompt payload and Hugging Face contract with visible `--neg` prompt text, but translate Local A1111 render settings into compact per-keyframe Deforum `prompts`, shared creative direction in `animation_prompts_positive`, and a merged `animation_prompts_negative` field.
 
 Reason: The latest 480-frame, 60 fps local batch failed during Deforum argument preparation with `Invalid arguments` and prior prompt JSON parse errors. Sending a shorter prompt schedule and putting shared positive/negative guidance in Deforum's native fields avoids duplicating long text across every keyframe while preserving the same effective guidance for local renders.
+
+## 2026-05-19: Prefer Source-Faithful Morph Defaults
+
+Decision: Make the default 8-image Deforum preset conservative for source-frame identity. Each prompt node now names its selected source image as the required target for that keyframe, explicitly blocks invented city geometry and abstract mosaic/line-art drift, raises source image strength to `0.96`, lowers denoise to `0.18`, lowers image influence decay/noise to `0.04`, raises structural lock to `0.92`, disables depth warp by default, removes zoom/pan drift, uses 2D motion, sets cadence to `1`, and lengthens the guided-image tween span to `42` frames.
+
+Reason: A later local MP4 rendered from stale SD 1.5 settings did not resemble the supplied source images. Its saved settings showed the old inline prompt schedule, `animation_mode: "3D"`, depth warping, `strength_schedule: 0.38`, `noise_schedule: 0.18`, short `tweening_frames_schedule: 10`, camera zoom/pan, and the SD 1.5 checkpoint. Those settings encouraged Deforum to invent high-contrast abstract geometry instead of morphing toward the provided end frames.
