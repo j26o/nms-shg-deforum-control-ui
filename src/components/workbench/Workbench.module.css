@@ -742,6 +742,12 @@
   gap: var(--space-2);
 }
 
+.controlDescription {
+  color: var(--color-text-soft);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .controlField strong {
   color: var(--color-text);
   font-weight: 600;
@@ -894,21 +900,78 @@
 
 .toggleField {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-2);
   color: var(--color-text-muted);
   font-size: 13px;
 }
 
-.modelNote {
+.toggleField span {
+  display: grid;
+  gap: 2px;
+}
+
+.toggleField small {
+  color: var(--color-text-soft);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.modelNote,
+.settingPresetNote {
   border-left: 3px solid var(--color-warn);
   padding-left: var(--space-2);
   display: grid;
   gap: 2px;
 }
 
-.modelNote p {
+.settingPresetNote {
+  border-left-color: var(--color-accent);
+}
+
+.modelNote p,
+.modelStrengthList p {
   margin: 0;
+}
+
+.settingPresetNote span {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.modelStrengthList {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #101419;
+}
+
+.modelStrengthList strong,
+.modelStrengthList span {
+  font-size: 12px;
+}
+
+.modelStrengthList ul {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.modelStrengthList li {
+  display: grid;
+  gap: 2px;
+}
+
+.modelStrengthList small,
+.modelStrengthList p {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .bottomBar {

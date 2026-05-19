@@ -150,6 +150,24 @@ Reason: The latest 480-frame, 60 fps local batch failed during Deforum argument 
 
 ## 2026-05-19: Prefer Source-Faithful Morph Defaults
 
-Decision: Make the default 8-image Deforum preset conservative for source-frame identity. Each prompt node now names its selected source image as the required target for that keyframe, explicitly blocks invented city geometry and abstract mosaic/line-art drift, raises source image strength to `0.96`, lowers denoise to `0.18`, lowers image influence decay/noise to `0.04`, raises structural lock to `0.92`, disables depth warp by default, removes zoom/pan drift, uses 2D motion, sets cadence to `1`, and lengthens the guided-image tween span to `42` frames.
+Decision: Make the default 8-image Deforum preset conservative for source-frame identity. Each prompt node now names its selected source image as the required target for that keyframe, explicitly blocks invented city geometry and abstract mosaic/line-art drift, uses the `sample-frame-match` thematic preset, raises source image strength to `0.98`, lowers denoise to `0.12`, lowers image influence decay/noise to `0.02`, raises structural lock to `0.96`, disables depth warp by default, removes zoom/pan drift, uses 2D motion, sets cadence to `1`, and lengthens the guided-image tween span to `54` frames.
 
 Reason: A later local MP4 rendered from stale SD 1.5 settings did not resemble the supplied source images. Its saved settings showed the old inline prompt schedule, `animation_mode: "3D"`, depth warping, `strength_schedule: 0.38`, `noise_schedule: 0.18`, short `tweening_frames_schedule: 10`, camera zoom/pan, and the SD 1.5 checkpoint. Those settings encouraged Deforum to invent high-contrast abstract geometry instead of morphing toward the provided end frames.
+
+## 2026-05-19: Increment Reused A1111 Output Folder Names
+
+Decision: Before submitting a Local A1111 Deforum render, the Vite body bridge checks the project-local `outputs/img2img-images` folder used by Automatic1111. If the requested `batch_name` folder already exists, the bridge submits the first free numbered name such as `future-wall-morph-study-01-deforum-02`, then `-03`, for both the full Deforum batch API and the simple API fallback.
+
+Reason: Reusing the same `batch_name` can mix frames, settings files, and MP4 artifacts across render attempts. Incrementing the submitted folder name gives each render pass a separate review folder without requiring the reviewer to rename the preset manually.
+
+## 2026-05-19: Explain Controls And Model Strengths In The UI
+
+Decision: Add plain-language descriptions to every visible Deforum control in the right-side settings panel and extend each configured model profile with `strongAt` and `midjourneyFit` metadata. The UI now shows the selected model's strengths and a compact list of all configured model strengths, and labels Juggernaut XL v9 as the closest configured Midjourney-like option.
+
+Reason: The prototype is being used for creative tuning, not only technical validation. Reviewers need to understand what each setting changes before rendering expensive passes, and they need a quick model recommendation when aiming for a polished Midjourney-like cinematic concept-art look.
+
+## 2026-05-19: Add Thematic Setting Presets
+
+Decision: Add a `Thematic preset` dropdown to the Generation controls backed by `src/config/thematicSettingPresets.js`. The presets apply grouped model, generation, image morph, motion, look, and output values. The default `sample-frame-match` preset is tuned to stay closest to the supplied panoramic source images; other presets cover misty maritime night, cinematic Midjourney-like concept polish, soft watercolor memory, and fast alignment testing.
+
+Reason: Reviewers need fast creative starting points without manually coordinating many sliders. Keeping these presets as structured config makes the chosen values testable, reusable, and easier to refine after real render evidence.

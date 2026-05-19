@@ -69,6 +69,8 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
 
   await page.getByLabel('Deforum controls').getByLabel('Model profile').selectOption('sdxl-base');
   await expect(page.locator('strong').filter({ hasText: 'SDXL Base 1.0' })).toBeVisible();
+  await expect(page.getByLabel('Model strengths')).toContainText('Juggernaut XL v9');
+  await expect(page.getByText(/Closest to Midjourney: Juggernaut XL v9/)).toBeVisible();
   await expect(page.getByRole('radio', { name: 'SDXL Base 1.0' })).toHaveCount(0);
 
   await expect(promptNodes.getByLabel('Active node prompt')).toHaveValue(/visionary future Singapore cityscape/);
@@ -77,16 +79,24 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await expect(promptNodes.getByLabel('Active node negative params')).toHaveValue(/strong vanishing point/);
 
   const deforumControls = page.getByLabel('Deforum controls');
-  await expect(deforumControls.getByLabel('Source strength')).toHaveValue('0.96');
-  await expect(deforumControls.getByLabel('Denoise')).toHaveValue('0.18');
-  await expect(deforumControls.getByLabel('Image decay')).toHaveValue('0.04');
-  await expect(deforumControls.getByLabel('Transition frames')).toHaveValue('42');
-  await expect(deforumControls.getByLabel('Structural lock')).toHaveValue('0.92');
+  await expect(deforumControls.getByLabel('Thematic preset')).toHaveValue('sample-frame-match');
+  await expect(deforumControls.getByText(/Closest to the supplied panoramic source images/)).toBeVisible();
+  await expect(deforumControls.getByLabel('Source strength')).toHaveValue('0.98');
+  await expect(deforumControls.getByLabel('Denoise')).toHaveValue('0.12');
+  await expect(deforumControls.getByLabel('Image decay')).toHaveValue('0.02');
+  await expect(deforumControls.getByLabel('Transition frames')).toHaveValue('54');
+  await expect(deforumControls.getByLabel('Structural lock')).toHaveValue('0.96');
   await expect(deforumControls.getByLabel('Zoom')).toHaveValue('1');
   await expect(deforumControls.getByLabel('Pan Y')).toHaveValue('0');
   await expect(deforumControls.getByLabel('Depth warp')).toHaveValue('0');
   await expect(deforumControls.getByLabel('Camera path')).toHaveValue('locked-source-morph');
   await expect(deforumControls.getByLabel('Cadence')).toHaveValue('1');
+  await deforumControls.getByLabel('Thematic preset').selectOption('cinematic-midjourney-concept');
+  await expect(deforumControls.getByLabel('Model profile')).toHaveValue('juggernaut-xl-v9');
+  await expect(deforumControls.getByLabel('Denoise')).toHaveValue('0.28');
+  await expect(deforumControls.getByLabel('Camera path')).toHaveValue('slow-push');
+  await deforumControls.getByLabel('Thematic preset').selectOption('sample-frame-match');
+  await expect(deforumControls.getByLabel('Model profile')).toHaveValue('realvisxl-v5');
 
   await promptNodes.getByRole('button', { name: 'Node', exact: true }).click();
   await promptNodes.getByLabel('Active node frame').fill('30');

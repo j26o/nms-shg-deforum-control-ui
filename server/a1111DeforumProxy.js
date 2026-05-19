@@ -110,6 +110,40 @@ async function pathExists(filePath) {
   return filePath;
 }
 
+function getA1111Img2ImgOutputRoot(env = process.env) {
+  return env.A1111_IMG2IMG_OUTPUT_DIR || path.resolve(process.cwd(), 'render-tools', 'stable-diffusion-webui', 'outputs', 'img2img-images');
+}
+
+async function doesPathExist(filePath) {
+  try {
+    await access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function createUniqueBatchName(batchName, env = process.env) {
+  const baseName = String(batchName || 'deforum-render').trim() || 'deforum-render';
+  const outputRoot = getA1111Img2ImgOutputRoot(env);
+  let candidate = baseName;
+  let suffix = 1;
+
+  while (await doesPathExist(path.join(outputRoot, candidate))) {
+    suffix += 1;
+    candidate = `${baseName}-${String(suffix).padStart(2, '0')}`;
+  }
+
+  return candidate;
+}
+
+async function ensureUniqueBatchName(settings, env = process.env) {
+  return {
+    ...settings,
+    batch_name: await createUniqueBatchName(settings.batch_name, env),
+  };
+}
+
 async function findFfmpegExecutable(env = process.env) {
   const candidates = [
     env.FFMPEG_PATH,
@@ -322,7 +356,7 @@ function throwMissingArtifactError(outdir, inspection) {
 
 async function submitFullDeforumApi(settings, env) {
   const baseUrl = getA1111BaseUrl(env);
-  const normalizedSettings = normalizeDeforumAssetPaths(settings);
+  const normalizedSettings = await ensureUniqueBatchName(normalizeDeforumAssetPaths(settings), env);
   const optionsOverrides = await createA1111OptionsOverrides(env);
   const response = await fetch(createA1111Url(baseUrl, '/deforum_api/batches'), {
     method: 'POST',
@@ -405,7 +439,10 @@ async function pollFullDeforumJob(jobId, env) {
 
 async function submitSimpleDeforumApi(payload, env) {
   const settings = payload.settings ?? payload.settings_json;
-  const normalizedSettings = typeof settings === 'string' ? normalizeDeforumAssetPaths(JSON.parse(settings)) : normalizeDeforumAssetPaths(settings);
+  const normalizedSettings = await ensureUniqueBatchName(
+    typeof settings === 'string' ? normalizeDeforumAssetPaths(JSON.parse(settings)) : normalizeDeforumAssetPaths(settings),
+    env,
+  );
   const settingsJson = JSON.stringify(normalizedSettings);
   const allowedParams = Array.isArray(payload.allowedParams)
     ? payload.allowedParams.join(';')

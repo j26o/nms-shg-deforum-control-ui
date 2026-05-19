@@ -19,6 +19,8 @@
       "license": "creativeml-openrail-m",
       "intendedUse": "Compatibility baseline for Automatic1111 Deforum and fast iteration.",
       "expectedStrength": "Most likely to work with classic Deforum workflows and lower VRAM pressure.",
+      "strongAt": "Fast compatibility checks, lower-risk Deforum plumbing tests, and baseline troubleshooting.",
+      "midjourneyFit": "Low. Useful for backend reliability, but less close to Midjourney's polished cinematic look.",
       "risk": "Lower detail and prompt adherence than SDXL-class models.",
       "status": "approved-for-prototype-review",
       "requiresLicenseAcceptance": true
@@ -32,6 +34,8 @@
       "license": "openrail++",
       "intendedUse": "Neutral high-detail fallback for panoramic image-to-image morph tests.",
       "expectedStrength": "Better detail, composition, and prompt adherence than SD 1.5.",
+      "strongAt": "Neutral SDXL reference renders, cleaner composition, and stronger prompt adherence than SD 1.5.",
+      "midjourneyFit": "Medium. More polished than SD 1.5, but usually less stylized than Midjourney-like fine-tunes.",
       "risk": "Slower than SD 1.5 and may need SDXL-compatible backend settings.",
       "status": "approved-for-prototype-review",
       "requiresLicenseAcceptance": true
@@ -45,6 +49,8 @@
       "license": "openrail++",
       "intendedUse": "Photoreal reference pass for skyline, architecture, and atmosphere.",
       "expectedStrength": "Photorealism, lighting, and architectural detail.",
+      "strongAt": "Photoreal skyline atmosphere, controlled lighting, architectural surfaces, and believable water/mist.",
+      "midjourneyFit": "Medium-high. Good for premium realistic renders, but less editorial/stylized than Midjourney.",
       "risk": "May pull the look away from the desired poetic painterly treatment.",
       "status": "approved-for-prototype-review",
       "requiresLicenseAcceptance": false
@@ -58,6 +64,8 @@
       "license": "creativeml-openrail-m",
       "intendedUse": "Cinematic architecture and atmosphere comparison pass.",
       "expectedStrength": "High-impact cinematic lighting and architectural render quality.",
+      "strongAt": "Polished cinematic images, dramatic lighting, glossy architecture, rich contrast, and high-impact concept-art mood.",
+      "midjourneyFit": "Highest among the configured models. Closest match when the target is a Midjourney-like cinematic concept-art finish.",
       "risk": "Model card includes business/API-use restrictions; production use needs licence review.",
       "status": "prototype-only-license-review-required",
       "requiresLicenseAcceptance": false
@@ -71,6 +79,8 @@
       "license": "openrail++",
       "intendedUse": "Optional finishing/refinement pass after an SDXL base render.",
       "expectedStrength": "Final denoising and detail refinement for selected stills or short candidate passes.",
+      "strongAt": "Detail cleanup and final denoising after an SDXL base pass, when the backend supports a refiner workflow.",
+      "midjourneyFit": "Low as a primary model. It is a finishing/refinement component, not the closest standalone Midjourney-style choice.",
       "risk": "Not a primary Deforum animation model; use only where the backend supports refiner workflows.",
       "status": "optional-refiner",
       "requiresLicenseAcceptance": true

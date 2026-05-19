@@ -47,7 +47,9 @@ describe('a1111 deforum body proxy', () => {
   });
 
   it('submits body settings through the Deforum batch API and polls for output', async () => {
+    const img2imgOutputRoot = path.join(testOutputRoot, 'img2img-images');
     const outputDir = path.join(testOutputRoot, 'full-run');
+    await mkdir(path.join(img2imgOutputRoot, 'future-wall-morph-study-01-deforum'), { recursive: true });
     await mkdir(outputDir, { recursive: true });
     await writeFile(path.join(outputDir, 'render.mp4'), 'mp4-data');
 
@@ -68,6 +70,7 @@ describe('a1111 deforum body proxy', () => {
     const result = await submitA1111DeforumRun(
       {
         settings: {
+          batch_name: 'future-wall-morph-study-01-deforum',
           prompts: { 0: 'future city --neg text' },
           init_images: '{"0":"assets/images/source/test.png"}',
         },
@@ -77,6 +80,7 @@ describe('a1111 deforum body proxy', () => {
         A1111_BASE_URL: 'http://127.0.0.1:7860',
         A1111_DEFORUM_POLL_INTERVAL_MS: '0',
         A1111_DEFORUM_MAX_POLLS: '1',
+        A1111_IMG2IMG_OUTPUT_DIR: img2imgOutputRoot,
         FFMPEG_PATH: process.execPath,
       },
     );
@@ -94,9 +98,52 @@ describe('a1111 deforum body proxy', () => {
     expect(submitInit.method).toBe('POST');
     expect(submitInit.headers).toEqual({ 'content-type': 'application/json' });
     expect(submitBody.options_overrides).toEqual({ deforum_ffmpeg_location: process.execPath });
+    expect(submitBody.deforum_settings.batch_name).toBe('future-wall-morph-study-01-deforum-02');
     expect(submitBody.deforum_settings.prompts['0']).toContain('future city');
     expect(JSON.parse(submitBody.deforum_settings.init_images)['0']).toBe(path.resolve(process.cwd(), 'assets/images/source/test.png'));
     expect(statusInit).toBeUndefined();
+  });
+
+  it('increments batch names past existing numbered output folders', async () => {
+    const img2imgOutputRoot = path.join(testOutputRoot, 'img2img-numbered');
+    const outputDir = path.join(testOutputRoot, 'numbered-run');
+    await mkdir(path.join(img2imgOutputRoot, 'future-wall-morph-study-01-deforum'), { recursive: true });
+    await mkdir(path.join(img2imgOutputRoot, 'future-wall-morph-study-01-deforum-02'), { recursive: true });
+    await mkdir(outputDir, { recursive: true });
+    await writeFile(path.join(outputDir, 'render.mp4'), 'mp4-data');
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        text: async () => JSON.stringify({ batch_id: 'batch-001b', job_ids: ['job-001b'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ id: 'job-001b', status: 'SUCCEEDED', outdir: outputDir }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await submitA1111DeforumRun(
+      {
+        settings: {
+          batch_name: 'future-wall-morph-study-01-deforum',
+          prompts: { 0: 'future city' },
+        },
+        allowedParams: ['batch_name', 'prompts'],
+      },
+      {
+        A1111_BASE_URL: 'http://127.0.0.1:7860',
+        A1111_DEFORUM_POLL_INTERVAL_MS: '0',
+        A1111_DEFORUM_MAX_POLLS: '1',
+        A1111_IMG2IMG_OUTPUT_DIR: img2imgOutputRoot,
+      },
+    );
+
+    const submitBody = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(submitBody.deforum_settings.batch_name).toBe('future-wall-morph-study-01-deforum-03');
   });
 
   it('fails completed jobs when Deforum only writes settings files', async () => {
@@ -165,7 +212,9 @@ describe('a1111 deforum body proxy', () => {
   });
 
   it('falls back to the query-only simple API when the batch API is missing', async () => {
+    const img2imgOutputRoot = path.join(testOutputRoot, 'simple-img2img');
     const outputDir = path.join(testOutputRoot, 'simple-run');
+    await mkdir(path.join(img2imgOutputRoot, 'future-wall-morph-study-01-deforum'), { recursive: true });
     await mkdir(outputDir, { recursive: true });
     await writeFile(path.join(outputDir, 'simple.mp4'), 'mp4-data');
 
@@ -187,12 +236,13 @@ describe('a1111 deforum body proxy', () => {
     const result = await submitA1111DeforumRun(
       {
         settings: {
+          batch_name: 'future-wall-morph-study-01-deforum',
           prompts: { 0: 'future city --neg text' },
           init_images: '{"0":"assets/images/source/test.png"}',
         },
         allowedParams: ['prompts', 'init_images'],
       },
-      { A1111_BASE_URL: 'http://127.0.0.1:7860' },
+      { A1111_BASE_URL: 'http://127.0.0.1:7860', A1111_IMG2IMG_OUTPUT_DIR: img2imgOutputRoot },
     );
 
     const [simpleUrl, simpleInit] = fetchMock.mock.calls[1];
@@ -204,6 +254,7 @@ describe('a1111 deforum body proxy', () => {
     expect(simpleInit).toEqual({ method: 'POST' });
     expect(upstreamUrl.href).toContain('http://127.0.0.1:7860/deforum/run?');
     expect(upstreamUrl.searchParams.get('allowed_params')).toBe('prompts;init_images');
+    expect(settings.batch_name).toBe('future-wall-morph-study-01-deforum-02');
     expect(settings.prompts['0']).toContain('future city');
     expect(JSON.parse(settings.init_images)['0']).toBe(path.resolve(process.cwd(), 'assets/images/source/test.png'));
   });

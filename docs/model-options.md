@@ -1,7 +1,7 @@
 # Model Options For Deforum Effect Review
 
 Status: prototype model matrix
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 Config source: `config/model-options.json`
 
 ## Purpose
@@ -17,20 +17,26 @@ Use a single `Model profile` dropdown in the Generation control group for both p
 The UI should:
 
 - load options from `config/model-options.json`;
-- show label, intended use, licence status, and risk note for the selected model;
+- offer selectable thematic setting presets from `src/config/thematicSettingPresets.js`;
+- show label, intended use, strength description, Midjourney-fit note, licence status, and risk note for the selected model;
+- show a compact model-strength summary for all configured profiles;
 - store `modelId`, `repository`, `file`, and `license` in every exported preset;
 - allow the same preset to be tested against each comparison model by selecting one runtime model at a time;
 - tag each output take with model metadata for comparison.
 
 ## Recommended Model Matrix
 
-| Model ID | Model | Download file | Licence | Prototype role | Notes |
+| Model ID | Model | Download file | Licence | Prototype role | Strength / Midjourney fit |
 |---|---|---|---|---|---|
-| `sd15-baseline` | Stable Diffusion 1.5 | `v1-5-pruned-emaonly.safetensors` | CreativeML OpenRAIL-M | Deforum compatibility baseline | Fastest fallback and most likely to work with classic Deforum workflows. |
-| `sdxl-base` | Stable Diffusion XL Base 1.0 | `sd_xl_base_1.0.safetensors` | OpenRAIL++ | Neutral high-detail fallback | Stronger prompt/detail baseline for panoramic morph tests. |
-| `realvisxl-v5` | RealVisXL V5.0 | `RealVisXL_V5.0_fp16.safetensors` | OpenRAIL++ | Photoreal skyline/architecture pass | Useful to test realism, lighting, and city detail. |
-| `juggernaut-xl-v9` | Juggernaut XL v9 | `Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors` | CreativeML OpenRAIL-M plus model-card business/API-use restrictions | Cinematic architecture pass | Prototype-only until licence review confirms production suitability. |
-| `sdxl-refiner` | SDXL Refiner 1.0 | `sd_xl_refiner_1.0.safetensors` | OpenRAIL++ | Optional finishing stage | Not the primary Deforum animation model; use only where the backend supports refiner workflows. |
+| `sd15-baseline` | Stable Diffusion 1.5 | `v1-5-pruned-emaonly.safetensors` | CreativeML OpenRAIL-M | Deforum compatibility baseline | Fast compatibility checks and backend troubleshooting. Low Midjourney fit. |
+| `sdxl-base` | Stable Diffusion XL Base 1.0 | `sd_xl_base_1.0.safetensors` | OpenRAIL++ | Neutral high-detail fallback | Cleaner composition and prompt adherence than SD 1.5. Medium Midjourney fit. |
+| `realvisxl-v5` | RealVisXL V5.0 | `RealVisXL_V5.0_fp16.safetensors` | OpenRAIL++ | Photoreal skyline/architecture pass | Photoreal skyline atmosphere, lighting, architecture, and water/mist. Medium-high Midjourney fit for realistic renders. |
+| `juggernaut-xl-v9` | Juggernaut XL v9 | `Juggernaut-XL_v9_RunDiffusionPhoto_v2.safetensors` | CreativeML OpenRAIL-M plus model-card business/API-use restrictions | Cinematic architecture pass | Closest configured Midjourney-like option: polished cinematic concept art, dramatic lighting, glossy architecture, and rich contrast. Prototype-only until licence review confirms production suitability. |
+| `sdxl-refiner` | SDXL Refiner 1.0 | `sd_xl_refiner_1.0.safetensors` | OpenRAIL++ | Optional finishing stage | Detail cleanup after an SDXL base pass. Low Midjourney fit as a standalone model. |
+
+Current recommendation for a Midjourney-like look: use `juggernaut-xl-v9` when the target is a polished cinematic concept-art finish. Use `realvisxl-v5` when the target is source-faithful photoreal skyline atmosphere.
+
+The default thematic setting preset is `sample-frame-match`, which is intentionally more conservative than a stylized concept-art pass: high source strength, low denoise, low image decay/noise, no depth warp, no camera drift, and a longer tween span to stay close to the supplied source images.
 
 ## Download Folder
 

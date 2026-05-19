@@ -1,4 +1,5 @@
 import { getDefaultModel } from './modelOptions.js';
+import { defaultSettingPresetId, getThematicSettingPreset } from './thematicSettingPresets.js';
 
 const DEFAULT_SOURCE_IMAGE_COUNT = 8;
 const DEFAULT_FPS = 60;
@@ -112,10 +113,12 @@ export function createDefaultTimeline(assets = createDefaultAssets(), { fps = DE
 export function createDefaultPreset() {
   const model = getDefaultModel();
   const assets = createDefaultAssets();
+  const settingPreset = getThematicSettingPreset(defaultSettingPresetId);
 
   return {
     schemaVersion: '0.1.0',
     presetName: 'future-wall-morph-study-01',
+    settingPresetId: settingPreset.id,
     target: {
       sourceResolution: [1680, 720],
       previewResolution: [896, 384],
@@ -139,30 +142,30 @@ export function createDefaultPreset() {
     generation: {
       sampler: 'DPM++ 2M Karras',
       scheduler: 'Karras',
-      steps: 25,
-      cfgScale: 7,
+      steps: settingPreset.generation.steps,
+      cfgScale: settingPreset.generation.cfgScale,
       seedMode: 'fixed',
       seed: 123456,
     },
     imageMorph: {
-      sourceImageStrength: 0.96,
-      denoiseStrength: 0.18,
-      imageInfluenceDecay: 0.04,
-      transitionDuration: 42,
+      sourceImageStrength: settingPreset.imageMorph.sourceImageStrength,
+      denoiseStrength: settingPreset.imageMorph.denoiseStrength,
+      imageInfluenceDecay: settingPreset.imageMorph.imageInfluenceDecay,
+      transitionDuration: settingPreset.imageMorph.transitionDuration,
       transitionEasing: 'ease-in-out',
-      holdFramesBeforeMorph: 8,
-      structuralLockStrength: 0.92,
+      holdFramesBeforeMorph: settingPreset.imageMorph.holdFramesBeforeMorph,
+      structuralLockStrength: settingPreset.imageMorph.structuralLockStrength,
       fogMaskAssistance: true,
     },
     motion: {
-      zoom: 1,
-      panX: 0,
-      panY: 0,
-      rotation: 0,
-      depthWarpStrength: 0,
-      cameraPathPreset: 'locked-source-morph',
+      zoom: settingPreset.motion.zoom,
+      panX: settingPreset.motion.panX,
+      panY: settingPreset.motion.panY,
+      rotation: settingPreset.motion.rotation,
+      depthWarpStrength: settingPreset.motion.depthWarpStrength,
+      cameraPathPreset: settingPreset.motion.cameraPathPreset,
       loopMode: 'loopable-return',
-      cadence: 1,
+      cadence: settingPreset.motion.cadence,
       fps: DEFAULT_FPS,
     },
     prompt: {
@@ -172,12 +175,12 @@ export function createDefaultPreset() {
       interpolationMode: 'weighted-keyframes',
     },
     look: {
-      contrast: 1.1,
-      fogEmphasis: 0.6,
-      bloom: 0.2,
-      grain: 0.05,
-      vignette: 0.12,
-      monochromeToColourBias: 0.45,
+      contrast: settingPreset.look.contrast,
+      fogEmphasis: settingPreset.look.fogEmphasis,
+      bloom: settingPreset.look.bloom,
+      grain: settingPreset.look.grain,
+      vignette: settingPreset.look.vignette,
+      monochromeToColourBias: settingPreset.look.monochromeToColourBias,
     },
     output: {
       previewDuration: DEFAULT_DURATION_SECONDS,

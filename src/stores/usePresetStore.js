@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createDefaultPreset, defaultCreativeDirectionNegativePrompt } from '../config/defaultPreset.js';
 import { getModelById } from '../config/modelOptions.js';
+import { getThematicSettingPreset } from '../config/thematicSettingPresets.js';
 import { queueA1111DeforumRender } from '../services/a1111DeforumAdapter.js';
 import { queueHuggingFaceDeforumRender } from '../services/huggingFaceDeforumAdapter.js';
 import { queueMockRender, createTakeFromJob } from '../services/mockRenderAdapter.js';
@@ -48,6 +49,25 @@ function updateNested(object, group, key, value) {
   };
 }
 
+function applyGroupPatch(currentGroup, patch = {}) {
+  return {
+    ...currentGroup,
+    ...patch,
+  };
+}
+
+function createModelState(model) {
+  return {
+    modelId: model.id,
+    label: model.label,
+    repository: model.repository,
+    file: model.file,
+    license: model.license,
+    status: model.status,
+    risk: model.risk,
+  };
+}
+
 export const usePresetStore = create((set, get) => ({
   preset: defaultPreset,
   selectedAssetId: defaultPreset.assets[0]?.id,
@@ -64,6 +84,23 @@ export const usePresetStore = create((set, get) => ({
   updateGroupValue: (group, key, value) => set((state) => ({ preset: updateNested(state.preset, group, key, value) })),
   updateTargetValue: (key, value) => set((state) => ({ preset: updateNested(state.preset, 'target', key, value) })),
   setRenderBackend: (renderBackend) => set({ renderBackend }),
+  applySettingPreset: (settingPresetId) =>
+    set((state) => {
+      const settingPreset = getThematicSettingPreset(settingPresetId);
+      const model = getModelById(settingPreset.modelId ?? state.preset.model.modelId);
+      return {
+        preset: {
+          ...state.preset,
+          settingPresetId: settingPreset.id,
+          model: createModelState(model),
+          generation: applyGroupPatch(state.preset.generation, settingPreset.generation),
+          imageMorph: applyGroupPatch(state.preset.imageMorph, settingPreset.imageMorph),
+          motion: applyGroupPatch(state.preset.motion, settingPreset.motion),
+          look: applyGroupPatch(state.preset.look, settingPreset.look),
+          output: applyGroupPatch(state.preset.output, settingPreset.output),
+        },
+      };
+    }),
   selectAsset: (assetId) => set({ selectedAssetId: assetId }),
   selectSegment: (segmentId) => set({ selectedSegmentId: segmentId }),
   setModelProfile: (modelId) =>
@@ -72,15 +109,7 @@ export const usePresetStore = create((set, get) => ({
       return {
         preset: {
           ...state.preset,
-          model: {
-            modelId: model.id,
-            label: model.label,
-            repository: model.repository,
-            file: model.file,
-            license: model.license,
-            status: model.status,
-            risk: model.risk,
-          },
+          model: createModelState(model),
         },
       };
     }),
