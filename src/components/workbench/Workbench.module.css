@@ -7,6 +7,117 @@
   grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
+.startupScreen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background:
+    linear-gradient(180deg, rgba(12, 15, 18, 0.94), rgba(16, 18, 21, 0.98)),
+    var(--color-bg);
+  color: var(--color-text);
+}
+
+.startupPanel {
+  width: min(620px, 100%);
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.startupBrand {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.startupBrand h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+}
+
+.startupBrand p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.startupProgress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #202832;
+}
+
+.startupProgress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width 220ms ease;
+}
+
+.startupStepList {
+  display: grid;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.startupStepList li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: #11151a;
+}
+
+.startupStepList strong,
+.startupStepList span {
+  display: block;
+}
+
+.startupStepList span {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.startupStep_ready svg {
+  color: var(--color-accent-strong);
+}
+
+.startupStep_checking svg {
+  color: var(--color-accent);
+}
+
+.startupStep_optional svg {
+  color: var(--color-warn);
+}
+
+.startupStep_offline svg,
+.startupStep_waiting svg {
+  color: var(--color-text-soft);
+}
+
+.spinIcon {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .toolbar {
   min-height: 58px;
   display: grid;

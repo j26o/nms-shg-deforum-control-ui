@@ -109,6 +109,8 @@ The dev server defaults to:
 http://127.0.0.1:5173
 ```
 
+When the browser opens, the UI first shows a startup screen while it checks the workbench server, Local A1111 Deforum, and the Hugging Face proxy. If the real backend is still offline, continue in UI-only mode and use `Render preview` until `pnpm dev:backend` or a manually started Automatic1111 instance is ready.
+
 Use `Render preview` for the fast mock path. Use `Render Deforum` after `pnpm dev:backend` reports the backend is ready, or after you manually start Automatic1111.
 
 Frontend-only development and smoke tests can use:

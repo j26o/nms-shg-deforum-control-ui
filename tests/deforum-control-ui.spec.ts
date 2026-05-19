@@ -42,6 +42,15 @@ test('loads workbench, edits controls, queues mock render, and exposes export ac
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto(appUrl);
 
+  await expect(page.getByRole('main', { name: 'Server startup' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Starting Deforum Control UI' })).toBeVisible();
+  await expect(page.getByLabel('Server startup progress')).toBeVisible();
+  const continueButton = page.getByRole('button', { name: 'Continue in UI-only mode' });
+  if (await continueButton.isVisible()) {
+    await expect(continueButton).toBeEnabled({ timeout: 10_000 });
+    await continueButton.click();
+  }
+
   await expect(page.getByText('Deforum Control UI')).toBeVisible();
   await expect(page.getByLabel('Seven by three preview frame')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Sources' })).toHaveCount(0);

@@ -75,3 +75,9 @@ Reason: The current exercise uses a fixed set of pre-rendered 1680x720 images co
 Decision: `Render preview` now drives visible render state: busy buttons, a progress bar, a status popup, queue messaging, and failure text through the same render notice pattern used for backend errors.
 
 Reason: Silent render actions make the prototype hard to evaluate. Even the mock preview path should confirm that the app accepted the render request, built the prompt payload, and saved a take.
+
+## 2026-05-19: Show Startup Readiness Before The Workbench
+
+Decision: Add a full-screen startup/loading view before the workbench mounts. It checks the Vite workbench server, Local A1111 Deforum API through `/a1111/deforum/api_version`, and the Hugging Face proxy through `/hf-deforum/status`. If Local A1111 is not ready within the short startup window, the UI can continue in UI-only preview mode.
+
+Reason: The reviewer needs visible feedback while local services are booting, but `pnpm dev` must remain frontend-only and should not hang the UI when the GPU backend is intentionally offline.
