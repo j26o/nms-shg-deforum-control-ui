@@ -16,7 +16,7 @@ Status: Pass with caveat
   - backend: Local A1111
   - model: `sd15-baseline`
   - preview resolution: `896x384`
-  - timeline reduced to 3 source-image segments to avoid the current oversized query-string failure with the default 24-image timeline
+  - timeline reduced to 3 source-image segments to avoid the then-current oversized query-string failure with the default 24-image timeline
   - duration: 3 seconds
   - steps: 16
 - Verified generated frames and stitched a review MP4 with the bundled FFmpeg after A1111 produced frames/settings but did not leave its own MP4 artifact.
@@ -27,7 +27,7 @@ Status: Pass with caveat
 |---|---|---|
 | Source faithfulness | Pass | The render used committed source images under `assets/images/source/` through the UI preset contract. |
 | Scope control | Pass | This is local prototype evidence only, not production renderer approval. |
-| UI/config usefulness | Pass with caveat | The UI successfully submitted a reduced real Deforum job and showed the backend output folder. The default 24-image timeline currently makes the `/a1111/deforum/run` URL too large for Vite. |
+| UI/config usefulness | Pass with caveat | The UI successfully submitted a reduced real Deforum job and showed the backend output folder. At the time of this eval, the default 24-image timeline made the old `/a1111/deforum/run` query transport too large for Vite; this has since been addressed with the `/a1111-deforum/run` body bridge. |
 | Model comparison | Pass with caveat | This run used only `sd15-baseline` for a fast end-to-end output check. |
 | 1680x720 handling | Pass | Source images remained `1680x720`; preview output was `896x384`, preserving 7:3. |
 | Windows setup | Pass | The run used the project-local Windows backend, FFmpeg, and Vite setup. |
@@ -80,14 +80,14 @@ Run details:
 
 ## Weaknesses
 
-- The default 24-image timeline cannot currently be submitted through the A1111 adapter because the settings JSON is sent in query parameters and Vite returns HTTP 431 for the oversized request.
+- At the time of this eval, the default 24-image timeline could not be submitted through the old A1111 query adapter because Vite returned HTTP 431 for the oversized request. Later implementation moved browser submission to the `/a1111-deforum/run` body bridge.
 - A1111 generated PNG frames and settings for the successful reduced run, but its built-in stitch step did not leave the expected MP4. The review video was created manually from the generated frames with the bundled FFmpeg.
 - The reduced timeline kept the last three source segments after repeated UI deletes, so the proof video is a valid real-output smoke artifact but not a curated final creative take.
 - The first attempted render hit a stale/incorrect UI server and produced unrelated frames with a default Deforum prompt. Those frames are not counted as review evidence.
 
 ## Recommended Improvements
 
-- Change the local A1111 adapter transport so large settings payloads are not passed through the query string, or cap/compact image-keyframe submission before calling `/a1111/deforum/run`.
+- Retest the full 24-image default timeline through the `/a1111-deforum/run` body bridge.
 - Add artifact validation: a real take should not be marked complete unless a nonzero MP4 or expected frame sequence exists.
 - Add a post-render fallback stitch step or diagnose why A1111/Deforum did not leave the MP4 despite generating frames.
 - Add a purpose-built "review render" preset that selects 2-4 curated source images without needing manual timeline deletion.

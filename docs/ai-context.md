@@ -42,6 +42,7 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - `src/services/renderAdapter.js`: render adapter boundary.
 - `src/services/mockRenderAdapter.js`: deterministic mock render path.
 - `src/services/a1111DeforumAdapter.js`: local Automatic1111 Deforum preset translator.
+- `server/a1111DeforumProxy.js`: local body bridge for A1111 Deforum render submission; avoids browser query-string 431 failures.
 - `src/services/huggingFaceDeforumAdapter.js`: Hugging Face Deforum payload builder and proxy-backed job adapter.
 - `server/hfDeforumProxy.js`: local Vite middleware proxy for Hugging Face credentials, image attachment, job submit/poll, and artifact download.
 - `docs/huggingface-deforum-backend-plan.md`: approved plan for an optional Hugging Face Deforum-compatible endpoint/proxy path.

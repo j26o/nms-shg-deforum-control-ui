@@ -346,7 +346,7 @@ export function createDeforumRenderSettings(preset, modelOverride) {
 }
 
 export async function getDeforumApiStatus() {
-  const response = await fetch('/a1111/deforum/api_version');
+  const response = await fetch('/a1111-deforum/api_version');
   if (!response.ok) {
     throw new Error(`Deforum API status failed: ${response.status}`);
   }
@@ -356,14 +356,17 @@ export async function getDeforumApiStatus() {
 export async function queueA1111DeforumRender(preset, modelOverride) {
   const renderConfig = normaliseRenderConfig(preset, modelOverride);
   const settings = createDeforumRenderSettings(preset, modelOverride);
-  const params = new URLSearchParams({
-    settings_json: JSON.stringify(settings),
-    allowed_params: Object.keys(settings).join(';'),
-  });
   const createdAt = new Date().toISOString();
   const startedAt = performance.now();
-  const response = await fetch(`/a1111/deforum/run?${params.toString()}`, {
+  const response = await fetch('/a1111-deforum/run', {
     method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      settings,
+      allowedParams: Object.keys(settings),
+    }),
   });
 
   if (!response.ok) {

@@ -81,3 +81,9 @@ Reason: Silent render actions make the prototype hard to evaluate. Even the mock
 Decision: Add a full-screen startup/loading view before the workbench mounts. It checks the Vite workbench server, Local A1111 Deforum API through `/a1111/deforum/api_version`, and the Hugging Face proxy through `/hf-deforum/status`. If Local A1111 is not ready within the short startup window, the UI can continue in UI-only preview mode.
 
 Reason: The reviewer needs visible feedback while local services are booting, but `pnpm dev` must remain frontend-only and should not hang the UI when the GPU backend is intentionally offline.
+
+## 2026-05-19: Route A1111 Deforum Through A Local Body Bridge
+
+Decision: Route `Render Deforum` through the local Vite bridge at `/a1111-deforum/run`. The browser sends reviewed settings in a JSON body; the bridge prefers the Deforum batch API at `/deforum_api/batches` and polls the job status. It only falls back to the older query-only simple API when the batch API is missing.
+
+Reason: The 24-image default prompt-node payload is too large for browser URL/query transport and can trigger HTTP 431 before the render reaches Deforum. A body-based local bridge keeps the full image-keyframe payload intact while preserving the existing A1111 backend.

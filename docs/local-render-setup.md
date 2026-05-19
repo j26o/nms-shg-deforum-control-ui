@@ -127,17 +127,19 @@ Settings:
 
 ## UI Integration
 
-The React app has a `Render Deforum` action that calls:
+The React app has a `Render Deforum` action that calls the local body bridge:
 
 ```text
-/a1111/deforum/run
+/a1111-deforum/run
 ```
 
-Vite proxies `/a1111` to:
+The bridge submits the settings JSON to the Deforum batch API when available:
 
 ```text
-http://127.0.0.1:7860
+http://127.0.0.1:7860/deforum_api/batches
 ```
+
+This avoids sending the full 24-image settings payload through the browser URL. If the batch API is unavailable, the bridge can fall back to the older query-only simple API at `http://127.0.0.1:7860/deforum/run`.
 
 Use the UI-only dev launcher from the repo root:
 

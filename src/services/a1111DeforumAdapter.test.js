@@ -49,12 +49,13 @@ describe('a1111 deforum adapter', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    const requestUrl = new URL(url, 'http://127.0.0.1:5173');
-    const settings = JSON.parse(requestUrl.searchParams.get('settings_json'));
+    const body = JSON.parse(init.body);
+    const settings = body.settings;
 
-    expect(init).toEqual({ method: 'POST' });
-    expect(requestUrl.pathname).toBe('/a1111/deforum/run');
-    expect(requestUrl.searchParams.get('allowed_params')).toContain('init_images');
+    expect(url).toBe('/a1111-deforum/run');
+    expect(init.method).toBe('POST');
+    expect(init.headers).toEqual({ 'content-type': 'application/json' });
+    expect(body.allowedParams).toContain('init_images');
     expect(settings.prompts['0']).toContain('--neg');
     expect(settings.prompts['0']).toContain('primary visual reference frame');
     expect(settings.init_images).toMatch(/assets[\\/]images[\\/]source[\\/]/);

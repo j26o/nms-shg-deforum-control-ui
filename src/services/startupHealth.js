@@ -58,7 +58,7 @@ async function waitForA1111(signal, timeoutMs) {
 
   while (performance.now() - startedAt < timeoutMs) {
     try {
-      const status = await fetchJson('/a1111/deforum/api_version', signal);
+      const status = await fetchJson('/a1111-deforum/api_version', signal);
       return {
         status: 'ready',
         detail: `Local Deforum API ready${status.version ? `: ${status.version}` : '.'}`,
@@ -77,7 +77,7 @@ async function waitForA1111(signal, timeoutMs) {
 export function createInitialStartupState() {
   const steps = [
     createStep('workbench', 'Workbench server', 'ready', 'Vite UI is serving the app.'),
-    createStep('a1111', 'Local A1111 Deforum', 'checking', 'Waiting for /deforum/api_version.'),
+    createStep('a1111', 'Local A1111 Deforum', 'checking', 'Waiting for /deforum/api_version through the local bridge.'),
     createStep('hf', 'Hugging Face proxy', 'checking', 'Checking local credential-safe proxy.'),
   ];
 
