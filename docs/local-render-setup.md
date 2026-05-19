@@ -133,6 +133,14 @@ The React app has a `Render Deforum` action that calls the local body bridge:
 /a1111-deforum/run
 ```
 
+When the backend writes an MP4 under the project output folders, the app exposes it through:
+
+```text
+/render-artifacts/file?path=...
+```
+
+The centre preview panel uses that URL to play the rendered video. If no playable MP4 is found, the panel still shows the output folder or pattern returned by the backend so the render can be inspected manually.
+
 It also polls the backend status bridge:
 
 ```text

@@ -41,6 +41,9 @@ describe('a1111 deforum adapter', () => {
       ok: true,
       json: async () => ({
         outdir: 'D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid',
+        artifactUrl: '/render-artifacts/file?path=D%3A%2Fout.mp4',
+        artifactPath: 'D:/out.mp4',
+        artifactFileName: 'out.mp4',
       }),
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -61,6 +64,9 @@ describe('a1111 deforum adapter', () => {
     expect(settings.init_images).toMatch(/assets[\\/]images[\\/]source[\\/]/);
     expect(job.status).toBe('complete');
     expect(job.outputPath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid');
+    expect(job.artifactUrl).toBe('/render-artifacts/file?path=D%3A%2Fout.mp4');
+    expect(job.artifactPath).toBe('D:/out.mp4');
+    expect(job.artifactFileName).toBe('out.mp4');
     expect(job.backendSettingsFilePath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/runid.txt');
     expect(job.outputSettingsPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*_settings.txt');
     expect(job.outputVideoPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*.mp4');

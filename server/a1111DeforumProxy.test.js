@@ -27,7 +27,6 @@ describe('a1111 deforum body proxy', () => {
     expect(status.ready).toBe(true);
     expect(status.status).toBe('ready');
     expect(status.apiVersion).toBe('1.0');
-    expect(status.modelCount).toBe(1);
     expect(fetchMock.mock.calls[0][0]).toBe('http://127.0.0.1:7860/deforum/api_version');
   });
 

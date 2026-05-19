@@ -155,12 +155,13 @@ git diff --check
 - Frame-keyed prompt JSON nodes with source-image selection, frame numbers, prompt text, and `--neg` params.
 - Mock render adapter that creates queue jobs and comparable take metadata.
 - Automatic1111 Deforum preset translator via the `Render Deforum` toolbar action.
+- Rendered MP4 playback in the centre preview panel when the selected backend returns a project-local artifact.
 - Exportable reviewed JSON plus readable Markdown report.
 - Vitest contract tests and Playwright CLI smoke test.
 
 ## Current Adapter Status
 
-The default preview action still uses deterministic mock metadata plus an inline simulated visual preview for fast UI review and does not create a file. The `Render Deforum` action calls the selected real backend. `Local A1111` uses the Automatic1111 Deforum backend when it is running at `http://127.0.0.1:7860`; `Hugging Face` uses the local `/hf-deforum/*` proxy and requires `HF_DEFORUM_ENDPOINT_URL` plus a valid `HF_TOKEN` or named Hugging Face CLI token.
+The default preview action still uses deterministic mock metadata plus an inline simulated visual preview for fast UI review and does not create a file. The `Render Deforum` action calls the selected real backend. `Local A1111` uses the Automatic1111 Deforum backend when it is running at `http://127.0.0.1:7860`; `Hugging Face` uses the local `/hf-deforum/*` proxy and requires `HF_DEFORUM_ENDPOINT_URL` plus a valid `HF_TOKEN` or named Hugging Face CLI token. Real MP4 artifacts under project output folders are served through `/render-artifacts/*` and shown in the centre preview panel.
 
 Backend runtime files live under `render-tools/` inside this project folder and are ignored by Git because they include a nested WebUI checkout, Python environment, model checkpoints, and generated render outputs. Vite is configured to ignore and deny that folder so the frontend dev server does not try to parse Automatic1111/Gradio assets. Backend setup details are in `docs/local-render-setup.md`.
 

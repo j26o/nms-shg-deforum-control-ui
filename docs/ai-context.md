@@ -40,11 +40,13 @@ Build and evaluate a local end-to-end Deforum effect prototype that lets Etienne
 - `src/services/backendStatus.js`: persistent toolbar backend status checks for Local A1111 and Hugging Face.
 - `src/components/workbench/StartupScreen.jsx`: boot/loading screen shown while startup checks run.
 - `src/components/workbench/PromptNodesPanel.jsx`: frame-keyed prompt JSON node editor.
+- `src/components/workbench/PreviewPanel.jsx`: centre preview surface for source-frame review and playable real render output.
 - `src/services/presetSchema.js`: export validation rules.
 - `src/services/renderAdapter.js`: render adapter boundary.
 - `src/services/mockRenderAdapter.js`: deterministic mock render path.
 - `src/services/a1111DeforumAdapter.js`: local Automatic1111 Deforum preset translator.
 - `server/a1111DeforumProxy.js`: local body bridge for A1111 Deforum render submission; avoids browser query-string 431 failures.
+- `server/renderArtifactProxy.js`: safe local artifact bridge for project output videos and generated render files.
 - `src/services/huggingFaceDeforumAdapter.js`: Hugging Face Deforum payload builder and proxy-backed job adapter.
 - `server/hfDeforumProxy.js`: local Vite middleware proxy for Hugging Face credentials, image attachment, job submit/poll, and artifact download.
 - `docs/huggingface-deforum-backend-plan.md`: approved plan for an optional Hugging Face Deforum-compatible endpoint/proxy path.

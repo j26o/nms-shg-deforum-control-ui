@@ -1,3 +1,5 @@
+import { createRenderArtifactUrl, findLatestVideoArtifact } from './renderArtifactProxy.js';
+
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
 const DEFAULT_POLL_INTERVAL_MS = 2000;
 const DEFAULT_MAX_POLLS = 3600;
@@ -59,7 +61,15 @@ function sleep(ms) {
 async function readUpstreamJson(response) {
   const text = await response.text();
   try {
-    return JSON.parse(text);
+    const result = JSON.parse(text);
+    const outdir = result.outdir || result.output_path || '';
+    const videoArtifact = await findLatestVideoArtifact(outdir).catch(() => null);
+    return {
+      ...result,
+      artifactPath: videoArtifact?.filePath ?? '',
+      artifactUrl: videoArtifact ? createRenderArtifactUrl(videoArtifact.filePath) : '',
+      artifactFileName: videoArtifact?.fileName ?? '',
+    };
   } catch {
     return { raw: text };
   }
@@ -219,9 +229,14 @@ export async function submitA1111DeforumRun(payload, env = process.env) {
       return { ...batch, api: 'deforum-api' };
     }
     const job = await pollFullDeforumJob(jobId, env);
+    const outdir = job.outdir || job.output_path || batch.outdir || '';
+    const videoArtifact = await findLatestVideoArtifact(outdir).catch(() => null);
     return {
       ...job,
-      outdir: job.outdir || job.output_path || batch.outdir || '',
+      outdir,
+      artifactPath: videoArtifact?.filePath ?? '',
+      artifactUrl: videoArtifact ? createRenderArtifactUrl(videoArtifact.filePath) : '',
+      artifactFileName: videoArtifact?.fileName ?? '',
       api: 'deforum-api',
       batchId: batch.batch_id,
       jobId,

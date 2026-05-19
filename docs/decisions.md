@@ -105,3 +105,9 @@ Reason: A failed real Deforum render can otherwise look like a generic UI error.
 Decision: Configure Vite to use `index.html` as the dependency optimisation entry, deny static serving from `render-tools/`, ignore `render-tools/` in file watching, and block browser requests for paths under `/render-tools/`.
 
 Reason: The project-local Automatic1111 runtime contains Gradio frontend assets and Python environment files. Those files are backend/runtime assets, not React app source, and Vite can otherwise try to resolve Gradio optional imports such as `bufferutil`.
+
+## 2026-05-19: Use Centre Preview For Rendered Output
+
+Decision: The centre preview panel is the primary rendered-output surface. Real backend MP4 artifacts are exposed through `/render-artifacts/*`, played in the centre panel, and the fullscreen control opens the playable artifact or fullscreen preview frame.
+
+Reason: Showing only source images in the main preview while burying real output paths in Takes made the prototype feel like the render had no visible result. Creative review needs a stable 7:3 output viewport first, with file paths as supporting metadata.

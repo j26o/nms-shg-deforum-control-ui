@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { createA1111DeforumProxyPlugin } from './server/a1111DeforumProxy.js';
 import { createHuggingFaceDeforumProxyPlugin } from './server/hfDeforumProxy.js';
+import { createRenderArtifactProxyPlugin } from './server/renderArtifactProxy.js';
 
 function createRenderToolsGuardPlugin() {
   return {
@@ -27,7 +28,13 @@ export default defineConfig(({ mode }) => {
   const a1111BaseUrl = env.A1111_BASE_URL || 'http://127.0.0.1:7860';
 
   return {
-    plugins: [react(), createRenderToolsGuardPlugin(), createA1111DeforumProxyPlugin(env), createHuggingFaceDeforumProxyPlugin(env)],
+    plugins: [
+      react(),
+      createRenderToolsGuardPlugin(),
+      createRenderArtifactProxyPlugin(),
+      createA1111DeforumProxyPlugin(env),
+      createHuggingFaceDeforumProxyPlugin(env),
+    ],
     optimizeDeps: {
       entries: ['index.html'],
       exclude: ['bufferutil', 'utf-8-validate'],

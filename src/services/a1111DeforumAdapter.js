@@ -413,6 +413,9 @@ export async function queueA1111DeforumRender(preset, modelOverride) {
     backendSettingsFilePath: outputPaths.settingsFilePath,
     outputSettingsPattern: outputPaths.outputSettingsPattern,
     outputVideoPattern: outputPaths.outputVideoPattern,
+    artifactPath: result.artifactPath ?? '',
+    artifactUrl: result.artifactUrl ?? '',
+    artifactFileName: result.artifactFileName ?? '',
   };
 }
 
