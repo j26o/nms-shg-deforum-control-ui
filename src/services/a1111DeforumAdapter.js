@@ -339,7 +339,7 @@ export function createDeforumRenderSettings(preset, modelOverride) {
     parseq_non_schedule_overrides: true,
     use_looper: hasInitImages && Object.keys(initImages).length > 1,
     init_images: JSON.stringify(initImages, null, 4),
-    image_strength_schedule: formatNumberSchedule(sourceImageStrength),
+    image_strength_schedule: formatNumberSchedule(denoiseStrength),
     blendFactorMax: formatNumberSchedule(sourceImageStrength),
     blendFactorSlope: formatNumberSchedule(imageInfluenceDecay),
     tweening_frames_schedule: formatNumberSchedule(transitionDuration),
