@@ -1,9 +1,12 @@
 import { getDefaultModel } from './modelOptions.js';
 import { defaultSettingPresetId, getThematicSettingPreset } from './thematicSettingPresets.js';
 
-const DEFAULT_SOURCE_IMAGE_COUNT = 8;
+const DEFAULT_SOURCE_IMAGE_COUNT = 3;
 const DEFAULT_FPS = 60;
-const DEFAULT_DURATION_SECONDS = 8;
+const DEFAULT_NODE_SPACING_SECONDS = 2;
+const DEFAULT_DURATION_SECONDS = DEFAULT_SOURCE_IMAGE_COUNT * DEFAULT_NODE_SPACING_SECONDS;
+
+export { DEFAULT_FPS, DEFAULT_NODE_SPACING_SECONDS };
 
 export const defaultCreativeDirectionPrompt = [
   'A visionary future Singapore cityscape across Marina Bay, featuring NS Square floating civic platform, curved waterfront grandstand, Wetlands by the Bay with lush layered greenery and waterways, and the Singapore Founders Memorial with sculptural contemporary architecture.',
@@ -90,18 +93,39 @@ export function createDefaultAssets() {
   }));
 }
 
-export function createDefaultTimeline(assets = createDefaultAssets(), { fps = DEFAULT_FPS, previewDuration = DEFAULT_DURATION_SECONDS } = {}) {
+export function getComputedDurationSeconds(timeline = [], fps = DEFAULT_FPS, nodeSpacingSeconds = DEFAULT_NODE_SPACING_SECONDS) {
+  const safeFps = Math.max(1, Number(fps) || DEFAULT_FPS);
+  const safeSpacing = Math.max(1, Number(nodeSpacingSeconds) || DEFAULT_NODE_SPACING_SECONDS);
+  if (!timeline.length) {
+    return safeSpacing;
+  }
+
+  const latestToFrame = Math.max(...timeline.map((segment) => Number(segment.toFrame ?? segment.fromFrame ?? 0)));
+  return Math.max(safeSpacing, Math.ceil((latestToFrame + 1) / safeFps));
+}
+
+export function retimeTimelineByNodeSpacing(timeline = [], fps = DEFAULT_FPS, nodeSpacingSeconds = DEFAULT_NODE_SPACING_SECONDS) {
+  const frameSpan = Math.max(1, Math.round((Number(fps) || DEFAULT_FPS) * nodeSpacingSeconds));
+  return timeline.map((segment, index) => {
+    const fromFrame = index * frameSpan;
+    return {
+      ...segment,
+      fromFrame,
+      toFrame: fromFrame + frameSpan - 1,
+    };
+  });
+}
+
+export function createDefaultTimeline(assets = createDefaultAssets(), { fps = DEFAULT_FPS, nodeSpacingSeconds = DEFAULT_NODE_SPACING_SECONDS } = {}) {
   const enabledAssets = assets.filter((asset) => asset.enabled !== false);
-  const totalFrames = Math.max(1, Math.round(fps * previewDuration));
-  const frameSpan = Math.max(1, Math.floor(totalFrames / Math.max(1, enabledAssets.length)));
+  const frameSpan = Math.max(1, Math.round(fps * nodeSpacingSeconds));
 
   return enabledAssets.map((asset, index) => {
-    const fromFrame = Math.min(index * frameSpan, totalFrames - 1);
-    const toFrame = index === enabledAssets.length - 1 ? totalFrames - 1 : Math.min((index + 1) * frameSpan - 1, totalFrames - 1);
+    const fromFrame = index * frameSpan;
     return {
       id: `segment-${String(index + 1).padStart(3, '0')}`,
       fromFrame,
-      toFrame,
+      toFrame: fromFrame + frameSpan - 1,
       sourceImageId: asset.id,
       prompt: createImageReferencePrompt(asset),
       negativePrompt: defaultCreativeDirectionNegativePrompt,
@@ -138,7 +162,7 @@ export function createDefaultPreset() {
       risk: model.risk,
     },
     assets,
-    timeline: createDefaultTimeline(assets, { fps: DEFAULT_FPS, previewDuration: DEFAULT_DURATION_SECONDS }),
+    timeline: createDefaultTimeline(assets, { fps: DEFAULT_FPS }),
     generation: {
       sampler: 'DPM++ 2M Karras',
       scheduler: 'Karras',

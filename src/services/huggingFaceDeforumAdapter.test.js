@@ -15,7 +15,7 @@ describe('hugging face deforum adapter', () => {
 
     expect(payload.backend).toBe('huggingface-deforum');
     expect(payload.target.previewResolution).toEqual([896, 384]);
-    expect(payload.target.maxFrames).toBe(480);
+    expect(payload.target.maxFrames).toBe(360);
     expect(payload.target.fps).toBe(60);
     expect(payload.output.format).toBe('mp4');
     expect(payload.model.file).toBe('RealVisXL_V5.0_fp16.safetensors');
@@ -112,5 +112,23 @@ describe('hugging face deforum adapter', () => {
     expect(fetchMock.mock.calls[1][0]).toBe('/hf-deforum/jobs/hf-job-002');
     expect(job.status).toBe('complete');
     expect(job.outputPath).toBe('hf://artifact/hf-job-002.mp4');
+  });
+
+  it('rejects smoke fallback crossfade artifacts as non-Deforum output', async () => {
+    const preset = createDefaultPreset();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        jobId: 'hf-job-fallback',
+        status: 'complete',
+        artifactUrl: 'https://example.test/fallback.mp4',
+        isFallbackMorph: true,
+        artifactKind: 'fallback-morph',
+        warnings: ['Used fallback keyframe morph renderer. This is for endpoint smoke tests only.'],
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(queueHuggingFaceDeforumRender(preset, undefined, { pollIntervalMs: 0 })).rejects.toThrow('smoke-test crossfade');
   });
 });

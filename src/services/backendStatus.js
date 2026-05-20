@@ -49,13 +49,43 @@ export async function checkBackendStatus(backend = 'a1111-deforum', signal) {
         };
       }
 
-      if (json.configured) {
+      if (json.configured && json.realDeforumReady) {
         return {
           backend,
           label: BACKEND_LABELS[backend],
           status: 'ready',
           ready: true,
-          detail: 'Proxy and endpoint configured.',
+          detail: 'Proxy and real Deforum endpoint are ready.',
+        };
+      }
+
+      if (json.configured && json.health?.fallbackMorphEnabled) {
+        return {
+          backend,
+          label: BACKEND_LABELS[backend],
+          status: 'not-configured',
+          ready: false,
+          detail: 'Hugging Face endpoint is in smoke fallback mode. It returns crossfade MP4s, not real Deforum renders.',
+        };
+      }
+
+      if (json.configured && json.health?.a1111Configured === false) {
+        return {
+          backend,
+          label: BACKEND_LABELS[backend],
+          status: 'not-configured',
+          ready: false,
+          detail: 'Hugging Face endpoint is configured, but no remote A1111 Deforum backend is attached.',
+        };
+      }
+
+      if (json.configured && json.health?.error) {
+        return {
+          backend,
+          label: BACKEND_LABELS[backend],
+          status: 'offline',
+          ready: false,
+          detail: `Hugging Face endpoint health check failed: ${json.health.error}`,
         };
       }
 

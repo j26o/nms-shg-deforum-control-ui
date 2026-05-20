@@ -41,6 +41,18 @@ HF_DEFORUM_ALLOW_FALLBACK_MORPH=1
 
 Fallback output crossfades submitted keyframe images into an MP4 and is marked with a warning in job metadata. It is not acceptable evidence for the final Hugging Face Deforum eval.
 
+The workbench treats this mode as not ready for real rendering. Fallback artifacts are labelled with:
+
+```json
+{
+  "renderMode": "fallback-morph",
+  "artifactKind": "fallback-morph",
+  "isFallbackMorph": true
+}
+```
+
+The frontend rejects those artifacts so they are not saved as completed Deforum takes.
+
 ## Local Proxy
 
 Set the workbench proxy to the Space URL:

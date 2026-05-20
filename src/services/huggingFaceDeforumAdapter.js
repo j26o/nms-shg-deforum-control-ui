@@ -163,6 +163,25 @@ function normalizeCompletedResult(result, submittedResult, payload) {
   };
 }
 
+function isFallbackMorphResult(result) {
+  if (result.isFallbackMorph || result.artifactKind === 'fallback-morph') {
+    return true;
+  }
+
+  const searchableText = [...(result.warnings ?? []), ...(result.logs ?? [])].join(' ').toLowerCase();
+  return searchableText.includes('fallback') && (searchableText.includes('morph') || searchableText.includes('crossfade'));
+}
+
+function assertRealDeforumResult(result) {
+  if (!isFallbackMorphResult(result)) {
+    return;
+  }
+
+  throw new Error(
+    'Hugging Face returned the smoke-test crossfade renderer, not a real Deforum MP4. Configure HF_DEFORUM_A1111_BASE_URL for a Deforum-enabled A1111 backend and disable HF_DEFORUM_ALLOW_FALLBACK_MORPH before using Hugging Face for creative evaluation.',
+  );
+}
+
 export async function queueHuggingFaceDeforumRender(preset, modelOverride, options = {}) {
   const renderConfig = normaliseRenderConfig(preset, modelOverride);
   const payload = createHuggingFaceDeforumPayload(preset, modelOverride);
@@ -179,6 +198,7 @@ export async function queueHuggingFaceDeforumRender(preset, modelOverride, optio
 
   const completed = isComplete(submitted.status) || !submitted.jobId ? submitted : await pollHuggingFaceJob(submitted.jobId, options);
   const result = normalizeCompletedResult(completed, submitted, payload);
+  assertRealDeforumResult(result);
   const completedAt = new Date().toISOString();
   const estimateSeconds = Math.max(1, Math.round((performance.now() - startedAt) / 1000));
   const previewResolution = getPreviewResolution(renderConfig);

@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import { createDefaultPreset, defaultCreativeDirectionNegativePrompt } from '../config/defaultPreset.js';
+import {
+  DEFAULT_NODE_SPACING_SECONDS,
+  createDefaultPreset,
+  defaultCreativeDirectionNegativePrompt,
+  getComputedDurationSeconds,
+  retimeTimelineByNodeSpacing,
+} from '../config/defaultPreset.js';
 import { getModelById } from '../config/modelOptions.js';
 import { getThematicSettingPreset } from '../config/thematicSettingPresets.js';
 import { queueA1111DeforumRender } from '../services/a1111DeforumAdapter.js';
@@ -18,13 +24,55 @@ function createAssetId() {
   return `image-custom-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 }
 
-function createTimelineSegmentForAsset(asset, timeline, prompt) {
+function getPresetFps(preset) {
+  return Number(preset.motion?.fps ?? preset.target?.fps) || 60;
+}
+
+function applyComputedTiming(preset) {
+  const fps = getPresetFps(preset);
+  const previewDuration = getComputedDurationSeconds(preset.timeline, fps);
+  return {
+    ...preset,
+    target: {
+      ...preset.target,
+      fps,
+      durationSeconds: previewDuration,
+    },
+    motion: {
+      ...preset.motion,
+      fps,
+    },
+    output: {
+      ...preset.output,
+      previewDuration,
+      renderRange: [0, Math.max(0, Math.round(fps * previewDuration) - 1)],
+    },
+  };
+}
+
+function retimePreset(preset, fps = getPresetFps(preset)) {
+  return applyComputedTiming({
+    ...preset,
+    target: {
+      ...preset.target,
+      fps,
+    },
+    motion: {
+      ...preset.motion,
+      fps,
+    },
+    timeline: retimeTimelineByNodeSpacing(preset.timeline, fps, DEFAULT_NODE_SPACING_SECONDS),
+  });
+}
+
+function createTimelineSegmentForAsset(asset, timeline, prompt, fps = 60) {
   const last = timeline[timeline.length - 1];
-  const fromFrame = last ? last.fromFrame + 30 : 0;
+  const frameSpan = Math.max(1, Math.round(fps * DEFAULT_NODE_SPACING_SECONDS));
+  const fromFrame = last ? last.fromFrame + frameSpan : 0;
   return {
     id: `segment-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     fromFrame,
-    toFrame: fromFrame,
+    toFrame: fromFrame + frameSpan - 1,
     sourceImageId: asset.id,
     prompt:
       prompt ??
@@ -87,18 +135,22 @@ export const usePresetStore = create((set, get) => ({
   applySettingPreset: (settingPresetId) =>
     set((state) => {
       const settingPreset = getThematicSettingPreset(settingPresetId);
-      const model = getModelById(settingPreset.modelId ?? state.preset.model.modelId);
       return {
         preset: {
           ...state.preset,
           settingPresetId: settingPreset.id,
-          model: createModelState(model),
           generation: applyGroupPatch(state.preset.generation, settingPreset.generation),
           imageMorph: applyGroupPatch(state.preset.imageMorph, settingPreset.imageMorph),
           motion: applyGroupPatch(state.preset.motion, settingPreset.motion),
           look: applyGroupPatch(state.preset.look, settingPreset.look),
-          output: applyGroupPatch(state.preset.output, settingPreset.output),
         },
+      };
+    }),
+  setFps: (fpsValue) =>
+    set((state) => {
+      const fps = Math.max(1, Math.round(Number(fpsValue) || getPresetFps(state.preset)));
+      return {
+        preset: retimePreset(state.preset, fps),
       };
     }),
   selectAsset: (assetId) => set({ selectedAssetId: assetId }),
@@ -133,13 +185,14 @@ export const usePresetStore = create((set, get) => ({
         width: Number(assetDraft.width) || state.preset.target.sourceResolution[0],
         height: Number(assetDraft.height) || state.preset.target.sourceResolution[1],
       };
-      const segment = createTimelineSegmentForAsset(asset, state.preset.timeline, state.preset.prompt?.positive);
+      const segment = createTimelineSegmentForAsset(asset, state.preset.timeline, state.preset.prompt?.positive, getPresetFps(state.preset));
+      const preset = applyComputedTiming({
+        ...state.preset,
+        assets: [...state.preset.assets, asset],
+        timeline: [...state.preset.timeline, segment],
+      });
       return {
-        preset: {
-          ...state.preset,
-          assets: [...state.preset.assets, asset],
-          timeline: [...state.preset.timeline, segment],
-        },
+        preset,
         selectedAssetId: asset.id,
         selectedSegmentId: segment.id,
       };
@@ -151,7 +204,7 @@ export const usePresetStore = create((set, get) => ({
       const selectedAssetId = state.selectedAssetId === assetId ? assets[0]?.id : state.selectedAssetId;
       const selectedSegmentId = timeline.some((segment) => segment.id === state.selectedSegmentId) ? state.selectedSegmentId : timeline[0]?.id;
       return {
-        preset: { ...state.preset, assets, timeline },
+        preset: applyComputedTiming({ ...state.preset, assets, timeline }),
         selectedAssetId,
         selectedSegmentId,
       };
@@ -168,18 +221,19 @@ export const usePresetStore = create((set, get) => ({
   addSegment: () =>
     set((state) => {
       const last = state.preset.timeline[state.preset.timeline.length - 1];
-      const fromFrame = last ? last.fromFrame + 30 : 0;
+      const frameSpan = Math.max(1, Math.round(getPresetFps(state.preset) * DEFAULT_NODE_SPACING_SECONDS));
+      const fromFrame = last ? last.fromFrame + frameSpan : 0;
       const segment = {
         id: `segment-${Date.now()}`,
         fromFrame,
-        toFrame: fromFrame,
+        toFrame: fromFrame + frameSpan - 1,
         sourceImageId: state.selectedAssetId ?? state.preset.assets[0]?.id,
         prompt: state.preset.prompt.positive,
         negativePrompt: state.preset.prompt.negative,
         transitionMode: 'sequential-morph',
       };
       return {
-        preset: { ...state.preset, timeline: [...state.preset.timeline, segment] },
+        preset: applyComputedTiming({ ...state.preset, timeline: [...state.preset.timeline, segment] }),
         selectedAssetId: segment.sourceImageId,
         selectedSegmentId: segment.id,
       };
@@ -188,38 +242,43 @@ export const usePresetStore = create((set, get) => ({
     set((state) => {
       const source = state.preset.timeline.find((segment) => segment.id === segmentId);
       if (!source) return state;
-      const fromFrame = source.fromFrame + 30;
+      const frameSpan = Math.max(1, Math.round(getPresetFps(state.preset) * DEFAULT_NODE_SPACING_SECONDS));
+      const fromFrame = source.fromFrame + frameSpan;
       const duplicate = {
         ...source,
         id: `segment-${Date.now()}`,
         fromFrame,
-        toFrame: fromFrame,
+        toFrame: fromFrame + frameSpan - 1,
       };
       return {
-        preset: { ...state.preset, timeline: [...state.preset.timeline, duplicate] },
+        preset: applyComputedTiming({ ...state.preset, timeline: [...state.preset.timeline, duplicate] }),
         selectedAssetId: duplicate.sourceImageId,
         selectedSegmentId: duplicate.id,
       };
     }),
   updateSegment: (segmentId, patch) =>
-    set((state) => ({
-      preset: {
-        ...state.preset,
-        timeline: state.preset.timeline.map((segment) => {
+    set((state) => {
+      const frameSpan = Math.max(1, Math.round(getPresetFps(state.preset) * DEFAULT_NODE_SPACING_SECONDS));
+      const timeline = state.preset.timeline.map((segment) => {
           if (segment.id !== segmentId) return segment;
           const next = { ...segment, ...patch };
           if (Object.prototype.hasOwnProperty.call(patch, 'fromFrame') && !Object.prototype.hasOwnProperty.call(patch, 'toFrame')) {
-            next.toFrame = next.fromFrame;
+            next.toFrame = next.fromFrame + frameSpan - 1;
           }
           return next;
+        });
+      return {
+        preset: applyComputedTiming({
+          ...state.preset,
+          timeline,
         }),
-      },
-    })),
+      };
+    }),
   deleteSegment: (segmentId) =>
     set((state) => {
       const timeline = state.preset.timeline.filter((segment) => segment.id !== segmentId);
       return {
-        preset: { ...state.preset, timeline },
+        preset: applyComputedTiming({ ...state.preset, timeline }),
         selectedSegmentId: timeline[0]?.id,
       };
     }),
@@ -230,7 +289,7 @@ export const usePresetStore = create((set, get) => ({
       const target = index + direction;
       if (index < 0 || target < 0 || target >= timeline.length) return state;
       [timeline[index], timeline[target]] = [timeline[target], timeline[index]];
-      return { preset: { ...state.preset, timeline } };
+      return { preset: retimePreset({ ...state.preset, timeline }) };
     }),
   queueRender: async () => {
     set({

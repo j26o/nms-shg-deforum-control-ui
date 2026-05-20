@@ -1,7 +1,7 @@
 # Todo
 
 Status: active next steps  
-Last updated: 2026-05-19
+Last updated: 2026-05-20
 
 ## Next Implementation Steps
 
@@ -39,6 +39,8 @@ Last updated: 2026-05-19
 - [x] Add the local `huggingface-deforum` frontend adapter and Vite proxy.
 - [x] Provide the remote Hugging Face endpoint or private Space/API runtime for `HF_DEFORUM_ENDPOINT_URL`.
 - [x] Deploy private Hugging Face Docker Space `robaldovino/nms-shg-deforum-endpoint` and verify local proxy smoke MP4 artifact retrieval.
+- [x] Block Hugging Face smoke fallback crossfade MP4s from being treated as completed Deforum renders.
+- [x] Add a Local A1111 retry path that chunks rejected 3+ image Deforum schedules into adjacent two-image real Deforum segments and stitches the MP4s.
 - [ ] Connect the deployed Hugging Face Space to a reachable A1111 Deforum backend through `HF_DEFORUM_A1111_BASE_URL`.
 - [ ] Run a Hugging Face vs local Automatic1111 eval using the same image-keyframe preset and MP4 artifact checks.
 
@@ -60,5 +62,6 @@ Last updated: 2026-05-19
 - Repeated Local A1111 renders with an existing Deforum `batch_name` output folder are submitted with incremented names (`-02`, `-03`, and so on) by the local bridge.
 - The controls panel now explains each visible setting, and the model selector describes each configured model's strengths. Juggernaut XL v9 is labelled as the closest configured Midjourney-like option; RealVisXL remains default for source-faithful photorealism.
 - Selectable thematic setting presets are available for sample-frame matching, misty maritime night, cinematic Midjourney-like concept polish, soft watercolor memory, and fast alignment testing.
-- Latest E2E eval: the UI confirms RealVisXL as the default and normal tests pass, but the live Local A1111 Deforum render still fails before artifact creation. Direct repros show 2 guided images reach `GENERATING`, while 3+ guided images fail in `PREPARING` with `Invalid arguments`.
+- Hugging Face fallback crossfade output is now treated as not configured/not real Deforum: the status check requires a real A1111-backed Space health response, and fallback artifacts are rejected if returned.
+- Latest E2E eval: the UI confirms RealVisXL as the default and normal tests pass. Direct repros show the current batch worker can reject or fail 3+ guided images in `PREPARING` with `Invalid arguments` or in `GENERATING` with `Generation error`, so the local bridge now retries those cases as stitched two-image Deforum segments.
 - Latest source-faithfulness review: the MP4 at `render-tools/stable-diffusion-webui/outputs/img2img-images/future-wall-morph-study-01-deforum/20260519195919.mp4` is not representative of the current defaults. Its saved settings used stale SD 1.5, old inline prompts, 3D depth warp, higher denoise/noise, and camera drift.

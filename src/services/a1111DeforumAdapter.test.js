@@ -15,7 +15,7 @@ describe('a1111 deforum adapter', () => {
 
     expect(settings.W).toBe(896);
     expect(settings.H).toBe(384);
-    expect(settings.max_frames).toBe(480);
+    expect(settings.max_frames).toBe(360);
     expect(settings.fps).toBe(60);
     expect(settings.sampler).toBe('DPM++ 2M Karras');
     expect(settings.scale).toBe(5.5);
@@ -29,7 +29,7 @@ describe('a1111 deforum adapter', () => {
     expect(settings.image_strength_schedule).toBe('0: (0.98)');
     expect(settings.tweening_frames_schedule).toBe('0: (54)');
     expect(settings.diffusion_cadence).toBe(1);
-    expect(Object.keys(settings.prompts)).toHaveLength(8);
+    expect(Object.keys(settings.prompts)).toEqual(['0', '120', '240']);
     expect(settings.prompts['0']).not.toContain('visionary future Singapore cityscape');
     expect(settings.prompts['0']).toContain('required target image for this keyframe');
     expect(settings.prompts['0']).toContain('Do not invent a new city');
@@ -44,7 +44,7 @@ describe('a1111 deforum adapter', () => {
     const initImages = JSON.parse(settings.init_images);
     expect(Object.keys(initImages)).toEqual(Object.keys(settings.prompts));
     expect(initImages['0']).toMatch(/assets[\\/]images[\\/]source[\\/]/);
-    expect(Object.values(initImages)).toHaveLength(8);
+    expect(Object.values(initImages)).toHaveLength(3);
     expect(settings.sampler_schedule).toBe('0: ("DPM++ 2M Karras")');
     expect(settings.enable_checkpoint_scheduling).toBe(true);
     expect(settings.checkpoint_schedule).toBe('0: ("sd_xl_base_1.0.safetensors")');
@@ -88,7 +88,7 @@ describe('a1111 deforum adapter', () => {
     expect(job.backendSettingsFilePath).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/runid.txt');
     expect(job.outputSettingsPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*_settings.txt');
     expect(job.outputVideoPattern).toBe('D:/nms-shg-deforum-control-ui-main/render-tools/stable-diffusion-webui/outputs/img2img-images/runid/*.mp4');
-    expect(Object.keys(job.renderSettings.prompts)).toHaveLength(8);
+    expect(Object.keys(job.renderSettings.prompts)).toHaveLength(3);
   });
 
   it('moves inline --neg prompt nodes into the Deforum negative field', () => {

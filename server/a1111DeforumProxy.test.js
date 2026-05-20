@@ -1,9 +1,11 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { checkA1111DeforumStatus, submitA1111DeforumRun } from './a1111DeforumProxy.js';
 
 const testOutputRoot = path.join(process.cwd(), 'outputs', '.a1111-proxy-test');
+const ffmpegPath = path.join(process.cwd(), 'render-tools', 'ffmpeg', 'ffmpeg-8.1.1-full_build', 'bin', 'ffmpeg.exe');
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -257,5 +259,84 @@ describe('a1111 deforum body proxy', () => {
     expect(settings.batch_name).toBe('future-wall-morph-study-01-deforum-02');
     expect(settings.prompts['0']).toContain('future city');
     expect(JSON.parse(settings.init_images)['0']).toBe(path.resolve(process.cwd(), 'assets/images/source/test.png'));
+  });
+
+  it('retries multi-image generation errors as adjacent Deforum segments', async () => {
+    const img2imgOutputRoot = path.join(testOutputRoot, 'chunk-img2img');
+    const segmentOneDir = path.join(testOutputRoot, 'segment-one');
+    const segmentTwoDir = path.join(testOutputRoot, 'segment-two');
+    await mkdir(segmentOneDir, { recursive: true });
+    await mkdir(segmentTwoDir, { recursive: true });
+    spawnSync(ffmpegPath, ['-y', '-f', 'lavfi', '-i', 'color=c=black:s=16x16:d=0.1', '-pix_fmt', 'yuv420p', path.join(segmentOneDir, 'segment-one.mp4')]);
+    spawnSync(ffmpegPath, ['-y', '-f', 'lavfi', '-i', 'color=c=white:s=16x16:d=0.1', '-pix_fmt', 'yuv420p', path.join(segmentTwoDir, 'segment-two.mp4')]);
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        text: async () => JSON.stringify({ batch_id: 'batch-full', job_ids: ['job-full'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ id: 'job-full', status: 'FAILED', phase: 'GENERATING', message: 'Generation error.' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        text: async () => JSON.stringify({ batch_id: 'batch-seg-1', job_ids: ['job-seg-1'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ id: 'job-seg-1', status: 'SUCCEEDED', outdir: segmentOneDir }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        text: async () => JSON.stringify({ batch_id: 'batch-seg-2', job_ids: ['job-seg-2'] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ id: 'job-seg-2', status: 'SUCCEEDED', outdir: segmentTwoDir }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await submitA1111DeforumRun(
+      {
+        settings: {
+          batch_name: 'future-wall-morph-study-01-deforum',
+          prompts: { 0: 'source one', 60: 'source two', 120: 'source three' },
+          init_images: JSON.stringify({
+            0: 'assets/images/source/one.png',
+            60: 'assets/images/source/two.png',
+            120: 'assets/images/source/three.png',
+          }),
+        },
+        allowedParams: ['prompts', 'init_images'],
+      },
+      {
+        A1111_BASE_URL: 'http://127.0.0.1:7860',
+        A1111_DEFORUM_POLL_INTERVAL_MS: '0',
+        A1111_DEFORUM_MAX_POLLS: '1',
+        A1111_IMG2IMG_OUTPUT_DIR: img2imgOutputRoot,
+        FFMPEG_PATH: ffmpegPath,
+      },
+    );
+
+    const firstSegmentBody = JSON.parse(fetchMock.mock.calls[2][1].body).deforum_settings;
+    const secondSegmentBody = JSON.parse(fetchMock.mock.calls[4][1].body).deforum_settings;
+
+    expect(result.api).toBe('deforum-api-chunked');
+    expect(result.chunkedFallback).toBe(true);
+    expect(result.artifactFileName).toBe('stitched.mp4');
+    expect(result.segmentResults).toHaveLength(2);
+    expect(firstSegmentBody.batch_name).toContain('seg-01');
+    expect(firstSegmentBody.max_frames).toBe(60);
+    expect(Object.keys(JSON.parse(firstSegmentBody.init_images))).toEqual(['0', '59']);
+    expect(secondSegmentBody.batch_name).toContain('seg-02');
+    expect(secondSegmentBody.max_frames).toBe(60);
   });
 });

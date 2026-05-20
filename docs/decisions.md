@@ -171,3 +171,15 @@ Reason: The prototype is being used for creative tuning, not only technical vali
 Decision: Add a `Thematic preset` dropdown to the Generation controls backed by `src/config/thematicSettingPresets.js`. The presets apply grouped model, generation, image morph, motion, look, and output values. The default `sample-frame-match` preset is tuned to stay closest to the supplied panoramic source images; other presets cover misty maritime night, cinematic Midjourney-like concept polish, soft watercolor memory, and fast alignment testing.
 
 Reason: Reviewers need fast creative starting points without manually coordinating many sliders. Keeping these presets as structured config makes the chosen values testable, reusable, and easier to refine after real render evidence.
+
+## 2026-05-20: Reject Hugging Face Smoke Fallback As Deforum Output
+
+Decision: The Hugging Face proxy now checks the endpoint `/health` response and only marks the backend ready when it reports a real A1111 Deforum runtime: `renderMode: "a1111"`, `a1111Configured: true`, and fallback morph disabled. The remote handler labels fallback artifacts with `renderMode: "fallback-morph"`, `artifactKind: "fallback-morph"`, and `isFallbackMorph: true`; the frontend adapter rejects those artifacts instead of saving them as completed Deforum takes.
+
+Reason: The deployed Hugging Face Space can return a smoke-test MP4 by crossfading submitted keyframe images. That validates credential-safe transport, but it ignores most generation settings and is not real Deforum. Treating it as a completed render made backend selection look broken and created misleading creative evidence.
+
+## 2026-05-20: Chunk Multi-Image A1111 Deforum Fallback
+
+Decision: When the Local A1111 Deforum batch API rejects or fails a multi-image `init_images` schedule with `Invalid arguments` or `Generation error`, the Vite bridge now retries by rendering adjacent two-image Deforum segments and concatenating the resulting MP4 artifacts with FFmpeg. This fallback can be disabled with `A1111_DEFORUM_DISABLE_CHUNK_FALLBACK=1`.
+
+Reason: The installed Deforum batch worker accepts smaller guided-image jobs but rejects the full 8-image looper payload during `PREPARING`. Segmenting keeps the output on the real Deforum path and avoids replacing the render with a visual crossfade backup.

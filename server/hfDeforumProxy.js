@@ -6,6 +6,7 @@ const DEFAULT_TOKEN_NAME = 'nms-shg';
 const DEFAULT_SUBMIT_PATH = '/jobs';
 const DEFAULT_STATUS_PATH_TEMPLATE = '/jobs/:id';
 const DEFAULT_ARTIFACT_PATH_TEMPLATE = '/jobs/:id/artifact';
+const DEFAULT_HEALTH_PATH = '/health';
 const MAX_BODY_BYTES = 20 * 1024 * 1024;
 
 function createJsonResponse(response, statusCode, payload) {
@@ -95,6 +96,7 @@ function getEndpointConfig(env = process.env) {
     submitPath: env.HF_DEFORUM_SUBMIT_PATH || DEFAULT_SUBMIT_PATH,
     statusPathTemplate: env.HF_DEFORUM_STATUS_PATH_TEMPLATE || DEFAULT_STATUS_PATH_TEMPLATE,
     artifactPathTemplate: env.HF_DEFORUM_ARTIFACT_PATH_TEMPLATE || DEFAULT_ARTIFACT_PATH_TEMPLATE,
+    healthPath: env.HF_DEFORUM_HEALTH_PATH || DEFAULT_HEALTH_PATH,
     includeImageData: env.HF_DEFORUM_INCLUDE_IMAGE_DATA !== '0',
   };
 }
@@ -182,6 +184,30 @@ async function forwardJson(url, { method = 'GET', token, body } = {}) {
   };
 }
 
+async function readEndpointHealth(config, token) {
+  if (!config.endpointUrl || !token) {
+    return null;
+  }
+
+  try {
+    return await forwardJson(createEndpointUrl(config.endpointUrl, config.healthPath), { token });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+function isRealDeforumEndpoint(health) {
+  return Boolean(
+    health &&
+      !health.error &&
+      String(health.renderMode ?? '').toLowerCase() === 'a1111' &&
+      health.a1111Configured === true &&
+      health.fallbackMorphEnabled !== true,
+  );
+}
+
 export function normaliseHuggingFaceJobResponse(result, fallback = {}) {
   const jobId = result.jobId ?? result.id ?? result.runId ?? fallback.jobId ?? '';
   const status = result.status ?? result.state ?? (result.artifactUrl || result.outputPath || result.artifactBase64 ? 'complete' : 'submitted');
@@ -196,6 +222,9 @@ export function normaliseHuggingFaceJobResponse(result, fallback = {}) {
     fps: result.fps,
     renderDurationMs: result.renderDurationMs ?? result.durationMs,
     renderSettings: result.renderSettings ?? result.settings ?? result.payload ?? null,
+    renderMode: result.renderMode ?? result.mode ?? '',
+    artifactKind: result.artifactKind ?? '',
+    isFallbackMorph: Boolean(result.isFallbackMorph),
     warnings: result.warnings ?? [],
     logs: result.logs ?? [],
     raw: result,
@@ -269,12 +298,18 @@ export async function handleHuggingFaceDeforumRequest(request, response, env = p
     if (request.method === 'GET' && pathName === '/hf-deforum/status') {
       const config = getEndpointConfig(env);
       const token = await getHuggingFaceToken(env);
+      const endpointConfigured = Boolean(config.endpointUrl);
+      const tokenConfigured = Boolean(token);
+      const health = endpointConfigured && tokenConfigured ? await readEndpointHealth(config, token) : null;
+      const realDeforumReady = isRealDeforumEndpoint(health);
       createJsonResponse(response, 200, {
-        configured: Boolean(config.endpointUrl && token),
-        endpointConfigured: Boolean(config.endpointUrl),
-        tokenConfigured: Boolean(token),
+        configured: Boolean(endpointConfigured && tokenConfigured),
+        endpointConfigured,
+        tokenConfigured,
         tokenName: env.HF_TOKEN_NAME || DEFAULT_TOKEN_NAME,
         backend: 'huggingface-deforum',
+        realDeforumReady,
+        health,
       });
       return;
     }

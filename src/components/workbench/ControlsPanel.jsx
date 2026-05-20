@@ -12,7 +12,7 @@ const midjourneyLikeModelId = 'juggernaut-xl-v9';
 
 const controlDescriptions = {
   modelProfile: 'Selects the checkpoint used by the backend render. Juggernaut XL v9 is the closest configured option to a polished Midjourney-like concept-art look; RealVisXL remains the default for source-faithful realism.',
-  thematicPreset: 'Applies a themed bundle of model, generation, morph, motion, and look settings. Sample frame match is tuned to stay closest to the supplied images.',
+  thematicPreset: 'Applies a themed bundle of generation, morph, motion, and look settings. Sample frame match is tuned to stay closest to the supplied images.',
   sampler: 'Controls the diffusion sampling algorithm. DPM++ 2M Karras is the current balanced default for stable image-to-image quality.',
   scheduler: 'Controls how denoising changes over each generation step. Karras usually gives smooth detail buildup.',
   steps: 'Sets how many diffusion passes are used per generated frame. Higher values can improve detail but increase render time.',
@@ -32,6 +32,7 @@ const controlDescriptions = {
   depthWarp: 'Enables 3D-like depth movement when above 0. This can add parallax but can also distort source geometry.',
   cameraPath: 'Names the motion style. locked-source-morph is the conservative default for preserving supplied frames.',
   cadence: 'Controls how often diffusion regenerates frames. Lower cadence improves consistency for image-reference morphs.',
+  fps: 'Sets the output frame rate. Prompt nodes are spaced from this value, with each node occupying a two-second segment.',
   positivePrompt: 'Shared creative direction added to the image-keyframe prompt schedule.',
   negativePrompt: 'Shared guardrails for artifacts and unwanted visual drift.',
   contrast: 'Adjusts tonal separation in the generated look.',
@@ -39,7 +40,7 @@ const controlDescriptions = {
   bloom: 'Controls the amount of glow around bright city lights.',
   grain: 'Adds texture/noise to reduce overly clean synthetic output.',
   renderQuality: 'Labels the intended render pass quality for review and handoff.',
-  duration: 'Sets the preview clip length in seconds.',
+  duration: 'Computed from the number of prompt nodes and the current FPS. Add or remove nodes to change total clip length.',
   outputFolder: 'Sets where lightweight mock preview exports are labelled. Real A1111 artifacts are written under render-tools.',
   handoffNotes: 'Freeform notes for the reviewer or production integrator.',
 };
@@ -91,6 +92,18 @@ function TextField({ label, value, onChange, multiline = false, description }) {
   );
 }
 
+function ReadOnlyField({ label, value, description }) {
+  return (
+    <div className={styles.controlField}>
+      <span>
+        {label}
+        <strong>{value}</strong>
+      </span>
+      <FieldDescription>{description}</FieldDescription>
+    </div>
+  );
+}
+
 function ControlGroup({ title, children }) {
   return (
     <section className={styles.controlGroup}>
@@ -105,6 +118,7 @@ export function ControlsPanel() {
   const updateGroupValue = usePresetStore((state) => state.updateGroupValue);
   const updateTargetValue = usePresetStore((state) => state.updateTargetValue);
   const setModelProfile = usePresetStore((state) => state.setModelProfile);
+  const setFps = usePresetStore((state) => state.setFps);
   const applySettingPreset = usePresetStore((state) => state.applySettingPreset);
   const selectedModel = modelOptions.models.find((model) => model.id === preset.model.modelId) ?? modelOptions.models[0];
   const midjourneyLikeModel = modelOptions.models.find((model) => model.id === midjourneyLikeModelId);
@@ -117,20 +131,6 @@ export function ControlsPanel() {
   return (
     <aside className={styles.controlsPanel} aria-label="Deforum controls">
       <ControlGroup title="Generation">
-        <SelectField
-          label="Thematic preset"
-          value={selectedSettingPreset.id}
-          options={thematicSettingPresets.map((settingPreset) => ({
-            value: settingPreset.id,
-            label: settingPreset.label,
-          }))}
-          onChange={applySettingPreset}
-          description={controlDescriptions.thematicPreset}
-        />
-        <div className={styles.settingPresetNote}>
-          <strong>{selectedSettingPreset.label}</strong>
-          <span>{selectedSettingPreset.description}</span>
-        </div>
         <SelectField
           label="Model profile"
           value={preset.model.modelId}
@@ -159,6 +159,20 @@ export function ControlsPanel() {
             ))}
           </ul>
           {midjourneyLikeModel ? <p>Closest to Midjourney: {midjourneyLikeModel.label} for cinematic, polished, high-impact concept art.</p> : null}
+        </div>
+        <SelectField
+          label="Thematic preset"
+          value={selectedSettingPreset.id}
+          options={thematicSettingPresets.map((settingPreset) => ({
+            value: settingPreset.id,
+            label: settingPreset.label,
+          }))}
+          onChange={applySettingPreset}
+          description={controlDescriptions.thematicPreset}
+        />
+        <div className={styles.settingPresetNote}>
+          <strong>{selectedSettingPreset.label}</strong>
+          <span>{selectedSettingPreset.description}</span>
         </div>
         <SelectField
           label="Sampler"
@@ -204,6 +218,15 @@ export function ControlsPanel() {
           options={previewSizes}
           onChange={setPreviewSize}
           description={controlDescriptions.previewResolution}
+        />
+        <SliderField
+          label="FPS"
+          min={12}
+          max={60}
+          step={1}
+          value={preset.target.fps}
+          onChange={setFps}
+          description={controlDescriptions.fps}
         />
       </ControlGroup>
 
@@ -394,13 +417,9 @@ export function ControlsPanel() {
           onChange={(value) => updateGroupValue('output', 'renderQuality', value)}
           description={controlDescriptions.renderQuality}
         />
-        <SliderField
+        <ReadOnlyField
           label="Duration"
-          min={3}
-          max={30}
-          step={1}
-          value={preset.output.previewDuration}
-          onChange={(value) => updateGroupValue('output', 'previewDuration', value)}
+          value={`${preset.output.previewDuration}s / ${preset.timeline.length} node${preset.timeline.length === 1 ? '' : 's'}`}
           description={controlDescriptions.duration}
         />
         <TextField

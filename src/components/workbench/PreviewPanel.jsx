@@ -7,6 +7,10 @@ function isPlayableMediaUrl(value = '') {
   return Boolean(value) && (/^https?:\/\//.test(value) || value.startsWith('/') || value.startsWith('blob:'));
 }
 
+function isReviewableRenderTake(take) {
+  return Boolean(take && !take.isFallbackMorph && take.hasFileArtifact !== false && take.artifactUrl);
+}
+
 export function PreviewPanel() {
   const preset = usePresetStore((state) => state.preset);
   const selectedAssetId = usePresetStore((state) => state.selectedAssetId);
@@ -17,7 +21,7 @@ export function PreviewPanel() {
     [preset.assets, selectedAssetId],
   );
   const latestRenderTake = useMemo(
-    () => takes.find((take) => take.artifactUrl || (take.backend !== 'mock' && take.outputPath)),
+    () => takes.find(isReviewableRenderTake),
     [takes],
   );
   const mediaUrl = latestRenderTake?.artifactUrl || (isPlayableMediaUrl(latestRenderTake?.outputPath) ? latestRenderTake.outputPath : '');
@@ -49,7 +53,7 @@ export function PreviewPanel() {
       </div>
       <div className={styles.previewFrame} ref={previewFrameRef}>
         {mediaUrl ? (
-          <video src={mediaUrl} controls playsInline aria-label="Rendered Deforum output video" />
+          <video key={mediaUrl} src={mediaUrl} controls playsInline aria-label="Rendered Deforum output video" />
         ) : selectedAsset ? (
           <img src={selectedAsset.previewUrl} alt={selectedAsset.label} />
         ) : null}

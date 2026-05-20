@@ -43,4 +43,50 @@ describe('backend status service', () => {
     expect(status.status).toBe('not-configured');
     expect(status.detail).toContain('incomplete');
   });
+
+  it('maps Hugging Face smoke fallback mode into not configured state', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse({
+          configured: true,
+          realDeforumReady: false,
+          health: {
+            renderMode: 'a1111',
+            a1111Configured: false,
+            fallbackMorphEnabled: true,
+          },
+        }),
+      ),
+    );
+
+    const status = await checkBackendStatus('huggingface-deforum');
+
+    expect(status.ready).toBe(false);
+    expect(status.status).toBe('not-configured');
+    expect(status.detail).toContain('crossfade MP4s');
+  });
+
+  it('maps Hugging Face real Deforum health into ready state', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        jsonResponse({
+          configured: true,
+          realDeforumReady: true,
+          health: {
+            renderMode: 'a1111',
+            a1111Configured: true,
+            fallbackMorphEnabled: false,
+          },
+        }),
+      ),
+    );
+
+    const status = await checkBackendStatus('huggingface-deforum');
+
+    expect(status.ready).toBe(true);
+    expect(status.status).toBe('ready');
+    expect(status.detail).toContain('real Deforum');
+  });
 });

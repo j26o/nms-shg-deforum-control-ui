@@ -41,9 +41,32 @@ export function queueMockRender(preset, modelOverride) {
   };
 }
 
+function isFallbackMorphJob(job) {
+  if (job.isFallbackMorph || job.artifactKind === 'fallback-morph' || job.backendResponse?.isFallbackMorph || job.backendResponse?.artifactKind === 'fallback-morph') {
+    return true;
+  }
+
+  const searchableText = [...(job.logs ?? []), ...(job.backendResponse?.warnings ?? []), ...(job.backendResponse?.logs ?? [])].join(' ').toLowerCase();
+  return searchableText.includes('fallback') && (searchableText.includes('morph') || searchableText.includes('crossfade'));
+}
+
+function createArtifactUrl(job) {
+  if (job.artifactUrl) {
+    return job.artifactUrl;
+  }
+
+  if (job.artifactPath) {
+    return `/render-artifacts/file?path=${encodeURIComponent(job.artifactPath)}`;
+  }
+
+  return '';
+}
+
 export function createTakeFromJob(job) {
   const config = job.renderConfig;
   const renderSettings = job.renderSettings ?? null;
+  const fallbackMorph = isFallbackMorphJob(job);
+  const artifactUrl = createArtifactUrl(job);
   return {
     id: `take-${Date.now()}`,
     jobId: job.id,
@@ -61,12 +84,13 @@ export function createTakeFromJob(job) {
     outputVideoPattern: job.outputVideoPattern ?? '',
     renderDurationMs: job.estimateSeconds * 1000,
     outputPath: job.outputPath,
-    artifactUrl: job.artifactUrl ?? '',
+    artifactUrl,
     artifactPath: job.artifactPath ?? '',
     artifactFileName: job.artifactFileName ?? '',
+    isFallbackMorph: fallbackMorph,
     previewLabel: job.previewLabel ?? '',
     simulatedPreview: job.simulatedPreview ?? null,
-    hasFileArtifact: Boolean(job.artifactUrl || job.outputPath),
+    hasFileArtifact: !fallbackMorph && Boolean(artifactUrl),
     remoteJobId: job.remoteJobId ?? '',
     renderSettings,
     logs: job.logs,

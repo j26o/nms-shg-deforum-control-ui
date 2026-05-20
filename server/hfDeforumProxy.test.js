@@ -18,4 +18,21 @@ describe('hf deforum proxy helpers', () => {
     expect(normalized.outputPath).toBe('https://example.test/out.mp4');
     expect(normalized.renderSettings.backend).toBe('huggingface-deforum');
   });
+
+  it('preserves fallback artifact metadata for UI-side rejection', () => {
+    const normalized = normaliseHuggingFaceJobResponse({
+      jobId: 'job-fallback',
+      status: 'complete',
+      artifactUrl: 'https://example.test/fallback.mp4',
+      renderMode: 'fallback-morph',
+      artifactKind: 'fallback-morph',
+      isFallbackMorph: true,
+      warnings: ['Used fallback keyframe morph renderer.'],
+    });
+
+    expect(normalized.renderMode).toBe('fallback-morph');
+    expect(normalized.artifactKind).toBe('fallback-morph');
+    expect(normalized.isFallbackMorph).toBe(true);
+    expect(normalized.warnings[0]).toContain('fallback');
+  });
 });

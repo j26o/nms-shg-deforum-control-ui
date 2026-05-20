@@ -11,12 +11,13 @@ describe('render adapter contract', () => {
 
     expect(config.model.id).toBe('sdxl-base');
     expect(config.target.aspectRatio).toBe('7:3');
-    expect(config.assets.length).toBe(8);
+    expect(config.assets.length).toBe(3);
     expect(config.timeline.length).toBe(config.assets.length);
     expect(config.timeline[0].prompt).toContain('visionary future Singapore cityscape');
     expect(config.timeline[0].prompt).toContain('required target image for this keyframe');
     expect(config.timeline[0].prompt).toContain('Do not invent a new city');
-    expect(config.timeline.at(-1).toFrame).toBe(479);
+    expect(config.timeline.map((segment) => segment.fromFrame)).toEqual([0, 120, 240]);
+    expect(config.timeline.at(-1).toFrame).toBe(359);
   });
 
   it('creates deterministic mock job metadata and comparable takes', () => {

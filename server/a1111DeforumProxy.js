@@ -1,6 +1,6 @@
 import { createRenderArtifactUrl, inspectRenderOutputDirectory } from './renderArtifactProxy.js';
 import { spawn } from 'node:child_process';
-import { access, readFile, stat } from 'node:fs/promises';
+import { access, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const MAX_BODY_BYTES = 5 * 1024 * 1024;
@@ -310,6 +310,35 @@ function isFailedStatus(value) {
   return FAILED_STATUSES.has(String(value ?? '').toLowerCase());
 }
 
+function isInvalidArgumentsError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.toLowerCase().includes('invalid arguments');
+}
+
+function isGenerationError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.toLowerCase().includes('generation error');
+}
+
+function parseInitImages(settings) {
+  if (!settings?.init_images || typeof settings.init_images !== 'string') {
+    return [];
+  }
+
+  try {
+    return Object.entries(JSON.parse(settings.init_images))
+      .map(([frame, imagePath]) => [Number(frame), String(imagePath)])
+      .filter(([frame, imagePath]) => Number.isFinite(frame) && imagePath)
+      .sort(([left], [right]) => left - right);
+  } catch {
+    return [];
+  }
+}
+
+function canUseChunkedMultiImageFallback(settings, env = process.env) {
+  return env.A1111_DEFORUM_DISABLE_CHUNK_FALLBACK !== '1' && parseInitImages(settings).length > 2;
+}
+
 async function inspectA1111Output(outdir, env = process.env, options = {}) {
   const inspection = await inspectRenderOutputDirectory(outdir).catch(() => ({
     exists: false,
@@ -379,6 +408,174 @@ async function submitFullDeforumApi(settings, env) {
   }
 
   return json;
+}
+
+function createChunkSettings(settings, initImageEntries, chunkIndex) {
+  const [startFrame, startImage] = initImageEntries[chunkIndex];
+  const [endFrame, endImage] = initImageEntries[chunkIndex + 1];
+  const frameSpan = Math.max(1, endFrame - startFrame);
+  const endKey = Math.max(1, frameSpan - 1);
+  const prompts = settings.prompts ?? {};
+  const startPrompt = prompts[String(startFrame)] ?? prompts[startFrame] ?? prompts['0'] ?? Object.values(prompts)[0] ?? '';
+  const endPrompt = prompts[String(endFrame)] ?? prompts[endFrame] ?? startPrompt;
+
+  return {
+    ...settings,
+    batch_name: `${settings.batch_name || 'deforum-render'}-seg-${String(chunkIndex + 1).padStart(2, '0')}`,
+    max_frames: frameSpan,
+    init_image: startImage,
+    prompts: {
+      0: startPrompt,
+      [String(endKey)]: endPrompt,
+    },
+    init_images: JSON.stringify(
+      {
+        0: startImage,
+        [String(endKey)]: endImage,
+      },
+      null,
+      4,
+    ),
+    use_init: true,
+    use_looper: true,
+    hybrid_generate_inputframes: true,
+    hybrid_use_first_frame_as_init_image: true,
+    hybrid_use_init_image: true,
+  };
+}
+
+function createConcatListContent(videoPaths) {
+  return videoPaths
+    .map((videoPath) => `file '${String(videoPath).replace(/\\/g, '/').replace(/'/g, "'\\''")}'`)
+    .join('\n');
+}
+
+function runFfmpegConcat(ffmpegPath, listPath, outputPath, env = process.env) {
+  const timeoutMs = Number(env.A1111_DEFORUM_FFMPEG_TIMEOUT_MS || 120000);
+  const args = ['-y', '-hide_banner', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', listPath, '-c', 'copy', outputPath];
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(ffmpegPath, args, { windowsHide: true });
+    const chunks = [];
+    let settled = false;
+    const timer = timeoutMs > 0
+      ? globalThis.setTimeout(() => {
+          settled = true;
+          child.kill('SIGTERM');
+          reject(new Error(`FFmpeg segment concat timed out after ${timeoutMs}ms.`));
+        }, timeoutMs)
+      : null;
+
+    const collect = (chunk) => {
+      chunks.push(Buffer.from(chunk));
+      while (Buffer.concat(chunks).length > 4000) {
+        chunks.shift();
+      }
+    };
+
+    child.stdout.on('data', collect);
+    child.stderr.on('data', collect);
+    child.on('error', (error) => {
+      if (settled) return;
+      settled = true;
+      if (timer) globalThis.clearTimeout(timer);
+      reject(error);
+    });
+    child.on('close', (code) => {
+      if (settled) return;
+      settled = true;
+      if (timer) globalThis.clearTimeout(timer);
+      if (code === 0) {
+        resolve();
+        return;
+      }
+      const output = Buffer.concat(chunks).toString('utf8').trim();
+      reject(new Error(`FFmpeg segment concat failed with exit code ${code}.${output ? ` ${output}` : ''}`));
+    });
+  });
+}
+
+async function concatSegmentArtifacts(segmentResults, settings, env = process.env) {
+  const outputRoot = getA1111Img2ImgOutputRoot(env);
+  const outputDir = path.join(outputRoot, `${settings.batch_name || 'deforum-render'}-stitched-${Date.now()}`);
+  await mkdir(outputDir, { recursive: true });
+
+  const outputPath = path.join(outputDir, 'stitched.mp4');
+  const listPath = path.join(outputDir, 'segments.txt');
+  const videoPaths = segmentResults.map((result) => result.artifactPath).filter(Boolean);
+  if (videoPaths.length !== segmentResults.length) {
+    throw new Error('Chunked Deforum fallback could not collect all segment MP4 artifacts.');
+  }
+
+  await writeFile(listPath, createConcatListContent(videoPaths), 'utf8');
+  await runFfmpegConcat(await findFfmpegExecutable(env), listPath, outputPath, env);
+
+  const outputStat = await stat(outputPath);
+  if (!outputStat.isFile() || outputStat.size <= 0) {
+    throw new Error(`Chunked Deforum fallback did not create a non-empty MP4 at ${outputPath}.`);
+  }
+
+  return {
+    outdir: outputDir,
+    artifactPath: outputPath,
+    artifactUrl: createRenderArtifactUrl(outputPath),
+    artifactFileName: path.basename(outputPath),
+    artifactInspection: {
+      exists: true,
+      videoCount: 1,
+      frameCount: 0,
+      settingsCount: 0,
+      artifactPath: outputPath,
+      artifactUrl: createRenderArtifactUrl(outputPath),
+      artifactFileName: path.basename(outputPath),
+      latestVideo: {
+        filePath: outputPath,
+        fileName: path.basename(outputPath),
+        size: outputStat.size,
+        modifiedMs: outputStat.mtimeMs,
+      },
+    },
+    segmentResults,
+  };
+}
+
+async function submitChunkedDeforumApi(settings, env) {
+  const normalizedSettings = normalizeDeforumAssetPaths(settings);
+  const initImageEntries = parseInitImages(normalizedSettings);
+  if (initImageEntries.length < 3) {
+    throw new Error('Chunked Deforum fallback requires at least three init images.');
+  }
+
+  const segmentResults = [];
+  for (let index = 0; index < initImageEntries.length - 1; index += 1) {
+    const segmentSettings = createChunkSettings(normalizedSettings, initImageEntries, index);
+    const batch = await submitFullDeforumApi(segmentSettings, env);
+    const jobId = batch.job_ids?.[0] ?? batch.job_id;
+    if (!jobId) {
+      const outdir = batch.outdir || batch.output_path || '';
+      const inspection = await inspectA1111Output(outdir, env, { stitchFrames: true });
+      if (!inspection.artifactUrl) {
+        throwMissingArtifactError(outdir, inspection);
+      }
+      segmentResults.push({
+        ...batch,
+        outdir,
+        artifactPath: inspection.artifactPath,
+        artifactUrl: inspection.artifactUrl,
+        artifactFileName: inspection.artifactFileName,
+        artifactInspection: inspection,
+      });
+      continue;
+    }
+
+    segmentResults.push(await pollFullDeforumJob(jobId, env));
+  }
+
+  return {
+    ...(await concatSegmentArtifacts(segmentResults, normalizedSettings, env)),
+    api: 'deforum-api-chunked',
+    chunkedFallback: true,
+  };
 }
 
 async function pollFullDeforumJob(jobId, env) {
@@ -580,6 +777,10 @@ export async function submitA1111DeforumRun(payload, env = process.env) {
       batchResponse: batch,
     };
   } catch (error) {
+    if ((isInvalidArgumentsError(error) || isGenerationError(error)) && canUseChunkedMultiImageFallback(settings, env)) {
+      return submitChunkedDeforumApi(settings, env);
+    }
+
     const canFallback = error?.stage === 'submit' && (error?.status === 404 || error?.status === 405);
     if (env.A1111_DEFORUM_DISABLE_SIMPLE_FALLBACK === '1' || !canFallback) {
       throw error;
